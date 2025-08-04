@@ -1,7 +1,7 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
+  <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
   <div id="app">
-    <router-view /> <!-- Aquí se cargan las vistas -->
+    <router-view /> <!-- Aquí se cargan las vistas como Dashboard o Login -->
   </div>
 </template>
 
