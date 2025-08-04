@@ -1,21 +1,25 @@
 // src/views/LoginView.vue
 <template>
-  <div class="loginView">
-    <h1>Iniciar sesión</h1>
-    <form @submit.prevent="handleLogin">
-      <div>
-        <label for="username">Usuario:</label>
-        <input type="text" id="username" v-model="username" required />
-      </div>
-      <div>
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <button type="submit">Entrar</button>
-    </form>
+  <div class="login-container">
+    <div class="login-box">
+      <h1>Iniciar sesión</h1>
 
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
+      <form @submit.prevent="handleLogin" class="login-form">
+        <div class="form-group">
+          <label for="username">Usuario:</label>
+          <input type="text" id="username" v-model="username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña:</label>
+          <input type="password" id="password" v-model="password" required />
+        </div>
+        <button type="submit" class="login-button">Entrar</button>
+      </form>
+
+      <!-- 🔴 Mensaje de error -->
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
     </div>
   </div>
 </template>
@@ -66,16 +70,97 @@ export default {
 </script>
 
 <style scoped>
-.loginView {
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #f2f6f9, #d6e4f0);
+  padding: 20px;
+  animation: fadeIn 0.6s ease-in;
+}
+
+.login-box {
+  background-color: white;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  width: 100%;
   max-width: 400px;
-  margin: auto;
-  padding-top: 40px;
+  transition: all 0.3s ease-in-out;
 }
-form div {
-  margin-bottom: 12px;
+
+.login-box h1 {
+  margin-bottom: 24px;
+  font-size: 26px;
+  color: #34495e;
 }
+
+.login-form .form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.login-button:hover {
+  background-color: #2980b9;
+}
+
 .error-message {
   margin-top: 20px;
-  color: red;
+  color: #e74c3c;
+  font-weight: bold;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-box {
+    padding: 30px 20px;
+  }
+
+  .login-box h1 {
+    font-size: 22px;
+  }
+
+  .login-button {
+    font-size: 14px;
+  }
 }
 </style>
