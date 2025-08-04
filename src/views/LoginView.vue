@@ -1,4 +1,4 @@
-// src/views/LoginView.vue
+<!-- src/views/LoginView.vue -->
 <template>
   <div class="login-container">
     <div class="login-box">
@@ -70,14 +70,19 @@ export default {
 </script>
 
 <style scoped>
+/* Ajuste general */
+* {
+  box-sizing: border-box;
+}
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #f2f6f9, #d6e4f0);
+  min-height: 100%;
   padding: 20px;
   animation: fadeIn 0.6s ease-in;
+  overflow: auto; /* Solo aparece scroll si es necesario */
 }
 
 .login-box {
