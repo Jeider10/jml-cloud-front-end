@@ -1,3 +1,4 @@
+// src/views/LoginView.vue
 <template>
   <div class="loginView">
     <h1>Iniciar sesión</h1>
@@ -36,11 +37,15 @@ export default {
       this.errorMessage = ''
       try {
         const response = await login(this.username, this.password)
-        const token = response.data.token
+        const { authorization, options } = response.data
 
-        localStorage.setItem('token', token)
-        this.$router.push('/dashboard')
+        // Guarda datos temporalmente (o usa Vuex)
+        localStorage.setItem('sessionToken', authorization)
+        localStorage.setItem('authUsername', this.username)
+        localStorage.setItem('authOptions', JSON.stringify(options))
 
+        // Redirige a pantalla de selección
+        this.$router.push('/role-selection')
       } catch (error) {
         console.error('❌ Error en login:', error)
 

@@ -1,4 +1,4 @@
-<!-- src/views/DashboardView.vue -->
+// src/views/DashboardView.vue
 <template>
   <div class="dashboard">
     <!-- Barra lateral -->
