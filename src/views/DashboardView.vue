@@ -1,3 +1,4 @@
+<!-- src/views/DashboardView.vue -->
 <template>
   <div class="dashboard">
     <!-- Barra lateral -->
@@ -77,7 +78,7 @@ body {
   justify-content: space-between; /* Espacio entre el contenido y el botón */
 }
 
-.logo {
+.sidebar .logo {
   padding: 20px;
   text-align: center;
   background-color: #003c6c;
@@ -86,10 +87,18 @@ body {
   border-bottom: 1px solid #02688a;
 }
 
+/* Scroll encima del botón */
 .sidebar-content {
-  flex-grow: 1; /* El contenido del menú ocupa el espacio sobrante */
-  overflow-y: auto; /* Se habilita el scroll si el contenido excede la altura */
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
 }
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
 
 .sidebar input {
   margin: 15px;
@@ -114,10 +123,14 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Botón fijo, mismo fondo del panel */
 .logout {
   padding: 15px;
   text-align: center;
+  background-color: #014c84; /* Mismo color que el panel */
   border-top: 1px solid #02688a;
+  position: sticky;
+  bottom: 0;
 }
 
 .logout button {
@@ -137,4 +150,5 @@ body {
   margin-left: 250px;
   padding: 20px;
 }
+
 </style>
