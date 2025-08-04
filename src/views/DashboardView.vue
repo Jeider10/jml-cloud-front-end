@@ -66,7 +66,7 @@ body {
 
 .dashboard {
   display: flex;
-  height: 100vh;
+  height: 92vh;
 }
 
 .sidebar {
@@ -96,9 +96,13 @@ body {
 
 .sidebar-content::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
+/* Mejora el scroll visualmente */
+.sidebar-content::-webkit-scrollbar {
+  width: 8px;
+}
 
 .sidebar input {
   margin: 15px;

@@ -12,9 +12,10 @@
       </div>
       <button type="submit">Entrar</button>
     </form>
-  </div>
-  <div
-  v-if="error" style="color: red">{{ error }}
+
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>
 
@@ -32,16 +33,27 @@ export default {
   },
   methods: {
     async handleLogin() {
+      this.errorMessage = ''
       try {
         const response = await login(this.username, this.password)
         const token = response.data.token
 
         localStorage.setItem('token', token)
-        this.$router.push('/dashboard') // 👈 redirección
+        this.$router.push('/dashboard')
 
       } catch (error) {
-        this.errorMessage = '❌ Usuario o contraseña incorrectos'
-        console.error('Error en login:', error)
+        console.error('❌ Error en login:', error)
+
+        if (!error.response) {
+          // 🔴 No hay respuesta del servidor (API caída, timeout, CORS, etc.)
+          this.errorMessage = 'No se puede conectar con el servicio de autenticación. Por favor contacte al administrador del sistema.'
+        } else if (error.response.status === 401) {
+          // ❌ Credenciales inválidas
+          this.errorMessage = 'Usuario o contraseña incorrectos.'
+        } else {
+          // ⚠️ Otro error inesperado
+          this.errorMessage = 'Ocurrió un error inesperado. Intente nuevamente.'
+        }
       }
     }
   }
@@ -49,12 +61,16 @@ export default {
 </script>
 
 <style scoped>
-.login {
+.loginView {
   max-width: 400px;
   margin: auto;
   padding-top: 40px;
 }
 form div {
   margin-bottom: 12px;
+}
+.error-message {
+  margin-top: 20px;
+  color: red;
 }
 </style>
