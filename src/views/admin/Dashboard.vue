@@ -39,17 +39,11 @@ export default {
 }
 
 .welcome-text {
-  position: absolute;
-  top: 100px;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  width: max-content; /* necesario para que funcione el centrado */
   text-align: center;
   font-size: 4rem;
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-top: 60px; /* ajusta según necesites espacio */
 }
 
 /* Subtítulo */
@@ -85,11 +79,8 @@ export default {
 }
 
 .restaurant-image {
-  position: absolute;
-  top: 430px;
-  left: 38%;
   display: block;
-  margin: 20px auto;
+  margin: 288px auto 20px auto;
   max-width: 400px;
   width: 80%;
   border-radius: 12px;
