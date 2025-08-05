@@ -1,19 +1,27 @@
 <template>
   <div class="side-menu-wrapper">
-    <!-- Panel lateral siempre visible -->
+    <!-- Panel lateral fijo -->
     <div class="side-panel">
-      <!-- Logo siempre visible -->
-      <div class="logo-section">
-        <img src="@/assets/logo.png" alt="Logo" class="logo" />
+      <div class="top-section">
+        <!-- Logo -->
+        <div class="logo-section">
+          <img src="@/assets/logo.png" alt="Logo" class="logo" />
+        </div>
+
+        <!-- Botón del menú justo debajo del logo -->
+        <div class="menu-toggle" @click="toggleMenu">☰</div>
       </div>
 
-      <!-- Botón de menú visible siempre -->
-      <div class="menu-toggle" @click="toggleMenu">☰</div>
+      <!-- Botón de salir siempre abajo -->
+      <div class="bottom-section">
+        <div class="logout-icon" @click="logout">
+          <img src="@/assets/boton-salir.png" alt="Salir" />
+        </div>
+      </div>
     </div>
 
-    <!-- Menú lateral (desplegable) -->
+    <!-- Menú desplegable -->
     <div :class="['side-menu', { 'menu-open': menuOpen }]">
-      <!-- Buscador -->
       <div class="search-box">
         <input type="text" placeholder="Buscar" />
       </div>
@@ -24,11 +32,6 @@
         <div v-for="(item, index) in menuItems" :key="index" class="menu-item">
           {{ item }}
         </div>
-      </div>
-
-      <!-- Botón de salir -->
-      <div class="logout-button" @click="logout">
-        Salir
       </div>
     </div>
   </div>
@@ -63,7 +66,9 @@ export default {
       this.menuOpen = !this.menuOpen
     },
     logout() {
-      alert('Salir clickeado') // Lógica real de logout aquí
+      // Redirigir al login o ejecutar logout real
+      alert('Salir clickeado')
+      this.$router.push('/login')
     }
   }
 }
@@ -75,19 +80,28 @@ export default {
   display: flex;
 }
 
-/* Panel lateral fijo (contiene logo y botón del menú) */
+/* Panel lateral fijo (contiene logo, botón del menú y botón salir) */
 .side-panel {
-  left: 0;
-  top: 0;
   position: fixed;
+  top: 0;
+  left: 0;
   width: 60px;
-  background-color: #005b82;
   height: 100vh;
+  background-color: #005b82;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  padding: 10px 0;
+}
+
+/* Sección superior (logo + botón menú) */
+.top-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10px;
-  z-index: 20;
+  gap: 15px;
 }
 
 /* Logo */
@@ -105,6 +119,22 @@ export default {
   font-size: 30px;
   color: white;
   cursor: pointer;
+  top: 50px;
+  position: absolute;
+}
+
+/* Sección inferior (botón salir) */
+.bottom-section {
+  margin-bottom: 20px;
+}
+
+.logout-icon {
+  cursor: pointer;
+}
+
+.logout-icon img {
+  width: 25px;
+  height: 25px;
 }
 
 /* Menú lateral desplegable */
@@ -167,15 +197,6 @@ export default {
 .menu-item {
   padding: 10px 0;
   border-bottom: 1px solid #ccc;
-  cursor: pointer;
-}
-
-/* Botón salir */
-.logout-button {
-  background-color: #003865;
-  color: white;
-  text-align: center;
-  padding: 15px;
   cursor: pointer;
 }
 
