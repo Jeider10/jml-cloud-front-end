@@ -1,3 +1,5 @@
+<!-- src/components/DashboardSideMenu.vue -->
+
 <template>
   <div class="side-menu-wrapper">
     <!-- Panel lateral fijo -->
@@ -5,12 +7,14 @@
       <!-- Sección superior (logo + botón menú + favoritos + usuario + informacion + configuracion + mensaje + botón salir) -->
       <div class="top-section">
         <!-- Logo -->
-        <div class="logo-section">
+        <div class="logo-icon" @click="onLogoClick">
           <img src="@/assets/logo.png" alt="Logo" class="logo" />
         </div>
 
-        <!-- Botón del menú justo debajo del logo -->
-        <div class="menu-toggle" @click="toggleMenu">☰</div>
+        <!-- Botón de menu justo debajo del logo -->
+        <div class="menu-icon" @click="onMenuClick">
+          <img src="@/assets/menu.png" alt="Menu" />
+        </div>
 
         <!-- Botón de favoritos justo debajo del botón del menú -->
         <div class="favorites-icon" @click="onFavoritesClick">
@@ -88,7 +92,11 @@ export default {
     }
   },
   methods: {
-    toggleMenu() {
+    onLogClick() {
+      // alert('Favoritos clickeado')
+    },
+
+    onMenuClick() {
       this.menuOpen = !this.menuOpen
     },
 
@@ -152,26 +160,30 @@ export default {
 }
 
 /* Logo */
-.logo-section {
-  margin-bottom: 10px;
-}
-
-.logo {
-  width: 30px;
-  height: auto;
-}
-
-/* Botón del menú */
-.menu-toggle {
-  font-size: 30px;
-  color: white;
+.logo-icon {
+  margin-top: 1px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
-  top: 50px;
-  position: absolute;
 }
 
+.logo-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón menú */
+.menu-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.menu-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón favoritos */
 .favorites-icon {
-  margin-top: 40px; /* Puedes cambiar este valor para ajustar la distancia */
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
 }
 
@@ -180,6 +192,7 @@ export default {
   height: 25px;
 }
 
+/* Botón usuario */
 .usuario-icon {
   margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
@@ -190,6 +203,7 @@ export default {
   height: 25px;
 }
 
+/* Botón informacion */
 .information-icon {
   margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
@@ -200,6 +214,7 @@ export default {
   height: 25px;
 }
 
+/* Botón configuracion */
 .configuration-icon {
   margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
@@ -210,6 +225,7 @@ export default {
   height: 25px;
 }
 
+/* Botón mensaje */
 .mensaje-icon {
   margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;

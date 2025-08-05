@@ -1,4 +1,5 @@
 <!-- src/views/LoginView.vue -->
+
 <template>
   <div class="login-container">
     <div class="login-box">
@@ -168,4 +169,5 @@ export default {
     font-size: 14px;
   }
 }
+
 </style>

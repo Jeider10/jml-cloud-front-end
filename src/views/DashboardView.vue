@@ -1,3 +1,5 @@
+<!-- src/views/DashboardView.vue -->
+
 <template>
   <div class="dashboard-view">
     <DashboardSideMenu />
@@ -35,4 +37,5 @@ export default {
 .side-menu.expanded ~ .main-content {
   margin-left: 280px;
 }
+
 </style>

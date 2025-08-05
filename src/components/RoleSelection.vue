@@ -1,4 +1,5 @@
 <!-- src/components/RoleSelection.vue -->
+
 <template>
   <div class="roleSelection">
     <h2>Seleccione su contexto</h2>
@@ -141,4 +142,5 @@ select {
 .submit-button:hover {
   background-color: #0056b3;
 }
+
 </style>

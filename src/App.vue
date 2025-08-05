@@ -1,8 +1,8 @@
 <!-- src/App.vue -->
+
 <template>
-  <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
   <div id="app">
-    <!-- Aquí se cargan las páginas (Dashboard, Login, etc.) -->
+    <!-- Aquí se cargan las páginas (Login, Dashboard, etc.) -->
     <router-view />
   </div>
 </template>
@@ -25,4 +25,5 @@ export default {
   /* Elimina esto si ya no lo necesitas */
   /* margin-top: 60px; */
 }
+
 </style>
