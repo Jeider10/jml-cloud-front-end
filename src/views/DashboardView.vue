@@ -34,13 +34,16 @@ export default {
 
 /* Estilo base */
 .main-content {
-  margin-left: 60px;
-  width: 100%;
-  transition: margin-left 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0px;
+  right: 0;
+  bottom: 0;
+  transition: left 0.5s ease;
 }
 
 /* Cuando el menú está abierto */
 .main-content.expanded {
-  margin-left: 310px; /* 60px (panel) + 250px (menú desplegable) */
+  left: 310px; /* 60px + 250px del menú desplegable */
 }
 </style>
