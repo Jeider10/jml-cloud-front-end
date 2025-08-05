@@ -1,18 +1,18 @@
 <template>
   <div class="dashboard-container">
     <h1 class="welcome-text animate-rainbow-text">
-      ¡Bienvenido!
+      ¡Bienvenido a la institución!
     </h1>
     <h2 class="subtitle-text">Por favor, selecciona una opción del menú a la izquierda.</h2>
     <p class="description-text">
-      Somos un restaurante comprometido con la excelencia culinaria,<br />
-      ofreciendo platillos frescos y preparados al instante.<br />
-      Nuestra pasión es brindarte una experiencia única cada vez que nos visitas.<br />
-      ¡Bienvenido a un viaje de sabor y tradición!
+      Somos una institución comprometida con la formación integral de nuestros estudiantes,<br />
+      brindando educación de calidad con valores y excelencia académica.<br />
+      Nuestro objetivo es inspirar, educar y transformar vidas.<br />
+      ¡Bienvenido a una comunidad de aprendizaje, crecimiento y futuro!
     </p>
 
-    <!-- Imagen del restaurante -->
-    <img src="@/assets/restaurante.png" alt="Imagen del restaurante" class="restaurant-image" />
+    <!-- Imagen de la institución -->
+    <img src="@/assets/institucion.png" alt="Imagen de la institución" class="instituto-image" />
 
     <!-- Footer -->
     <footer class="page-footer">
@@ -78,7 +78,7 @@ export default {
   box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
 }
 
-.restaurant-image {
+.instituto-image {
   display: block;
   margin: 288px auto 20px auto;
   max-width: 400px;
@@ -100,27 +100,13 @@ export default {
 
 /* Animación arcoíris */
 @keyframes rainbow-text {
-  0% {
-    color: red;
-  }
-  16% {
-    color: orange;
-  }
-  32% {
-    color: yellow;
-  }
-  48% {
-    color: green;
-  }
-  64% {
-    color: blue;
-  }
-  80% {
-    color: indigo;
-  }
-  100% {
-    color: violet;
-  }
+  0% { color: red; }
+  16% { color: orange; }
+  32% { color: yellow; }
+  48% { color: green; }
+  64% { color: blue; }
+  80% { color: indigo; }
+  100% { color: violet; }
 }
 
 .animate-rainbow-text {
