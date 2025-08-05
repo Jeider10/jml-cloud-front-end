@@ -5,19 +5,21 @@
     <DashboardSideMenu />
 
     <div class="main-content">
-      <!-- Aquí todo el contenido del dashboard -->
-      <h1>Bienvenido al Dashboard</h1>
+      <!-- Aquí usamos el Dashboard original descargado -->
+      <DashboardDownloaded />
     </div>
   </div>
 </template>
 
 <script>
 import DashboardSideMenu from '@/components/DashboardSideMenu.vue'
+import DashboardDownloaded from '@/views/admin/Dashboard.vue' // <-- Importas el nuevo dashboard
 
 export default {
   name: 'DashboardView',
   components: {
-    DashboardSideMenu
+    DashboardSideMenu,
+    DashboardDownloaded
   }
 }
 </script>
