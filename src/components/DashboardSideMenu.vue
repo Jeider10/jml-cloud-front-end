@@ -1,17 +1,18 @@
-<!-- src/components/DashboardSideMenu.vue -->
-
 <template>
   <div class="side-menu-wrapper">
-    <!-- Logo siempre visible -->
-    <div class="logo-section">
-      <img src="@/assets/logo.png" alt="Logo" class="logo" />
+    <!-- Panel lateral siempre visible -->
+    <div class="side-panel">
+      <!-- Logo siempre visible -->
+      <div class="logo-section">
+        <img src="@/assets/logo.png" alt="Logo" class="logo" />
+      </div>
+
+      <!-- Botón de menú visible siempre -->
+      <div class="menu-toggle" @click="toggleMenu">☰</div>
     </div>
-    <!-- Botón de menú visible siempre -->
-    <div class="menu-toggle" @click="toggleMenu">☰</div>
 
-    <!-- Menú lateral -->
+    <!-- Menú lateral (desplegable) -->
     <div :class="['side-menu', { 'menu-open': menuOpen }]">
-
       <!-- Buscador -->
       <div class="search-box">
         <input type="text" placeholder="Buscar" />
@@ -71,36 +72,46 @@ export default {
 <style scoped>
 .side-menu-wrapper {
   position: relative;
+  display: flex;
 }
 
-.logo-section {
-  position: fixed;
-  top: 0;
+/* Panel lateral fijo (contiene logo y botón del menú) */
+.side-panel {
   left: 0;
+  top: 0;
+  position: fixed;
+  width: 60px;
+  background-color: #005b82;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
   z-index: 20;
-  padding: 5px;
+}
+
+/* Logo */
+.logo-section {
+  margin-bottom: 10px;
 }
 
 .logo {
   width: 30px;
   height: auto;
-  margin: 10px;
 }
 
+/* Botón del menú */
 .menu-toggle {
-  position: absolute;
-  top: 45px;
-  left: 7px;
   font-size: 30px;
-  color: black;
+  color: white;
   cursor: pointer;
-  z-index: 10;
 }
 
+/* Menú lateral desplegable */
 .side-menu {
   position: fixed;
   top: 0;
-  left: 0;
+  left: 60px; /* Desplazado según el ancho del panel */
   width: 250px;
   height: 100vh;
   background: linear-gradient(to bottom, #005b82, #00b374);
@@ -110,14 +121,25 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  z-index: 10;
 }
 
 .side-menu.menu-open {
   transform: translateX(0);
 }
 
+/* Buscador */
 .search-box {
-  padding: 100px 20px 20px 5px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #005b82, #00b374);
+  margin-bottom: 0px; /* <---- Aquí controlas la distancia */
 }
 
 .search-box input {
@@ -126,6 +148,7 @@ export default {
   font-size: 14px;
 }
 
+/* Título del menú */
 .menu-title {
   background-color: #003865;
   color: white;
@@ -134,6 +157,7 @@ export default {
   font-weight: bold;
 }
 
+/* Lista de ítems */
 .menu-items {
   flex-grow: 1;
   padding: 10px 20px;
@@ -146,6 +170,7 @@ export default {
   cursor: pointer;
 }
 
+/* Botón salir */
 .logout-button {
   background-color: #003865;
   color: white;
