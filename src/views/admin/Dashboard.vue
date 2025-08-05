@@ -16,18 +16,23 @@ export default {
 .dashboard-container {
   height: 100vh;
   width: 100%;
-  overflow: hidden; /* elimina scroll SOLO aquí */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  overflow: hidden;
   background: linear-gradient(135deg, #74ebd5, #9face6);
   animation: gradientShift 10s ease infinite;
+  position: relative; /* IMPORTANTE para posicionar hijos con absolute */
 }
 
 .welcome-text {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: max-content; /* necesario para que funcione el centrado */
+  text-align: center;
   font-size: 4rem;
   font-weight: bold;
-  text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
