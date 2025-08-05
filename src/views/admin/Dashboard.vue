@@ -1,56 +1,62 @@
 <template>
-  <div class="welcome-container">
-    <h1 class="welcome-text">Bienvenido al sistema</h1>
+  <div class="dashboard-container">
+    <h1 class="welcome-text animate-rainbow-text">
+      ¡Bienvenido!
+    </h1>
   </div>
 </template>
 
 <script>
 export default {
-  name: "dashboard-page",
+  name: "dashboard-page"
 };
 </script>
 
 <style scoped>
-.welcome-container {
-  width: 100%;
+.dashboard-container {
   height: 100vh;
+  width: 100%;
+  overflow: hidden; /* elimina scroll SOLO aquí */
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   background: linear-gradient(135deg, #74ebd5, #9face6);
   animation: gradientShift 10s ease infinite;
 }
 
 .welcome-text {
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: bold;
-  color: white;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 2s ease-out;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Fondo animado */
-@keyframes gradientShift {
+/* Animación arcoíris */
+@keyframes rainbow-text {
   0% {
-    background-position: 0% 50%;
+    color: red;
   }
-  50% {
-    background-position: 100% 50%;
+  16% {
+    color: orange;
+  }
+  32% {
+    color: yellow;
+  }
+  48% {
+    color: green;
+  }
+  64% {
+    color: blue;
+  }
+  80% {
+    color: indigo;
   }
   100% {
-    background-position: 0% 50%;
+    color: violet;
   }
 }
 
-/* Entrada del texto */
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.animate-rainbow-text {
+  animation: rainbow-text 4s infinite linear;
 }
 </style>
