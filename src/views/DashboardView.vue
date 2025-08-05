@@ -1,11 +1,9 @@
 <!-- src/views/DashboardView.vue -->
-
 <template>
   <div class="dashboard-view">
-    <DashboardSideMenu />
+    <DashboardSideMenu @menu-toggle="menuOpen = $event" />
 
-    <div class="main-content">
-      <!-- Aquí usamos el Dashboard original descargado -->
+    <div :class="['main-content', { expanded: menuOpen }]">
       <DashboardDownloaded />
     </div>
   </div>
@@ -13,13 +11,18 @@
 
 <script>
 import DashboardSideMenu from '@/components/DashboardSideMenu.vue'
-import DashboardDownloaded from '@/views/admin/Dashboard.vue' // <-- Importas el nuevo dashboard
+import DashboardDownloaded from '@/views/admin/Dashboard.vue'
 
 export default {
   name: 'DashboardView',
   components: {
     DashboardSideMenu,
     DashboardDownloaded
+  },
+  data() {
+    return {
+      menuOpen: false
+    }
   }
 }
 </script>
@@ -29,15 +32,15 @@ export default {
   display: flex;
 }
 
+/* Estilo base */
 .main-content {
   margin-left: 60px;
-  padding: 20px;
   width: 100%;
   transition: margin-left 0.3s ease;
 }
 
-.side-menu.expanded ~ .main-content {
-  margin-left: 280px;
+/* Cuando el menú está abierto */
+.main-content.expanded {
+  margin-left: 310px; /* 60px (panel) + 250px (menú desplegable) */
 }
-
 </style>

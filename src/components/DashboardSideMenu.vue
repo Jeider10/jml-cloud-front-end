@@ -98,6 +98,7 @@ export default {
 
     onMenuClick() {
       this.menuOpen = !this.menuOpen
+      this.$emit('menu-toggle', this.menuOpen)
     },
 
     onFavoritesClick() {
