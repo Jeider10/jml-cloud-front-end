@@ -2,6 +2,7 @@
   <div class="side-menu-wrapper">
     <!-- Panel lateral fijo -->
     <div class="side-panel">
+      <!-- Sección superior (logo + botón menú + favoritos + usuario + informacion + configuracion + mensaje + botón salir) -->
       <div class="top-section">
         <!-- Logo -->
         <div class="logo-section">
@@ -10,6 +11,31 @@
 
         <!-- Botón del menú justo debajo del logo -->
         <div class="menu-toggle" @click="toggleMenu">☰</div>
+
+        <!-- Botón de favoritos justo debajo del botón del menú -->
+        <div class="favorites-icon" @click="onFavoritesClick">
+          <img src="@/assets/favoritos.png" alt="Favoritos" />
+        </div>
+
+        <!-- Botón de usuario justo debajo del botón de favoritos -->
+        <div class="usuario-icon" @click="onUsuarioClick">
+          <img src="@/assets/usuario.png" alt="Usuario" />
+        </div>
+
+        <!-- Botón de information justo debajo del botón de usuario -->
+        <div class="information-icon" @click="onInformationClick">
+          <img src="@/assets/informacion.png" alt="Information" />
+        </div>
+
+        <!-- Botón de configuration justo debajo del botón de information -->
+        <div class="configuration-icon" @click="onConfigurationClick">
+          <img src="@/assets/configuracion.png" alt="Configuracion" />
+        </div>
+
+        <!-- Botón de mensaje justo debajo del botón de configuracion -->
+        <div class="usuario-icon" @click="onMensajeClick">
+          <img src="@/assets/mensaje.png" alt="Mensaje" />
+        </div>
       </div>
 
       <!-- Botón de salir siempre abajo -->
@@ -65,9 +91,30 @@ export default {
     toggleMenu() {
       this.menuOpen = !this.menuOpen
     },
+
+    onFavoritesClick() {
+      // alert('Favoritos clickeado')
+    },
+
+    onUsuarioClick() {
+      // alert('Usuario clickeado')
+    },
+
+    onInformationClick() {
+      // alert('Information clickeado')
+    },
+
+    onConfigurationClick() {
+      // alert('Configuration clickeado')
+    },
+
+    onMensajeClick() {
+      // alert('Mensaje clickeado')
+    },
+
     logout() {
       // Redirigir al login o ejecutar logout real
-      alert('Salir clickeado')
+      // alert('Salir clickeado')
       this.$router.push('/login')
     }
   }
@@ -121,6 +168,56 @@ export default {
   cursor: pointer;
   top: 50px;
   position: absolute;
+}
+
+.favorites-icon {
+  margin-top: 40px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.favorites-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+.usuario-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.usuario-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+.information-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.information-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+.configuration-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.configuration-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+.mensaje-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.mensaje-icon img {
+  width: 25px;
+  height: 25px;
 }
 
 /* Sección inferior (botón salir) */
