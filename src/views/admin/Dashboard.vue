@@ -3,19 +3,22 @@
     <h1 class="welcome-text animate-rainbow-text">
       ¡Bienvenido!
     </h1>
-
-    <!-- Subtítulo -->
-    <h2 class="subtitle-text">
-      Por favor, selecciona una opción en el menú de la izquierda.
-    </h2>
-
-    <!-- Descripción de la empresa -->
+    <h2 class="subtitle-text">Por favor, selecciona una opción del menú a la izquierda.</h2>
     <p class="description-text">
-      En <strong>Delicias Gourmet</strong> nos apasiona brindar experiencias culinarias inolvidables.<br />
-      Nuestros platos combinan tradición y creatividad, elaborados con ingredientes frescos y locales.<br />
-      Ofrecemos un ambiente acogedor, ideal para compartir momentos especiales con tus seres queridos.<br />
-      ¡Déjate sorprender por nuestros sabores únicos y el mejor servicio!
+      Somos un restaurante comprometido con la excelencia culinaria,<br />
+      ofreciendo platillos frescos y preparados al instante.<br />
+      Nuestra pasión es brindarte una experiencia única cada vez que nos visitas.<br />
+      ¡Bienvenido a un viaje de sabor y tradición!
     </p>
+
+    <!-- Imagen del restaurante -->
+    <img src="@/assets/restaurante.png" alt="Imagen del restaurante" class="restaurant-image" />
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>Copyright © 2025 Creative Tim</p>
+      <p>Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok</p>
+    </footer>
   </div>
 </template>
 
@@ -79,6 +82,29 @@ export default {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+}
+
+.restaurant-image {
+  position: absolute;
+  top: 430px;
+  left: 38%;
+  display: block;
+  margin: 20px auto;
+  max-width: 400px;
+  width: 80%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.page-footer {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+  opacity: 0.8;
 }
 
 /* Animación arcoíris */
