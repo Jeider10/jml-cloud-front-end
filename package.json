@@ -1,11 +1,13 @@
 {
-  "name": "jml-cloud-front-end",
+  "name": "jml-cloud-front-end-serverless-service",
   "version": "0.1.0",
   "private": true,
+  "main": "background.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "electron:serve": "electron .",
+    "electron:build": "electron-builder"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.0.0",
@@ -23,7 +25,25 @@
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.jml.cloud.frontend",
+    "productName": "JML Cloud Frontend",
+    "files": [
+      "dist/**/*",
+      "background.js"
+    ],
+    "directories": {
+      "output": "dist_electron",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    }
   }
 }

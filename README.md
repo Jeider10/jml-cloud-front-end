@@ -1,4 +1,7 @@
-# jml-cloud-front-end
+# jml-cloud-front-end-serverless-service
+
+## Project description
+This project is the front-end of the JML Cloud Serverless Service. It is a Vue.js project that uses the Vue CLI to build and serve the application. The project is designed to be a single page application that communicates with the JML Cloud Serverless Service API.
 
 ## Project setup
 ```
