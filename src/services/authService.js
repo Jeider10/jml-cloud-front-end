@@ -11,10 +11,12 @@ const apiClient = axios.create({
 
 export const login = (userName, password) => {
   return apiClient.post('/login', {
-  userName,
-  password })
+    userName,
+    password
+  })
 }
 
-export const confirmarSeleccion = (data) => {
-  return apiClient.post('/login/role-selection', data)
-}
+// Se elimina la función de selección de rol
+// export const confirmarSeleccion = (data) => {
+//   return apiClient.post('/login/role-selection', data)
+// }

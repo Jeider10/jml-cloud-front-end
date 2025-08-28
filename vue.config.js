@@ -11,6 +11,7 @@ module.exports = defineConfig({
   devServer: {
     port: process.env.VUE_APP_FRONT_END_PORT || 8080, // usa la variable o default 8080
     // port: process.env.VUE_APP_FRONT_END_BASE_URL || 8080, // usa la variable o default 8080
+    historyApiFallback: true, // ⚡ importante para recargar rutas como /dashboard o /auth/login
   },
 
   pluginOptions: {

@@ -2,7 +2,6 @@
 
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
-import RoleSelection from '@/components/RoleSelection.vue'
 import DashboardView from '@/views/DashboardView.vue'
 
 // styles
@@ -44,11 +43,6 @@ const routes = [
     component: LoginView
   },
   {
-    path: '/role-selection',
-    name: 'RoleSelection',
-    component: RoleSelection
-  },
-  {
     path: '/dashboard',
     name: 'Dashboard',
     component: DashboardView
@@ -59,19 +53,19 @@ const routes = [
     component: Admin,
     children: [
       {
-        path: "/admin/dashboard",
+        path: "dashboard",
         component: Dashboard,
       },
       {
-        path: "/admin/settings",
+        path: "settings",
         component: AdminSettings,
       },
       {
-        path: "/admin/tables",
+        path: "tables",
         component: AdminTables,
       },
       {
-        path: "/admin/maps",
+        path: "maps",
         component: AdminMaps,
       },
     ],
@@ -82,11 +76,11 @@ const routes = [
     component: AuthLayout,
     children: [
       {
-        path: "/auth/login",
+        path: "login",
         component: UserLogin,
       },
       {
-        path: "/auth/register",
+        path: "register",
         component: UserRegister,
       },
     ],

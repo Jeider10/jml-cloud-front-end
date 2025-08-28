@@ -42,15 +42,14 @@ export default {
       this.errorMessage = ''
       try {
         const response = await login(this.username, this.password)
-        const { authorization, options } = response.data
+        const { authorization } = response.data
 
         // Guarda datos temporalmente (o usa Vuex)
         localStorage.setItem('sessionToken', authorization)
         localStorage.setItem('authUsername', this.username)
-        localStorage.setItem('authOptions', JSON.stringify(options))
 
-        // Redirige a pantalla de selección
-        this.$router.push('/role-selection')
+        // Redirige directo al dashboard
+        this.$router.push('/dashboard')
       } catch (error) {
         console.error('❌ Error en login:', error)
 
