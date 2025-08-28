@@ -3,7 +3,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VUE_APP_AUTH_BASE_URL, // ⚠️ backend
+  baseURL: process.env.VUE_APP_AUTH_BASE_URL, // ⚠️ backend
   headers: {
     'Content-Type': 'application/json'
   }

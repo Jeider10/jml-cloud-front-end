@@ -2,11 +2,17 @@
 
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
+const { spawn } = require('child_process')
+
+function startBackend() {
+  const backendPath = path.join(process.resourcesPath, 'backend', 'start-backend.bat')
+  spawn('cmd.exe', ['/c', backendPath], { detached: true, stdio: 'ignore' })
+}
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1000,
-    height: 700,
+    width: 800,
+    height: 400,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,       // permite usar require en renderer si lo necesitas
@@ -14,18 +20,11 @@ function createWindow() {
     }
   })
 
-  // 🔹 Cargar tu app de Vue
-  // En desarrollo apunta al servidor de Vite/Vue (npm run serve)
-  // En producción usarías loadFile(dist/index.html)
-  // if (process.env.ELECTRON_DEV) {
-  if (process.env.NODE_ENV === 'development') {
-    win.loadURL(process.env.VUE_APP_FRONT_END_PORT) // o 8080 según el puerto de tu Vue
-  } else {
-    win.loadFile(path.join(__dirname, 'dist/index.html')) // tu build de Vue. index.html que se genera en dist/index.html
-  }
+  win.loadFile('dist/index.html') // tu build de Vue. index.html que se genera en dist/index.html
 }
 
 app.whenReady().then(() => {
+  startBackend()
   createWindow()
 
   app.on('activate', function () {
