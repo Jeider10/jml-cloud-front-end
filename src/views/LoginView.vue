@@ -21,6 +21,16 @@
       <div v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
+
+      <!-- 🔹 Enlaces adicionales -->
+      <div class="login-links">
+        <p>
+          <router-link to="/forgot-password">¿Olvidaste tu contraseña?</router-link>
+        </p>
+        <p>
+          <router-link to="/register">Registrar nuevo usuario</router-link>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -144,6 +154,25 @@ export default {
   text-align: center;
 }
 
+.login-links {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.login-links p {
+  margin: 6px 0;
+}
+
+.login-links a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-links a:hover {
+  text-decoration: underline;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -168,5 +197,4 @@ export default {
     font-size: 14px;
   }
 }
-
 </style>

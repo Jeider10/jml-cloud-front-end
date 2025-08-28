@@ -3,6 +3,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue'
+
 
 // styles
 
@@ -46,6 +48,11 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: DashboardView
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPasswordView
   },
   {
     path: "/admin",
