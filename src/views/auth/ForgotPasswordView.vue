@@ -65,12 +65,13 @@ export default {
 
       try {
         // Validar que el usuario exista
-        const payload = { userName: this.username };
         const response = await axios.post(
           `${process.env.VUE_APP_AUTH_BASE_URL}/user/search-by-user-name`,
-          payload
+          { userName: this.username },
+          { headers: { 'Content-Type': 'application/json' } }
         );
 
+        // Si la respuesta trae data, el usuario existe
         if (!response.data) {
           this.errorMessage = 'El usuario no existe';
           return;
@@ -81,7 +82,11 @@ export default {
 
       } catch (err) {
         console.error(err);
-        this.errorMessage = 'Ocurrió un error al buscar el usuario';
+        if (err.response && err.response.status === 404) {
+          this.errorMessage = 'El usuario no existe';
+        } else {
+          this.errorMessage = 'Ocurrió un error al buscar el usuario';
+        }
       }
     },
     async handleUpdatePassword() {
