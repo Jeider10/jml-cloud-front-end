@@ -31,6 +31,11 @@
           <router-link to="/register-user">Registrar nuevo usuario</router-link>
         </p>
       </div>
+
+      <!-- 🔹 Botón salir -->
+      <div class="exit-button-container">
+        <button class="exit-button" @click="handleExit">Salir</button>
+      </div>
     </div>
   </div>
 </template>
@@ -74,6 +79,11 @@ export default {
           this.errorMessage = 'Ocurrió un error inesperado. Intente nuevamente.'
         }
       }
+    },
+    handleExit() {
+      // Aquí decides qué quieres que haga:
+      // ejemplo cerrar pestaña o ir a otra ruta
+      this.$router.push('/')
     }
   }
 }
@@ -103,6 +113,7 @@ export default {
   width: 100%;
   max-width: 400px;
   transition: all 0.3s ease-in-out;
+  position: relative; /* 👈 necesario para ubicar el botón abajo */
 }
 
 .login-box h1 {
@@ -171,6 +182,28 @@ export default {
 
 .login-links a:hover {
   text-decoration: underline;
+}
+
+/* 🔹 Botón salir en esquina inferior derecha */
+.exit-button-container {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.exit-button {
+  padding: 6px 12px;
+  background-color: #ffffff; /* blanco */
+  color: #3498db; /* Azul marino oscuro */
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.exit-button:hover {
+  background-color: #ffffff; /* blanco */
 }
 
 @keyframes fadeIn {
