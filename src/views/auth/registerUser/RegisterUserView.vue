@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { registerUser } from '@/services/authService'
 
 export default {
   name: "RegisterUserView",
@@ -96,21 +96,17 @@ export default {
       this.successMessage = "";
 
       try {
-        // petición POST al micro de autenticación
-        const response = await axios.post(
-          `${process.env.VUE_APP_AUTH_BASE_URL}/user/register`,
-          this.user,
-          { headers: { "Content-Type": "application/json" } }
-        );
-
-        console.log("✅ Usuario registrado:", response.data);
-        this.successMessage = "✅ Usuario registrado correctamente";
+        const response = await registerUser(this.user)
+        console.log("✅ Usuario registrado:", response.data)
+        this.successMessage = "✅ Usuario registrado correctamente"
 
         // limpiar formulario
-        this.user.userName = "";
-        this.user.password = "";
-        this.user.rolCode = null;
-        this.user.email = "";
+        this.user = {
+          userName: "",
+          password: "",
+          rolCode: null,
+          email: ""
+        }
       } catch (err) {
         console.error("❌ Error al registrar usuario:", err);
         if (err.response && err.response.status === 409) {

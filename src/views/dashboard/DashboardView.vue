@@ -4,20 +4,20 @@
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />
 
     <div :class="['main-content', { expanded: menuOpen }]">
-      <DashboardDownloaded />
+      <DashboardExpandedView />
     </div>
   </div>
 </template>
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import DashboardDownloaded from '@/views/dashboard/DashboardExpandedView.vue'
+import DashboardExpandedView from '@/views/dashboard/DashboardExpandedView.vue'
 
 export default {
   name: 'DashboardView',
   components: {
     DashboardSideMenu,
-    DashboardDownloaded
+    DashboardExpandedView
   },
   data() {
     return {

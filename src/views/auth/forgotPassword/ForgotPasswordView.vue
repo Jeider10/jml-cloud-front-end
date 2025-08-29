@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { searchUserByUsername, updateForgotPassword } from '@/services/authService'
 
 export default {
   name: 'ForgotPasswordView',
@@ -69,12 +69,7 @@ export default {
       this.errorMessage = '';
 
       try {
-        // Validar que el usuario exista
-        const response = await axios.post(
-          `${process.env.VUE_APP_AUTH_BASE_URL}/user/search-by-user-name`,
-          { userName: this.username },
-          { headers: { 'Content-Type': 'application/json' } }
-        );
+        const response = await searchUserByUsername(this.username);
 
         // Si la respuesta trae data, el usuario existe
         if (!response.data) {
@@ -108,18 +103,10 @@ export default {
       }
 
       try {
-        const payload = {
-          userName: this.username,
-          password: this.newPassword
-        }
-        // Llamada al micro de autenticación para actualizar contraseña
-        await axios.put(
-          `${process.env.VUE_APP_AUTH_BASE_URL}/user/forgot-password`,
-          payload
-        )
+        await updateForgotPassword(this.username, this.newPassword);
         this.successMessage = 'Contraseña actualizada correctamente';
       } catch (err) {
-        console.error(err)
+        console.error(err);
         this.errorMessage = 'Ocurrió un error al actualizar la contraseña';
       }
     }
