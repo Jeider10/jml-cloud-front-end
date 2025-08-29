@@ -118,10 +118,6 @@ export default {
           payload
         )
         this.successMessage = 'Contraseña actualizada correctamente';
-        // Opcional: redirigir al login
-        setTimeout(() => {
-          this.$router.push('/login');
-        }, 2000);
       } catch (err) {
         console.error(err)
         this.errorMessage = 'Ocurrió un error al actualizar la contraseña';

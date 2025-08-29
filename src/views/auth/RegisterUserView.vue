@@ -111,11 +111,6 @@ export default {
         this.user.password = "";
         this.user.rolCode = null;
         this.user.email = "";
-
-        // opcional: redirigir al login después de 2 seg
-        setTimeout(() => {
-          this.$router.push("/login");
-        }, 2000);
       } catch (err) {
         console.error("❌ Error al registrar usuario:", err);
         if (err.response && err.response.status === 409) {
