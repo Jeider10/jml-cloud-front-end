@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue'
+import RegisterUserView from '@/views/auth/RegisterUserView.vue'
 
 
 // styles
@@ -53,6 +54,11 @@ const routes = [
     path: '/forgot-password',
     name: 'ForgotPassword',
     component: ForgotPasswordView
+  },
+  {
+    path: '/register-user',
+    name: 'RegisterUserView',
+    component: RegisterUserView
   },
   {
     path: "/admin",

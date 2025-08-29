@@ -28,7 +28,7 @@
           <router-link to="/forgot-password">¿Olvidaste tu contraseña?</router-link>
         </p>
         <p>
-          <router-link to="/register">Registrar nuevo usuario</router-link>
+          <router-link to="/register-user">Registrar nuevo usuario</router-link>
         </p>
       </div>
     </div>

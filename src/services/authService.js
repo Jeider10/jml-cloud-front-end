@@ -10,7 +10,7 @@ const apiClient = axios.create({
 })
 
 export const login = (userName, password) => {
-  return apiClient.post('/login', {
+  return apiClient.post('/auth/login', {
     userName,
     password
   })
