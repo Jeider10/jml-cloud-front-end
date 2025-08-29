@@ -10,8 +10,8 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/components/DashboardSideMenu.vue'
-import DashboardDownloaded from '@/views/admin/Dashboard.vue'
+import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import DashboardDownloaded from '@/views/dashboard/DashboardExpandedView.vue'
 
 export default {
   name: 'DashboardView',

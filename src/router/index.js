@@ -1,10 +1,10 @@
 // src/router/index.js
 
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '@/views/LoginView.vue'
-import DashboardView from '@/views/DashboardView.vue'
-import ForgotPasswordView from '@/views/auth/ForgotPasswordView.vue'
-import RegisterUserView from '@/views/auth/RegisterUserView.vue'
+import LoginView from '@/views/auth/login/LoginView.vue'
+import DashboardView from '@/views/dashboard/DashboardView.vue'
+import ForgotPasswordView from '@/views/auth/forgotPassword/ForgotPasswordView.vue'
+import RegisterUserView from '@/views/auth/registerUser/RegisterUserView.vue'
 
 const routes = [
   {
