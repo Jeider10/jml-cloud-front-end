@@ -36,6 +36,11 @@
       <div v-if="successMessage" class="success-message">
         {{ successMessage }}
       </div>
+
+      <!-- Botón volver al login -->
+      <p class="back-to-login">
+        <router-link to="/login">Volver al login</router-link>
+      </p>
     </div>
   </div>
 </template>
@@ -126,7 +131,6 @@ export default {
 }
 </script>
 
-
 <style scoped>
 .forgot-password-container {
   display: flex;
@@ -197,6 +201,11 @@ export default {
   margin-top: 20px;
   color: #2ecc71;
   font-weight: bold;
+  text-align: center;
+}
+
+.back-to-login {
+  margin-top: 16px;
   text-align: center;
 }
 </style>
