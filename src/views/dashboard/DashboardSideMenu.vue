@@ -122,7 +122,7 @@ export default {
       this.$router.push('/registro-productos')
     },
     onVentasClick() {
-      // alert('Ventas clickeado')
+      this.$router.push('/historial-ventas')
     },
     onConfiguracionClick() {
       // alert('Configuracion clickeado')
