@@ -116,7 +116,7 @@ export default {
       this.$router.push('/registro-cliente')
     },
     onProveedoresClick() {
-      // alert('Proveedores clickeado')
+      this.$router.push('/registro-proveedor')
     },
     onProductosClick() {
       // alert('Productos clickeado')

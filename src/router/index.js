@@ -8,6 +8,8 @@ import RegisterUserView from '@/views/auth/registerUser/RegisterUserView.vue'
 import NuevaVentaView from '@/components/ventas/NuevaVentaView.vue'
 import RegistroClienteView from '@/components/clientes/RegistroClienteView.vue'
 import ActualizarClienteView from '@/components/clientes/ActualizarClienteView.vue'
+import RegistroProveedorView from '@/components/proveedores/RegistroProveedorView.vue'
+import ActualizarProveedorView from '@/components/proveedores/ActualizarProveedorView.vue'
 
 const routes = [
   {
@@ -48,6 +50,16 @@ const routes = [
     path: '/actualizar-cliente',
     name: 'ActualizarClienteView',
     component: ActualizarClienteView
+  },
+  {
+    path: '/registro-proveedor',
+    name: 'RegistroProveedorView',
+    component: RegistroProveedorView
+  },
+  {
+    path: '/actualizar-proveedor',
+    name: 'ActualizarProveedorView',
+    component: ActualizarProveedorView
   },
 ];
 

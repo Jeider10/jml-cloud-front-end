@@ -19,8 +19,8 @@
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
-          <label>DNI/RUC</label>
-          <input v-model="clienteForm.dni" type="text" /> <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
+          <label>Identificación</label>
+          <input v-model="clienteForm.identificacion" type="text" /> <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
 
           <label>Nombre</label>
           <input v-model="clienteForm.nombre" type="text" />
@@ -53,7 +53,7 @@ export default {
     return {
       menuOpen: false,
       clienteForm: {
-        dni: '',
+        identificacion: '',
         nombre: '',
         apellido: '',
         telefono: '',
@@ -61,14 +61,14 @@ export default {
       },
       mensaje: '',
       mensajeTipo: '',
-      dniOriginal: '' // para rastrear el DNI original
+      identificacionOriginal: '' // para rastrear la identificación original
     }
   },
   mounted() {
     const cliente = JSON.parse(localStorage.getItem('clienteActualizar'))
     if (cliente) {
       this.clienteForm = { ...cliente }
-      this.dniOriginal = cliente.dni // guardamos el DNI original
+      this.identificacionOriginal = cliente.identificacion
     }
   },
   methods: {
@@ -83,21 +83,21 @@ export default {
     },
 
     actualizarCliente() {
-      if (!this.clienteForm.dni || !this.clienteForm.nombre || !this.clienteForm.apellido) {
-        this.mostrarMensaje('DNI, nombre y apellido son obligatorios.', 'error')
+      if (!this.clienteForm.identificacion || !this.clienteForm.nombre || !this.clienteForm.apellido) {
+        this.mostrarMensaje('Identificación, nombre y apellido son obligatorios.', 'error')
         return
       }
 
       const clientes = JSON.parse(localStorage.getItem('clientes')) || []
 
-      // Verificamos si el nuevo DNI ya existe en otro cliente
-      const duplicado = clientes.find(c => c.dni === this.clienteForm.dni && c.dni !== this.dniOriginal)
+      // Verificamos si la nueva identificación ya existe en otro cliente
+      const duplicado = clientes.find(c => c.identificacion === this.clienteForm.identificacion && c.identificacion !== this.identificacionOriginal)
       if (duplicado) {
-        this.mostrarMensaje(`⚠️ Ya existe un cliente con este DNI/RUC (${duplicado.dni}).`, 'error')
+        this.mostrarMensaje(`⚠️ Ya existe un cliente con esta Identificación (${duplicado.identificacion}).`, 'error')
         return
       }
 
-      const idx = clientes.findIndex(c => c.dni === this.dniOriginal)
+      const idx = clientes.findIndex(c => c.identificacion === this.identificacionOriginal)
       if (idx !== -1) {
         // Actualizamos datos y fecha de registro
         clientes[idx] = { ...clientes[idx], ...this.clienteForm, fechaRegistro: new Date().toLocaleString() }
