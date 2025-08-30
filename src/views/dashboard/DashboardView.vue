@@ -1,4 +1,5 @@
 <!-- src/views/DashboardView.vue -->
+
 <template>
   <div class="dashboard-view">
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />

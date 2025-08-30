@@ -12,7 +12,7 @@
     </p>
 
     <!-- Imagen de la institución -->
-    <img src="@/assets/institucion.png" alt="Imagen de la institución" class="instituto-image" />
+    <img src="@/assets/img/Institucion.png" alt="Institución" class="instituto-image" />
 
     <!-- Footer -->
     <footer class="page-footer">

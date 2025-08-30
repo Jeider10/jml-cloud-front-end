@@ -4,60 +4,64 @@
   <div class="side-menu-wrapper">
     <!-- Panel lateral fijo -->
     <div class="side-panel">
-      <!-- Sección superior (logo + botón menú + favoritos + usuario + informacion + configuracion + mensaje + botón salir) -->
+      <!-- Sección superior (logo + botón menú + nueva venta + clientes + proveedores + productos + ventas + configuracion + usuario + botón salir) -->
       <div class="top-section">
         <!-- Logo -->
         <div class="logo-icon" @click="onLogoClick">
-          <img src="@/assets/logo.png" alt="Logo" class="logo" />
+          <img src="@/assets/img/LogoVue.png" alt="Logo" class="logo" />
         </div>
 
         <!-- Botón de menu justo debajo del logo -->
         <div class="menu-icon" @click="onMenuClick">
-          <img src="@/assets/menu.png" alt="Menu" />
+          <img src="@/assets/img/Menu.png" alt="Menu" />
         </div>
 
-        <!-- Botón de favoritos justo debajo del botón del menú -->
-        <div class="favorites-icon" @click="onFavoritesClick">
-          <img src="@/assets/favoritos.png" alt="Favoritos" />
+        <!-- Botón de nueva venta justo debajo del botón del menú -->
+        <div class="nueva-venta-icon" @click="onNuevaVentaClick">
+          <img src="@/assets/img/NuevaVenta.png" alt="NuevaVenta" />
         </div>
 
-        <!-- Botón de usuario justo debajo del botón de favoritos -->
+        <!-- Botón de clientes justo debajo del botón de nueva venta -->
+        <div class="clientes-icon" @click="onClientesClick">
+          <img src="@/assets/img/Clientes.png" alt="Clientes" />
+        </div>
+
+        <!-- Botón de proveedores justo debajo del botón de usuario -->
+        <div class="proveedores-icon" @click="onProveedoresClick">
+          <img src="@/assets/img/Proveedores.png" alt="Proveedores" />
+        </div>
+
+        <!-- Botón de productos justo debajo del botón de proveedores -->
+        <div class="productos-icon" @click="onProductosClick">
+          <img src="@/assets/img/Productos.png" alt="Productos" />
+        </div>
+
+        <!-- Botón de ventas justo debajo del botón de productos -->
+        <div class="ventas-icon" @click="onVentasClick">
+          <img src="@/assets/img/Ventas.png" alt="Ventas" />
+        </div>
+
+        <!-- Botón de configuracion justo debajo del botón de ventas -->
+        <div class="configuracion-icon" @click="onConfiguracionClick">
+          <img src="@/assets/img/Configuracion.png" alt="Configuracion" />
+        </div>
+
+        <!-- Botón de usuario justo debajo del botón de configuracion -->
         <div class="usuario-icon" @click="onUsuarioClick">
-          <img src="@/assets/usuario.png" alt="Usuario" />
-        </div>
-
-        <!-- Botón de information justo debajo del botón de usuario -->
-        <div class="information-icon" @click="onInformationClick">
-          <img src="@/assets/informacion.png" alt="Information" />
-        </div>
-
-        <!-- Botón de configuration justo debajo del botón de information -->
-        <div class="configuration-icon" @click="onConfigurationClick">
-          <img src="@/assets/configuracion.png" alt="Configuracion" />
-        </div>
-
-        <!-- Botón de mensaje justo debajo del botón de configuracion -->
-        <div class="usuario-icon" @click="onMensajeClick">
-          <img src="@/assets/mensaje.png" alt="Mensaje" />
+          <img src="@/assets/img/Usuario.png" alt="Usuario" />
         </div>
       </div>
 
       <!-- Botón de salir siempre abajo -->
       <div class="bottom-section">
         <div class="logout-icon" @click="logout">
-          <img src="@/assets/boton-salir.png" alt="Salir" />
+          <img src="@/assets/img/BotonSalir.png" alt="Salir" />
         </div>
       </div>
     </div>
 
     <!-- Menú desplegable -->
     <div :class="['side-menu', { 'menu-open': menuOpen }]">
-      <div class="search-box">
-        <input type="text" placeholder="Buscar" />
-      </div>
-
-      <div class="menu-title">OPCIONES</div>
-
       <div class="menu-items">
         <div v-for="(item, index) in menuItems" :key="index" class="menu-item">
           {{ item }}
@@ -74,53 +78,46 @@ export default {
     return {
       menuOpen: false,
       menuItems: [
-        'Procesos de Negocio',
-        'Procesos Back Office',
-        'ACH Cámara de Compensación Automática',
-        'Administración de Menú',
-        'Depósitos a la Vista',
-        'Servicios Bancarios',
-        'Firma Digital',
-        'Comercio Exterior',
-        'Contabilidad',
-        'Órdenes Ingreso & Egreso',
-        'Administración del Sistema',
-        'Gestión de Mecanismos',
-        'Tesorería',
-        'Garantías'
+        'Nueva Venta',
+        'Clientes',
+        'Proveedor',
+        'Productos',
+        'Ventas',
+        'Configuracion',
+        'Usuarios'
       ]
     }
   },
   methods: {
     onLogClick() {
-      // alert('Favoritos clickeado')
+      // alert('NuevaVenta clickeado')
     },
 
     onMenuClick() {
       this.menuOpen = !this.menuOpen
       this.$emit('menu-toggle', this.menuOpen)
     },
-
-    onFavoritesClick() {
-      // alert('Favoritos clickeado')
+    onNuevaVentaClick() {
+      // alert('Nueva venta clickeado')
     },
-
+    onClientesClick() {
+      // alert('Clientes clickeado')
+    },
+    onProveedoresClick() {
+      // alert('Proveedores clickeado')
+    },
+    onProductosClick() {
+      // alert('Productos clickeado')
+    },
+    onVentasClick() {
+      // alert('Ventas clickeado')
+    },
+    onConfiguracionClick() {
+      // alert('Configuracion clickeado')
+    },
     onUsuarioClick() {
       // alert('Usuario clickeado')
     },
-
-    onInformationClick() {
-      // alert('Information clickeado')
-    },
-
-    onConfigurationClick() {
-      // alert('Configuration clickeado')
-    },
-
-    onMensajeClick() {
-      // alert('Mensaje clickeado')
-    },
-
     logout() {
       // Redirigir al login o ejecutar logout real
       // alert('Salir clickeado')
@@ -182,57 +179,79 @@ export default {
   height: 25px;
 }
 
-/* Botón favoritos */
-.favorites-icon {
+/* Botón Nueva Venta */
+.nueva-venta-icon {
   margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
 }
 
-.favorites-icon img {
+.nueva-venta-icon img {
   width: 25px;
   height: 25px;
 }
 
-/* Botón usuario */
+/* Botón Clientes */
+.clientes-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.clientes-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón Proveedores */
+.proveedores-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.proveedores-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón Productos */
+.productos-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.productos-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón Ventas */
+.ventas-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.ventas-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón Configuracion */
+.configuracion-icon {
+  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
+  cursor: pointer;
+}
+
+.configuracion-icon img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Botón Usuario */
 .usuario-icon {
   margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
   cursor: pointer;
 }
 
 .usuario-icon img {
-  width: 25px;
-  height: 25px;
-}
-
-/* Botón informacion */
-.information-icon {
-  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
-  cursor: pointer;
-}
-
-.information-icon img {
-  width: 25px;
-  height: 25px;
-}
-
-/* Botón configuracion */
-.configuration-icon {
-  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
-  cursor: pointer;
-}
-
-.configuration-icon img {
-  width: 25px;
-  height: 25px;
-}
-
-/* Botón mensaje */
-.mensaje-icon {
-  margin-top: 10px; /* Puedes cambiar este valor para ajustar la distancia */
-  cursor: pointer;
-}
-
-.mensaje-icon img {
   width: 25px;
   height: 25px;
 }
