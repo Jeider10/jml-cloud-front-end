@@ -25,6 +25,9 @@
           <label>Nombre</label>
           <input v-model="clienteForm.nombre" type="text" />
 
+          <label>Apellido</label>
+          <input v-model="clienteForm.apellido" type="text" />
+
           <label>Teléfono</label>
           <input v-model="clienteForm.telefono" type="text" />
 
@@ -44,6 +47,7 @@
             <th>ID</th>
             <th>DNI/RUC</th>
             <th>NOMBRE</th>
+            <th>APELLIDO</th>
             <th>TELÉFONO</th>
             <th>DIRECCIÓN</th>
             <th>ACCIONES</th>
@@ -54,6 +58,7 @@
             <td>{{ idx + 1 }}</td>
             <td>{{ c.dni }}</td>
             <td>{{ c.nombre }}</td>
+            <td>{{ c.apellido }}</td>
             <td>{{ c.telefono }}</td>
             <td>{{ c.direccion }}</td>
             <td>
@@ -62,7 +67,7 @@
           </tr>
 
           <tr v-if="clientes.length === 0">
-            <td colspan="6" class="empty-row">No hay clientes registrados.</td>
+            <td colspan="7" class="empty-row">No hay clientes registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -82,6 +87,7 @@ export default {
       clienteForm: {
         dni: '',
         nombre: '',
+        apellido: '',
         telefono: '',
         direccion: ''
       },
@@ -112,22 +118,39 @@ export default {
         this.mostrarMensaje('Ingrese el nombre del cliente.', 'error')
         return
       }
+      if (!this.clienteForm.apellido) {
+        this.mostrarMensaje('Ingrese el apellido del cliente.', 'error')
+        return
+      }
+
+      // 🔍 Verificar si ya existe un cliente con el mismo DNI
+      const existente = this.clientes.find(c => c.dni === this.clienteForm.dni)
+      if (existente) {
+        this.mostrarMensaje(
+          `⚠️ Ya existe un cliente con este DNI/RUC (${existente.dni}): ${existente.nombre} ${existente.apellido}.`,
+          'error'
+        )
+        return
+      }
 
       // Guardar cliente
       const nuevo = { ...this.clienteForm }
       this.clientes.push(nuevo)
 
-      this.mostrarMensaje(`✅ Cliente ${this.clienteForm.nombre} registrado correctamente.`, 'success')
+      this.mostrarMensaje(
+        `✅ Cliente ${this.clienteForm.nombre} ${this.clienteForm.apellido} registrado correctamente.`,
+        'success'
+      )
 
       // limpiar formulario
-      this.clienteForm = { dni: '', nombre: '', telefono: '', direccion: '' }
+      this.clienteForm = { dni: '', nombre: '', apellido: '', telefono: '', direccion: '' }
     },
 
     eliminarCliente(idx) {
       if (idx >= 0 && idx < this.clientes.length) {
         const eliminado = this.clientes[idx]
         this.clientes.splice(idx, 1)
-        this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} eliminado.`, 'error')
+        this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} ${eliminado.apellido} eliminado.`, 'error')
       }
     }
   }
@@ -146,7 +169,7 @@ export default {
   right: 0;
   bottom: 0;
   padding: 20px;
-  background-color: #d0e8ff;
+  background-color: #6fffd4; /* ✅ mismo color que NuevaVentaView.vue */
   overflow-y: auto;
   transition: left 0.3s ease;
   display: flex;
