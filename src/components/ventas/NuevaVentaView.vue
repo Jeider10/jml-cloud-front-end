@@ -20,13 +20,18 @@
           <input v-model="venta.descripcion" type="text" />
 
           <label>Cant</label>
-          <input v-model="venta.cantidad" type="number" />
+          <input v-model.number="venta.cantidad" type="number" min="1" />
 
           <label>Precio</label>
-          <input v-model="venta.precio" type="number" />
+          <input v-model.number="venta.precio" type="number" min="0" step="0.01" />
 
           <label>Seleccionar:</label>
           <input v-model="venta.fecha" type="date" />
+
+          <!-- Botón para agregar producto desde el formulario -->
+          <button type="button" class="agregar-btn" @click="agregarItem">
+            ➕ Agregar
+          </button>
         </div>
 
         <div class="form-row">
@@ -51,8 +56,28 @@
             <td>{{ idx + 1 }}</td>
             <td>{{ item.descripcion }}</td>
             <td>{{ item.cantidad }}</td>
-            <td>{{ item.precio }}</td>
-            <td>{{ item.cantidad * item.precio }}</td>
+            <td>{{ formatNumber(item.precio) }}</td>
+            <td class="precio-total-cell">
+              <div class="total-value">{{ formatNumber(item.cantidad * item.precio) }}</div>
+
+              <!-- cuadrito para ingresar un id y boton eliminar al lado -->
+              <div class="mini-controls">
+                <input
+                  v-model="item.customId"
+                  type="text"
+                  class="mini-input"
+                  placeholder="ID"
+                />
+                <button class="delete-btn" @click="eliminarItem(idx)" title="Eliminar">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Mensaje cuando no hay items -->
+          <tr v-if="items.length === 0">
+            <td colspan="5" class="empty-row">No hay productos agregados.</td>
           </tr>
         </tbody>
       </table>
@@ -71,7 +96,7 @@
         <!-- Acciones -->
         <div class="acciones-footer">
           <button @click="imprimirFactura">🖨️ Imprimir</button>
-          <span class="total">💰 Total a Pagar: {{ calcularTotal }}</span>
+          <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
       </div>
     </div>
@@ -95,6 +120,7 @@ export default {
         stock: 0,
         fecha: new Date().toISOString().substr(0, 10)
       },
+      // items: cada item tendrá { codigo, descripcion, cantidad, precio, customId }
       items: [],
       cliente: {
         dni: '',
@@ -104,15 +130,63 @@ export default {
   },
   computed: {
     calcularTotal() {
-      return this.items.reduce((acc, i) => acc + i.precio * i.cantidad, 0)
+      return this.items.reduce((acc, i) => acc + (Number(i.precio) * Number(i.cantidad)), 0)
     }
   },
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
     },
+
+    // Agrega el producto que está en el form a la tabla
+    agregarItem() {
+      // Validaciones mínimas
+      if (!this.venta.descripcion) {
+        alert('Ingrese la descripción del producto.')
+        return
+      }
+      if (!this.venta.cantidad || this.venta.cantidad <= 0) {
+        alert('Ingrese una cantidad válida.')
+        return
+      }
+      if (this.venta.precio === '' || this.venta.precio < 0) {
+        alert('Ingrese un precio válido.')
+        return
+      }
+
+      // Construir item y agregar
+      const newItem = {
+        codigo: this.venta.codigo || '',
+        descripcion: this.venta.descripcion,
+        cantidad: Number(this.venta.cantidad),
+        precio: Number(this.venta.precio),
+        customId: '' // cuadrito editable por el usuario
+      }
+
+      this.items.push(newItem)
+
+      // limpiar algunos campos para el próximo registro (manteniendo fecha y stock si quieres)
+      this.venta.codigo = ''
+      this.venta.descripcion = ''
+      this.venta.cantidad = 1
+      this.venta.precio = 0
+    },
+
+    // Eliminar item por índice
+    eliminarItem(idx) {
+      if (idx >= 0 && idx < this.items.length) {
+        this.items.splice(idx, 1)
+      }
+    },
+
     imprimirFactura() {
       alert('🖨️ Aquí iría la lógica para imprimir la factura.')
+    },
+
+    // Formato numérico simple (2 decimales)
+    formatNumber(value) {
+      const n = Number(value) || 0
+      return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     }
   }
 }
@@ -160,6 +234,7 @@ export default {
   align-items: center;
   gap: 10px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 label {
@@ -172,6 +247,21 @@ input {
   border-radius: 4px;
 }
 
+/* botón agregar (en la fila del formulario) */
+.agregar-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.agregar-btn:hover {
+  background: #005f8a;
+}
+
+/* Tabla de productos */
 .productos-table {
   width: 100%;
   border-collapse: collapse;
@@ -184,6 +274,57 @@ input {
   padding: 8px;
   text-align: center;
   background: white;
+}
+
+/* Celda con precio total + mini controles */
+.precio-total-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Mostrar total en grande */
+.total-value {
+  font-weight: 700;
+  color: #0b3954;
+}
+
+/* mini-controls: input pequeño + boton eliminar */
+.mini-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mini-input {
+  width: 70px;
+  padding: 4px 6px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  text-align: center;
+}
+
+/* boton eliminar pequeño */
+.delete-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #e63946;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.delete-btn:hover {
+  background: #b52a33;
+}
+
+/* Mensaje fila vacía */
+.empty-row {
+  text-align: center;
+  padding: 18px;
+  color: #666;
 }
 
 /* Footer final */
