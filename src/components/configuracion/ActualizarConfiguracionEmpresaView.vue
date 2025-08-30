@@ -1,4 +1,4 @@
-<!-- src/components/clientes/ConfiguracionEmpresaView.vue -->
+<!-- src/components/clientes/ActualizarConfiguracionEmpresaView.vue -->
 
 <template>
   <div class="configuracion-empresa-wrapper">
