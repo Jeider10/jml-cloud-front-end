@@ -125,7 +125,7 @@ export default {
       this.$router.push('/historial-ventas')
     },
     onConfiguracionClick() {
-      // alert('Configuracion clickeado')
+      this.$router.push('/configuracion-empresa')
     },
     onUsuarioClick() {
       // alert('Usuario clickeado')

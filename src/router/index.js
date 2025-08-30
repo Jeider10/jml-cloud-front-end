@@ -13,6 +13,7 @@ import ActualizarProveedorView from '@/components/proveedores/ActualizarProveedo
 import RegistroProductosView from '@/components/productos/RegistroProductosView.vue'
 import ActualizarProductosView from '@/components/productos/ActualizarProductosView.vue'
 import HistorialVentasView from '@/components/ventas/HistorialVentasView.vue'
+import ConfiguracionEmpresaView from '@/components/configuracion/ConfiguracionEmpresaView.vue'
 
 const routes = [
   {
@@ -78,6 +79,11 @@ const routes = [
     path: '/historial-ventas',
     name: 'HistorialVentasView',
     component: HistorialVentasView
+  },
+  {
+    path: '/configuracion-empresa',
+    name: 'ConfiguracionEmpresaView',
+    component: ConfiguracionEmpresaView
   },
 ];
 
