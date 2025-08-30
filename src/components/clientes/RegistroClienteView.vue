@@ -16,6 +16,19 @@
         </div>
       </transition>
 
+      <!-- Modal de confirmación de eliminación -->
+      <transition name="fade">
+        <div v-if="modalEliminar.visible" class="modal-overlay">
+          <div class="modal-content">
+            <p>⚠️ ¿Está seguro de eliminar al cliente {{ modalEliminar.cliente.nombre }} {{ modalEliminar.cliente.apellido }}?</p>
+            <div class="modal-buttons">
+              <button class="btn-yes" @click="eliminarCliente(modalEliminar.idx)">Sí</button>
+              <button class="btn-no" @click="modalEliminar.visible = false">No</button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
@@ -79,7 +92,7 @@
             <td>
               <!-- Nuevo botón de actualizar -->
               <button class="update-btn" @click="abrirActualizarCliente(c)">✏️</button>
-              <button class="delete-btn" @click="eliminarCliente(idx)">🗑️</button>
+              <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
             </td>
           </tr>
           <tr v-if="clientesFiltrados.length === 0">
@@ -111,7 +124,13 @@ export default {
       clientesFiltrados: [],
       mensaje: '',
       mensajeTipo: '',
-      busqueda: ''
+      busqueda: '',
+      // Modal de eliminación
+      modalEliminar: {
+        visible: false,
+        idx: null,
+        cliente: {}
+      }
     }
   },
   mounted() {
@@ -172,15 +191,20 @@ export default {
       // limpiar formulario
       this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
     },
+    // Abrir modal en vez de window.confirm
+    confirmarEliminar(idx) {
+      this.modalEliminar.idx = idx
+      this.modalEliminar.cliente = this.clientes[idx]
+      this.modalEliminar.visible = true
+    },
 
     eliminarCliente(idx) {
-      if (idx >= 0 && idx < this.clientes.length) {
-        const eliminado = this.clientes[idx]
-        this.clientes.splice(idx, 1)
-        localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Actualizamos localStorage
-        this.clientesFiltrados = [...this.clientes]
-        this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} ${eliminado.apellido} eliminado.`, 'error')
-      }
+      const eliminado = this.clientes[idx]
+      this.clientes.splice(idx, 1)
+      localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Actualizamos localStorage
+      this.clientesFiltrados = [...this.clientes]
+      this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} ${eliminado.apellido} eliminado.`, 'error')
+      this.modalEliminar.visible = false
     },
 
     abrirActualizarCliente(cliente) {
@@ -343,4 +367,43 @@ input {
   font-weight: 600;
 }
 .buscar-btn:hover { background: #049670; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 300px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
+}
+
+.modal-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-yes, .btn-no {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-yes { background: #e63946; color: white; }
+.btn-yes:hover { background: #b52a33; }
+
+.btn-no { background: #06d6a0; color: white; }
+.btn-no:hover { background: #049670; }
 </style>
