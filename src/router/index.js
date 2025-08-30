@@ -10,6 +10,8 @@ import RegistroClienteView from '@/components/clientes/RegistroClienteView.vue'
 import ActualizarClienteView from '@/components/clientes/ActualizarClienteView.vue'
 import RegistroProveedorView from '@/components/proveedores/RegistroProveedorView.vue'
 import ActualizarProveedorView from '@/components/proveedores/ActualizarProveedorView.vue'
+import RegistroProductosView from '@/components/productos/RegistroProductosView.vue'
+import ActualizarProductosView from '@/components/productos/ActualizarProductosView.vue'
 
 const routes = [
   {
@@ -60,6 +62,16 @@ const routes = [
     path: '/actualizar-proveedor',
     name: 'ActualizarProveedorView',
     component: ActualizarProveedorView
+  },
+  {
+    path: '/registro-productos',
+    name: 'RegistroProductosView',
+    component: RegistroProductosView
+  },
+  {
+    path: '/actualizar-productos',
+    name: 'ActualizarProductosView',
+    component: ActualizarProductosView
   },
 ];
 

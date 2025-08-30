@@ -119,7 +119,7 @@ export default {
       this.$router.push('/registro-proveedor')
     },
     onProductosClick() {
-      // alert('Productos clickeado')
+      this.$router.push('/registro-productos')
     },
     onVentasClick() {
       // alert('Ventas clickeado')
