@@ -22,10 +22,10 @@
           <label>DNI/RUC</label>
           <input v-model="clienteForm.dni" type="text" />
 
-          <label>Nombre</label>
+          <label>Nombres</label>
           <input v-model="clienteForm.nombre" type="text" />
 
-          <label>Apellido</label>
+          <label>Apellidos</label>
           <input v-model="clienteForm.apellido" type="text" />
 
           <label>Teléfono</label>
@@ -40,7 +40,7 @@
         </div>
 
         <!-- 🔍 Filtro de búsqueda -->
-        <div class="form-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+        <div class="form-filtro">
           <!-- Texto descriptivo -->
           <span style="font-weight: bold; margin-bottom: 4px;">Buscar por DNI/RUC, Nombre o Apellido:</span>
 
@@ -59,8 +59,8 @@
           <tr>
             <th>ID</th>
             <th>DNI/RUC</th>
-            <th>NOMBRE</th>
-            <th>APELLIDO</th>
+            <th>NOMBRES</th>
+            <th>APELLIDOS</th>
             <th>TELÉFONO</th>
             <th>DIRECCIÓN</th>
             <th>FECHA REGISTRO</th> <!-- ⏰ Nueva columna -->
@@ -254,13 +254,26 @@ export default {
 }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.form-container { margin-bottom: 20px; }
+.form-container {
+  margin-bottom: 0px;
+}
+
 .form-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 12px;
   flex-wrap: wrap;
+}
+
+.form-filtro {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center; /* o center según prefieras */
+  gap: 4px;                /* espacio entre el texto y los inputs/botones */
+  margin-top: 20px;         /* espacio arriba del bloque */
+  margin-bottom: 12px;     /* espacio debajo del bloque */
 }
 
 label { font-weight: bold; }
