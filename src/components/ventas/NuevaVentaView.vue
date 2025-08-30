@@ -57,21 +57,22 @@
         </tbody>
       </table>
 
-      <!-- Datos de cliente -->
-      <div class="form-container">
-        <div class="form-row">
+      <!-- === Sección final (datos cliente + acciones) === -->
+      <div class="footer-venta">
+        <!-- Datos de cliente -->
+        <div class="form-row cliente-datos">
           <label>DNI/RUC</label>
           <input v-model="cliente.dni" type="text" />
 
           <label>Nombre</label>
           <input v-model="cliente.nombre" type="text" />
         </div>
-      </div>
 
-      <!-- Footer de acciones -->
-      <div class="acciones-footer">
-        <button @click="imprimirFactura">🖨️ Imprimir</button>
-        <span class="total">💰 Total a Pagar: {{ calcularTotal }}</span>
+        <!-- Acciones -->
+        <div class="acciones-footer">
+          <button @click="imprimirFactura">🖨️ Imprimir</button>
+          <span class="total">💰 Total a Pagar: {{ calcularTotal }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -120,23 +121,27 @@ export default {
 <style scoped>
 .nueva-venta-wrapper {
   display: flex;
-  height: 100vh;
-  width: 100%;
 }
 
-/* Contenido principal */
+/* Contenido principal al estilo Dashboard */
 .venta-container {
-  flex: 1;
-  margin-left: 60px; /* ancho colapsado del menú */
+  position: absolute;
+  top: 0;
+  left: 60px; /* ancho colapsado del menú */
+  right: 0;
+  bottom: 0;
   padding: 20px;
   background-color: #6fffd4;
-  overflow-y: auto;
-  transition: margin-left 0.3s ease;
+  overflow-y: auto; /* solo aparece si se necesita */
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 /* Si menú expandido, deja más espacio */
 .venta-container.expanded {
-  margin-left: 200px;
+  left: 220px; /* menú desplegable */
 }
 
 .titulo {
@@ -179,6 +184,17 @@ input {
   padding: 8px;
   text-align: center;
   background: white;
+}
+
+/* Footer final */
+.footer-venta {
+  margin-top: auto; /* empuja al final */
+  padding-top: 20px;
+  border-top: 2px solid #ccc;
+}
+
+.cliente-datos {
+  margin-bottom: 15px;
 }
 
 .acciones-footer {

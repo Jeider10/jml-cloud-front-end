@@ -100,18 +100,14 @@ export default {
     }
   },
   methods: {
-    onLogClick() {
-      // alert('NuevaVenta clickeado')
+    onLogoClick () {
+      // Puedes redirigir a dashboard si lo deseas
+      this.$router.push('/dashboard')
     },
-
     onMenuClick() {
       // alterna el estado expandido/colapsado
       this.menuOpen = !this.menuOpen
       this.$emit('menu-toggle', this.menuOpen)
-    },
-    onLogoClick () {
-      // Puedes redirigir a dashboard si lo deseas
-      // this.$router.push('/')
     },
     onNuevaVentaClick() {
       this.$router.push('/nueva-venta')
