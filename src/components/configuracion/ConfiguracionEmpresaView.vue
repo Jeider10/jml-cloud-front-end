@@ -13,23 +13,23 @@
       <div class="datos-empresa">
         <div class="dato-row">
           <label>NIC:</label>
-          <input type="text" :value="empresa.nic" disabled />
+          <input type="text" v-model="empresa.nic" :disabled="!modoEdicion" />
         </div>
         <div class="dato-row">
           <label>Nombre:</label>
-          <input type="text" :value="empresa.nombre" disabled />
+          <input type="text" v-model="empresa.nombre" :disabled="!modoEdicion" />
         </div>
         <div class="dato-row">
           <label>Dirección:</label>
-          <input type="text" :value="empresa.direccion" disabled />
+          <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
         </div>
         <div class="dato-row">
           <label>Teléfono:</label>
-          <input type="text" :value="empresa.telefono" disabled />
+          <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
         </div>
         <div class="dato-row">
           <label>Mensaje:</label>
-          <input type="text" :value="empresa.mensaje" disabled />
+          <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
         </div>
       </div>
 
@@ -38,11 +38,32 @@
         <img src="@/assets/img/Empresa.png" alt="Logo Empresa" class="logo-empresa" />
       </div>
 
-      <!-- Botón actualizar -->
+      <!-- Botones -->
       <div class="acciones">
-        <button type="button" class="actualizar-btn" @click="irActualizar">
+        <button v-if="!modoEdicion" type="button" class="actualizar-btn" @click="activarEdicion">
           ✏️ Actualizar
         </button>
+
+        <div v-else class="btn-group">
+          <button type="button" class="guardar-btn" :disabled="!tieneTexto" @click="mostrarConfirmacion = true">
+            💾 Guardar
+          </button>
+          <button type="button" class="limpiar-btn" @click="limpiar">
+            🧹 Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div v-if="mostrarConfirmacion" class="modal-overlay">
+      <div class="modal">
+        <h3>⚠️ Confirmación</h3>
+        <p>¿Estás seguro de que deseas actualizar los datos de la empresa?</p>
+        <div class="modal-buttons">
+          <button class="si-btn" @click="confirmarGuardar">Sí</button>
+          <button class="no-btn" @click="mostrarConfirmacion = false">No</button>
+        </div>
       </div>
     </div>
   </div>
@@ -52,11 +73,13 @@
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 
 export default {
-  name: 'ConfiguracionEmpresaView',
+  name: 'ActualizarConfiguracionEmpresaView',
   components: { DashboardSideMenu },
   data() {
     return {
       menuOpen: false,
+      modoEdicion: false,
+      mostrarConfirmacion: false,
       empresa: {
         nic: '',
         nombre: '',
@@ -66,15 +89,27 @@ export default {
       }
     }
   },
+  computed: {
+    tieneTexto() {
+      return Object.values(this.empresa).some(v => v && v.trim() !== '')
+    }
+  },
   mounted() {
-    // cargar datos de empresa si ya existen
     const data = JSON.parse(localStorage.getItem('empresa'))
     if (data) this.empresa = data
   },
   methods: {
-    irActualizar() {
-      localStorage.setItem('empresaActualizar', JSON.stringify(this.empresa))
-      this.$router.push({ name: 'ActualizarEmpresaView' })
+    activarEdicion() {
+      this.modoEdicion = true
+    },
+    confirmarGuardar() {
+      localStorage.setItem('empresa', JSON.stringify(this.empresa))
+      this.mostrarConfirmacion = false
+      this.modoEdicion = false
+    },
+    limpiar() {
+      this.empresa = { nic: '', nombre: '', direccion: '', telefono: '', mensaje: '' }
+      this.modoEdicion = false
     }
   }
 }
@@ -141,6 +176,10 @@ export default {
   background-color: #f9f9f9;
   color: #333;
 }
+.dato-row input:disabled {
+  background-color: #eee;
+  color: #666;
+}
 
 .logo-container {
   display: flex;
@@ -148,25 +187,102 @@ export default {
   margin-bottom: 30px;
 }
 .logo-empresa {
-  width: 600px; /* 👈 mucho más grande */
+  width: 600px;
   height: auto;
 }
 
 .acciones {
   display: flex;
   justify-content: center;
+  gap: 15px;
 }
-.actualizar-btn {
+
+.btn-group {
+  display: flex;
+  gap: 15px;
+}
+
+.actualizar-btn,
+.guardar-btn,
+.limpiar-btn {
   padding: 12px 20px;
   border-radius: 6px;
-  background: #0077b6;
-  color: white;
   border: none;
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
 }
+
+.actualizar-btn {
+  background: #0077b6;
+  color: white;
+}
 .actualizar-btn:hover {
   background: #005f8a;
 }
+
+.guardar-btn {
+  background: #28a745;
+  color: white;
+}
+.guardar-btn:disabled {
+  background: #94d3a2;
+  cursor: not-allowed;
+}
+
+.limpiar-btn {
+  background: #e74c3c;
+  color: white;
+}
+.limpiar-btn:hover {
+  background: #c0392b;
+}
+
+/* Estilos del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.25);
+  width: 400px;
+  text-align: center;
+}
+.modal h3 {
+  margin-bottom: 10px;
+}
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+.si-btn {
+  background: #28a745;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+.no-btn {
+  background: #e74c3c;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+.si-btn:hover { background: #218838; }
+.no-btn:hover { background: #c0392b; }
 </style>
