@@ -50,6 +50,7 @@
             <th>APELLIDO</th>
             <th>TELÉFONO</th>
             <th>DIRECCIÓN</th>
+            <th>FECHA REGISTRO</th> <!-- ⏰ Nueva columna -->
             <th>ACCIONES</th>
           </tr>
         </thead>
@@ -61,13 +62,14 @@
             <td>{{ c.apellido }}</td>
             <td>{{ c.telefono }}</td>
             <td>{{ c.direccion }}</td>
+            <td>{{ c.fechaRegistro }}</td> <!-- ⏰ Mostrar fecha -->
             <td>
               <button class="delete-btn" @click="eliminarCliente(idx)">🗑️</button>
             </td>
           </tr>
 
           <tr v-if="clientes.length === 0">
-            <td colspan="7" class="empty-row">No hay clientes registrados.</td>
+            <td colspan="8" class="empty-row">No hay clientes registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -133,8 +135,11 @@ export default {
         return
       }
 
-      // Guardar cliente
-      const nuevo = { ...this.clienteForm }
+      // Guardar cliente con fecha y hora
+      const nuevo = {
+        ...this.clienteForm,
+        fechaRegistro: new Date().toLocaleString()  // ⏰ aquí agregamos la fecha
+      }
       this.clientes.push(nuevo)
 
       this.mostrarMensaje(
