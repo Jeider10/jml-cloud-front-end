@@ -32,10 +32,12 @@ export default {
 .dashboard-container {
   height: 100vh;
   width: 100%;
+  margin-left: 0px; /* Deja espacio fijo para el menú */
   overflow: hidden;
   background: linear-gradient(135deg, #74ebd5, #9face6);
   animation: gradientShift 10s ease infinite;
   position: relative; /* IMPORTANTE para posicionar hijos con absolute */
+  transition: all 0.3s ease; /* animación suave */
 }
 
 .welcome-text {
