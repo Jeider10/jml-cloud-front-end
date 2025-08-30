@@ -157,16 +157,23 @@ export default {
         return
       }
 
-      // Construir item y agregar
-      const newItem = {
-        codigo: this.venta.codigo || '',
-        descripcion: this.venta.descripcion,
-        cantidad: Number(this.venta.cantidad),
-        precio: Number(this.venta.precio),
-        removeQty: null // valor inicial del cuadrito
+      // ✅ Verificar si ya existe un producto con ese código
+      const existingIndex = this.items.findIndex(i => i.codigo === this.venta.codigo)
+      if (existingIndex !== -1) {
+        // Si existe → sumar cantidad al mismo producto
+        this.items[existingIndex].cantidad += Number(this.venta.cantidad)
+        alert(`⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad en el registro existente.`)
+      } else {
+        // Si no existe → crear uno nuevo
+        const newItem = {
+          codigo: this.venta.codigo || '',
+          descripcion: this.venta.descripcion,
+          cantidad: Number(this.venta.cantidad),
+          precio: Number(this.venta.precio),
+          removeQty: null // valor inicial del cuadrito
+        }
+        this.items.push(newItem)
       }
-
-      this.items.push(newItem)
 
       // limpiar algunos campos para el próximo registro
       this.venta.codigo = ''
@@ -184,9 +191,13 @@ export default {
         if (!qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad) {
           // si no se pone nada, es 0, o es mayor/igual a la cantidad actual → se elimina el producto completo
           this.items.splice(idx, 1)
+          alert('🗑️ Producto eliminado completamente.')
         } else {
           // caso contrario, se resta la cantidad
           item.cantidad -= qtyToRemove
+          alert(`➖ Se restaron ${qtyToRemove} unidades del producto ${item.codigo}.`)
+          // limpiar el cuadrito después de usarlo
+          item.removeQty = null
         }
       }
     },
