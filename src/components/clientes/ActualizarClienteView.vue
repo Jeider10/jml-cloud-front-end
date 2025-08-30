@@ -99,9 +99,16 @@ export default {
 
       const idx = clientes.findIndex(c => c.dni === this.dniOriginal)
       if (idx !== -1) {
-        clientes[idx] = { ...clientes[idx], ...this.clienteForm }
+        // Actualizamos datos y fecha de registro
+        clientes[idx] = { ...clientes[idx], ...this.clienteForm, fechaRegistro: new Date().toLocaleString() }
         localStorage.setItem('clientes', JSON.stringify(clientes))
+
         this.mostrarMensaje(`Cliente ${this.clienteForm.nombre} actualizado correctamente.`, 'success')
+
+        // Volver automáticamente a la vista de registro después de 2 segundos
+        setTimeout(() => {
+          this.$router.push({ name: 'RegistroClienteView' })
+        }, 2000)
       }
     }
   }
