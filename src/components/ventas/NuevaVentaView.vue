@@ -62,15 +62,16 @@
             <td class="precio-total-cell">
               <div class="total-value">{{ formatNumber(item.cantidad * item.precio) }}</div>
 
-              <!-- cuadrito para ingresar un id y boton eliminar al lado -->
+              <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
               <div class="mini-controls">
                 <input
-                  v-model="item.customId"
-                  type="text"
+                  v-model.number="item.removeQty"
+                  type="number"
+                  min="0"
                   class="mini-input"
-                  placeholder="ID"
+                  placeholder="Cant"
                 />
-                <button class="delete-btn" @click="eliminarItem(idx)" title="Eliminar">
+                <button class="delete-btn" @click="eliminarItem(idx)" title="Eliminar / Restar">
                   🗑️
                 </button>
               </div>
@@ -122,7 +123,7 @@ export default {
         stock: 0,
         fecha: new Date().toISOString().substr(0, 10)
       },
-      // items: cada item tendrá { codigo, descripcion, cantidad, precio, customId }
+      // items: cada item tendrá { codigo, descripcion, cantidad, precio, removeQty }
       items: [],
       cliente: {
         dni: '',
@@ -162,7 +163,7 @@ export default {
         descripcion: this.venta.descripcion,
         cantidad: Number(this.venta.cantidad),
         precio: Number(this.venta.precio),
-        customId: '' // cuadrito editable por el usuario
+        removeQty: null // valor inicial del cuadrito
       }
 
       this.items.push(newItem)
@@ -174,10 +175,19 @@ export default {
       this.venta.precio = 0
     },
 
-    // Eliminar item por índice
+    // Eliminar/restar cantidad
     eliminarItem(idx) {
       if (idx >= 0 && idx < this.items.length) {
-        this.items.splice(idx, 1)
+        const item = this.items[idx]
+        const qtyToRemove = Number(item.removeQty)
+
+        if (!qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad) {
+          // si no se pone nada, es 0, o es mayor/igual a la cantidad actual → se elimina el producto completo
+          this.items.splice(idx, 1)
+        } else {
+          // caso contrario, se resta la cantidad
+          item.cantidad -= qtyToRemove
+        }
       }
     },
 
