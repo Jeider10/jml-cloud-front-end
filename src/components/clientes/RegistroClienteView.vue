@@ -50,6 +50,14 @@
           <button type="button" class="agregar-btn" @click="agregarCliente">
             ➕ Registrar
           </button>
+
+          <!-- Nuevo botón Limpiar campos -->
+          <button type="button"
+                  class="limpiar-campos-btn"
+                  :disabled="!hayDatos()"
+                  @click="limpiarCampos">
+            🧹 Limpiar campos
+          </button>
         </div>
 
         <!-- 🔍 Filtro de búsqueda -->
@@ -191,6 +199,17 @@ export default {
       // limpiar formulario
       this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
     },
+
+    // Método para saber si hay datos en el formulario
+    hayDatos() {
+      return this.clienteForm.identificacion || this.clienteForm.nombre || this.clienteForm.apellido || this.clienteForm.telefono || this.clienteForm.direccion
+    },
+
+    // Limpiar campos del formulario
+    limpiarCampos() {
+      this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
+    },
+
     // Abrir modal en vez de window.confirm
     confirmarEliminar(idx) {
       this.modalEliminar.idx = idx
@@ -318,6 +337,19 @@ input {
   font-weight: 600;
 }
 .agregar-btn:hover { background: #005f8a; }
+
+/* Nuevo botón limpiar campos */
+.limpiar-campos-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.limpiar-campos-btn:disabled { background: #ccc; cursor: not-allowed; }
+.limpiar-campos-btn:not(:disabled):hover { background: #e76f51; }
 
 .update-btn {
   padding: 6px 8px;
