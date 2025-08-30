@@ -45,6 +45,7 @@
         <thead>
           <tr>
             <th>ID</th>
+            <th>CÓDIGO</th>
             <th>DESCRIPCIÓN</th>
             <th>CANTIDAD</th>
             <th>PRECIO U.</th>
@@ -54,6 +55,7 @@
         <tbody>
           <tr v-for="(item, idx) in items" :key="idx">
             <td>{{ idx + 1 }}</td>
+            <td>{{ item.codigo }}</td>
             <td>{{ item.descripcion }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ formatNumber(item.precio) }}</td>
@@ -77,7 +79,7 @@
 
           <!-- Mensaje cuando no hay items -->
           <tr v-if="items.length === 0">
-            <td colspan="5" class="empty-row">No hay productos agregados.</td>
+            <td colspan="6" class="empty-row">No hay productos agregados.</td>
           </tr>
         </tbody>
       </table>
@@ -165,7 +167,7 @@ export default {
 
       this.items.push(newItem)
 
-      // limpiar algunos campos para el próximo registro (manteniendo fecha y stock si quieres)
+      // limpiar algunos campos para el próximo registro
       this.venta.codigo = ''
       this.venta.descripcion = ''
       this.venta.cantidad = 1
