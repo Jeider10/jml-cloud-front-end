@@ -19,8 +19,8 @@
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
-          <label>DNI/RUC</label>
-          <input v-model="clienteForm.dni" type="text" />
+          <label>Identificación</label>
+          <input v-model="clienteForm.identificacion" type="text" />
 
           <label>Nombres</label>
           <input v-model="clienteForm.nombre" type="text" />
@@ -42,7 +42,7 @@
         <!-- 🔍 Filtro de búsqueda -->
         <div class="form-filtro">
           <!-- Texto descriptivo -->
-          <span style="font-weight: bold; margin-bottom: 4px;">Buscar por DNI/RUC, Nombre o Apellido:</span>
+          <span style="font-weight: bold;">Buscar por Identificación, Nombre o Apellido:</span>
 
           <!-- Input y botones -->
           <div style="display: flex; gap: 4px;">
@@ -58,7 +58,7 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>DNI/RUC</th>
+            <th>IDENTIFICACIÓN</th>
             <th>NOMBRES</th>
             <th>APELLIDOS</th>
             <th>TELÉFONO</th>
@@ -70,7 +70,7 @@
         <tbody>
           <tr v-for="(c, idx) in clientesFiltrados" :key="idx">
             <td>{{ idx + 1 }}</td>
-            <td>{{ c.dni }}</td>
+            <td>{{ c.identificacion }}</td>
             <td>{{ c.nombre }}</td>
             <td>{{ c.apellido }}</td>
             <td>{{ c.telefono }}</td>
@@ -101,7 +101,7 @@ export default {
     return {
       menuOpen: false,
       clienteForm: {
-        dni: '',
+        identificacion: '',
         nombre: '',
         apellido: '',
         telefono: '',
@@ -132,8 +132,8 @@ export default {
     },
 
     agregarCliente() {
-      if (!this.clienteForm.dni) {
-        this.mostrarMensaje('Ingrese el DNI/RUC del cliente.', 'error')
+      if (!this.clienteForm.identificacion) {
+        this.mostrarMensaje('Ingrese la Identificación del cliente.', 'error')
         return
       }
       if (!this.clienteForm.nombre) {
@@ -145,11 +145,11 @@ export default {
         return
       }
 
-      // 🔍 Verificar si ya existe un cliente con el mismo DNI
-      const existente = this.clientes.find(c => c.dni === this.clienteForm.dni)
+      // 🔍 Verificar si ya existe un cliente con la misma identificación
+      const existente = this.clientes.find(c => c.identificacion === this.clienteForm.identificacion)
       if (existente) {
         this.mostrarMensaje(
-          `⚠️ Ya existe un cliente con este DNI/RUC (${existente.dni}): ${existente.nombre} ${existente.apellido}.`,
+          `⚠️ Ya existe un cliente con esta Identificación (${existente.identificacion}): ${existente.nombre} ${existente.apellido}.`,
           'error'
         )
         return
@@ -170,7 +170,7 @@ export default {
       )
 
       // limpiar formulario
-      this.clienteForm = { dni: '', nombre: '', apellido: '', telefono: '', direccion: '' }
+      this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
     },
 
     eliminarCliente(idx) {
@@ -193,7 +193,7 @@ export default {
     filtrarClientes() {
       const texto = this.busqueda.toLowerCase()
       this.clientesFiltrados = this.clientes.filter(c =>
-        c.dni.toLowerCase().includes(texto) ||
+        c.identificacion.toLowerCase().includes(texto) ||
         c.nombre.toLowerCase().includes(texto) ||
         c.apellido.toLowerCase().includes(texto)
       )
