@@ -20,7 +20,7 @@
       <div class="form-container">
         <div class="form-row">
           <label>DNI/RUC</label>
-          <input v-model="clienteForm.dni" type="text" disabled />
+          <input v-model="clienteForm.dni" type="text" /> <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
 
           <label>Nombre</label>
           <input v-model="clienteForm.nombre" type="text" />
@@ -60,13 +60,15 @@ export default {
         direccion: ''
       },
       mensaje: '',
-      mensajeTipo: ''
+      mensajeTipo: '',
+      dniOriginal: '' // para rastrear el DNI original
     }
   },
   mounted() {
     const cliente = JSON.parse(localStorage.getItem('clienteActualizar'))
     if (cliente) {
       this.clienteForm = { ...cliente }
+      this.dniOriginal = cliente.dni // guardamos el DNI original
     }
   },
   methods: {
@@ -81,13 +83,21 @@ export default {
     },
 
     actualizarCliente() {
-      if (!this.clienteForm.nombre || !this.clienteForm.apellido) {
-        this.mostrarMensaje('Nombre y apellido son obligatorios.', 'error')
+      if (!this.clienteForm.dni || !this.clienteForm.nombre || !this.clienteForm.apellido) {
+        this.mostrarMensaje('DNI, nombre y apellido son obligatorios.', 'error')
         return
       }
 
       const clientes = JSON.parse(localStorage.getItem('clientes')) || []
-      const idx = clientes.findIndex(c => c.dni === this.clienteForm.dni)
+
+      // Verificamos si el nuevo DNI ya existe en otro cliente
+      const duplicado = clientes.find(c => c.dni === this.clienteForm.dni && c.dni !== this.dniOriginal)
+      if (duplicado) {
+        this.mostrarMensaje(`⚠️ Ya existe un cliente con este DNI/RUC (${duplicado.dni}).`, 'error')
+        return
+      }
+
+      const idx = clientes.findIndex(c => c.dni === this.dniOriginal)
       if (idx !== -1) {
         clientes[idx] = { ...clientes[idx], ...this.clienteForm }
         localStorage.setItem('clientes', JSON.stringify(clientes))
