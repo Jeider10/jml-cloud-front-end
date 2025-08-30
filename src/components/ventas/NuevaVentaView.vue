@@ -23,6 +23,10 @@
           <label>Código</label>
           <input v-model="venta.codigo" type="text" />
 
+          <!-- 🔹 Nuevo campo: Producto -->
+          <label>Producto</label>
+          <input v-model="venta.producto" type="text" />
+
           <label>Descripción</label>
           <input v-model="venta.descripcion" type="text" />
 
@@ -53,6 +57,8 @@
           <tr>
             <th>ID</th>
             <th>CÓDIGO</th>
+            <!-- 🔹 Nueva columna: Producto -->
+            <th>PRODUCTO</th>
             <th>DESCRIPCIÓN</th>
             <th>CANTIDAD</th>
             <th>PRECIO U.</th>
@@ -63,6 +69,8 @@
           <tr v-for="(item, idx) in items" :key="idx">
             <td>{{ idx + 1 }}</td>
             <td>{{ item.codigo }}</td>
+            <!-- 🔹 Mostrar Producto -->
+            <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ formatNumber(item.precio) }}</td>
@@ -87,7 +95,7 @@
 
           <!-- Mensaje cuando no hay items -->
           <tr v-if="items.length === 0">
-            <td colspan="6" class="empty-row">No hay productos agregados.</td>
+            <td colspan="7" class="empty-row">No hay productos agregados.</td>
           </tr>
         </tbody>
       </table>
@@ -124,13 +132,14 @@ export default {
       menuOpen: false,
       venta: {
         codigo: '',
+        producto: '', // 🔹 Nuevo campo
         descripcion: '',
         cantidad: 1,
         precio: 0,
         stock: 0,
         fecha: new Date().toISOString().substr(0, 10)
       },
-      // items: cada item tendrá { codigo, descripcion, cantidad, precio, removeQty }
+      // items: cada item tendrá { codigo, producto, descripcion, cantidad, precio, removeQty }
       items: [],
       cliente: {
         dni: '',
@@ -162,6 +171,10 @@ export default {
     // Agrega el producto que está en el form a la tabla
     agregarItem() {
       // Validaciones mínimas
+      if (!this.venta.producto) {
+        this.mostrarMensaje('Ingrese el nombre del producto.', 'error')
+        return
+      }
       if (!this.venta.descripcion) {
         this.mostrarMensaje('Ingrese la descripción del producto.', 'error')
         return
@@ -185,17 +198,19 @@ export default {
         // Si no existe → crear uno nuevo
         const newItem = {
           codigo: this.venta.codigo || '',
+          producto: this.venta.producto, // 🔹 Guardar Producto
           descripcion: this.venta.descripcion,
           cantidad: Number(this.venta.cantidad),
           precio: Number(this.venta.precio),
           removeQty: null
         }
         this.items.push(newItem)
-        this.mostrarMensaje(`✅ Producto ${this.venta.descripcion} agregado correctamente.`, 'success')
+        this.mostrarMensaje(`✅ Producto ${this.venta.producto} agregado correctamente.`, 'success')
       }
 
       // limpiar algunos campos para el próximo registro
       this.venta.codigo = ''
+      this.venta.producto = ''
       this.venta.descripcion = ''
       this.venta.cantidad = 1
       this.venta.precio = 0
