@@ -38,6 +38,19 @@
             ➕ Registrar
           </button>
         </div>
+
+        <!-- 🔍 Filtro de búsqueda -->
+        <div class="form-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+          <!-- Texto descriptivo -->
+          <span style="font-weight: bold; margin-bottom: 4px;">Buscar por DNI/RUC, Nombre o Apellido:</span>
+
+          <!-- Input y botones -->
+          <div style="display: flex; gap: 4px;">
+            <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
+            <button type="button" class="buscar-btn" @click="filtrarClientes">Buscar</button>
+            <button type="button" class="buscar-btn" @click="limpiarBusqueda">Limpiar</button>
+          </div>
+        </div>
       </div>
 
       <!-- Tabla de clientes -->
@@ -55,7 +68,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(c, idx) in clientes" :key="idx">
+          <tr v-for="(c, idx) in clientesFiltrados" :key="idx">
             <td>{{ idx + 1 }}</td>
             <td>{{ c.dni }}</td>
             <td>{{ c.nombre }}</td>
@@ -69,8 +82,7 @@
               <button class="delete-btn" @click="eliminarCliente(idx)">🗑️</button>
             </td>
           </tr>
-
-          <tr v-if="clientes.length === 0">
+          <tr v-if="clientesFiltrados.length === 0">
             <td colspan="8" class="empty-row">No hay clientes registrados.</td>
           </tr>
         </tbody>
@@ -96,9 +108,15 @@ export default {
         direccion: ''
       },
       clientes: [],
+      clientesFiltrados: [],
       mensaje: '',
-      mensajeTipo: ''
+      mensajeTipo: '',
+      busqueda: ''
     }
+  },
+  mounted() {
+    this.clientes = JSON.parse(localStorage.getItem('clientes')) || []
+    this.clientesFiltrados = [...this.clientes]
   },
   methods: {
     handleMenuToggle(state) {
@@ -144,6 +162,7 @@ export default {
       }
       this.clientes.push(nuevo)
       localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Guardamos en localStorage
+      this.clientesFiltrados = [...this.clientes]
 
       this.mostrarMensaje(
         `✅ Cliente ${this.clienteForm.nombre} ${this.clienteForm.apellido} registrado correctamente.`,
@@ -159,6 +178,7 @@ export default {
         const eliminado = this.clientes[idx]
         this.clientes.splice(idx, 1)
         localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Actualizamos localStorage
+        this.clientesFiltrados = [...this.clientes]
         this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} ${eliminado.apellido} eliminado.`, 'error')
       }
     },
@@ -168,6 +188,20 @@ export default {
       localStorage.setItem('clienteActualizar', JSON.stringify(cliente))
       // Redirigimos a la vista de actualización
       this.$router.push({ name: 'ActualizarClienteView' }) // ✅ Nombre de component del index
+    },
+
+    filtrarClientes() {
+      const texto = this.busqueda.toLowerCase()
+      this.clientesFiltrados = this.clientes.filter(c =>
+        c.dni.toLowerCase().includes(texto) ||
+        c.nombre.toLowerCase().includes(texto) ||
+        c.apellido.toLowerCase().includes(texto)
+      )
+    },
+
+    limpiarBusqueda() {
+      this.busqueda = ''
+      this.clientesFiltrados = [...this.clientes]
     }
   }
 }
@@ -284,4 +318,16 @@ input {
 .delete-btn:hover { background: #b52a33; }
 
 .empty-row { text-align: center; padding: 18px; color: #666; }
+
+.buscar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #06d6a0;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+.buscar-btn:hover { background: #049670; }
 </style>
