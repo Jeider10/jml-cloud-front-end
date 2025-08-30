@@ -47,7 +47,10 @@
           <label>Dirección</label>
           <input v-model="clienteForm.direccion" type="text" />
 
-          <button type="button" class="agregar-btn" @click="agregarCliente">
+          <button type="button"
+                  class="agregar-btn"
+                  :disabled="!hayDatos()"
+                  @click="agregarCliente">
             ➕ Registrar
           </button>
 
@@ -68,8 +71,14 @@
           <!-- Input y botones -->
           <div style="display: flex; gap: 4px;">
             <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
-            <button type="button" class="buscar-btn" @click="filtrarClientes">Buscar</button>
-            <button type="button" class="buscar-btn" @click="limpiarBusqueda">Limpiar</button>
+            <button type="button"
+                    class="buscar-btn"
+                    :disabled="!hayDatosFiltro()"
+                    @click="filtrarClientes">Buscar</button>
+            <button type="button"
+                    class="buscar-btn"
+                    :disabled="!hayDatosFiltro()"
+                    @click="limpiarBusqueda">Limpiar</button>
           </div>
         </div>
       </div>
@@ -210,6 +219,11 @@ export default {
       this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
     },
 
+    // Método para saber si hay datos en el cuadro de filtro
+    hayDatosFiltro() {
+      return this.busqueda.trim().length > 0
+    },
+
     // Abrir modal en vez de window.confirm
     confirmarEliminar(idx) {
       this.modalEliminar.idx = idx
@@ -336,7 +350,18 @@ input {
   cursor: pointer;
   font-weight: 600;
 }
-.agregar-btn:hover { background: #005f8a; }
+
+.agregar-btn:hover {
+  background: #005f8a;
+}
+
+.agregar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed; }
+
+.agregar-btn:not(:disabled):hover {
+  background: #e76f51;
+}
 
 /* Nuevo botón limpiar campos */
 .limpiar-campos-btn {
@@ -348,8 +373,14 @@ input {
   cursor: pointer;
   font-weight: 600;
 }
-.limpiar-campos-btn:disabled { background: #ccc; cursor: not-allowed; }
-.limpiar-campos-btn:not(:disabled):hover { background: #e76f51; }
+
+.limpiar-campos-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed; }
+
+.limpiar-campos-btn:not(:disabled):hover {
+  background: #e76f51;
+}
 
 .update-btn {
   padding: 6px 8px;
@@ -398,7 +429,41 @@ input {
   margin-left: 4px;
   font-weight: 600;
 }
-.buscar-btn:hover { background: #049670; }
+
+.buscar-btn:hover {
+  background: #049670;
+}
+
+.buscar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed; }
+
+.buscar-btn:not(:disabled):hover {
+  background: #e76f51;
+}
+
+.limpiar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #06d6a0;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.limpiar-btn:hover {
+  background: #049670;
+}
+
+.limpiar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed; }
+
+.limpiar-btn:not(:disabled):hover {
+  background: #e76f51;
+}
 
 /* Modal */
 .modal-overlay {
