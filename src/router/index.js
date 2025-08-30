@@ -6,6 +6,7 @@ import DashboardView from '@/views/dashboard/DashboardView.vue'
 import ForgotPasswordView from '@/views/auth/forgotPassword/ForgotPasswordView.vue'
 import RegisterUserView from '@/views/auth/registerUser/RegisterUserView.vue'
 import NuevaVentaView from '@/components/ventas/NuevaVentaView.vue'
+import RegistroClienteView from '@/components/clientes/RegistroClienteView.vue'
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: '/nueva-venta',
     name: 'NuevaVentaView',
     component: NuevaVentaView
+  },
+  {
+    path: '/registro-cliente',
+    name: 'RegistroClienteView',
+    component: RegistroClienteView
   },
 ];
 
