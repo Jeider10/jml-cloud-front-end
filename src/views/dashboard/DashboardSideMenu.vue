@@ -128,7 +128,7 @@ export default {
       this.$router.push('/configuracion-empresa')
     },
     onUsuarioClick() {
-      // alert('Usuario clickeado')
+      this.$router.push('/registrar-usuario-empresa')
     },
     logout() {
       // Redirigir al login o ejecutar logout real
