@@ -10,6 +10,13 @@
       <!-- Encabezado -->
       <h1 class="titulo">Nueva Venta</h1>
 
+      <!-- 🔔 Mensaje visual -->
+      <transition name="fade">
+        <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
+          {{ mensaje }}
+        </div>
+      </transition>
+
       <!-- Formulario principal -->
       <div class="form-container">
         <div class="form-row">
@@ -128,7 +135,10 @@ export default {
       cliente: {
         dni: '',
         nombre: ''
-      }
+      },
+      // 🔔 mensajes en pantalla
+      mensaje: '',
+      mensajeTipo: '' // success | warning | error
     }
   },
   computed: {
@@ -141,19 +151,27 @@ export default {
       this.menuOpen = state
     },
 
+    mostrarMensaje(texto, tipo = 'success') {
+      this.mensaje = texto
+      this.mensajeTipo = tipo
+      setTimeout(() => {
+        this.mensaje = ''
+      }, 3000)
+    },
+
     // Agrega el producto que está en el form a la tabla
     agregarItem() {
       // Validaciones mínimas
       if (!this.venta.descripcion) {
-        alert('Ingrese la descripción del producto.')
+        this.mostrarMensaje('Ingrese la descripción del producto.', 'error')
         return
       }
       if (!this.venta.cantidad || this.venta.cantidad <= 0) {
-        alert('Ingrese una cantidad válida.')
+        this.mostrarMensaje('Ingrese una cantidad válida.', 'error')
         return
       }
       if (this.venta.precio === '' || this.venta.precio < 0) {
-        alert('Ingrese un precio válido.')
+        this.mostrarMensaje('Ingrese un precio válido.', 'error')
         return
       }
 
@@ -162,7 +180,7 @@ export default {
       if (existingIndex !== -1) {
         // Si existe → sumar cantidad al mismo producto
         this.items[existingIndex].cantidad += Number(this.venta.cantidad)
-        alert(`⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad en el registro existente.`)
+        this.mostrarMensaje(`⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad en el registro existente.`, 'warning')
       } else {
         // Si no existe → crear uno nuevo
         const newItem = {
@@ -170,9 +188,10 @@ export default {
           descripcion: this.venta.descripcion,
           cantidad: Number(this.venta.cantidad),
           precio: Number(this.venta.precio),
-          removeQty: null // valor inicial del cuadrito
+          removeQty: null
         }
         this.items.push(newItem)
+        this.mostrarMensaje(`✅ Producto ${this.venta.descripcion} agregado correctamente.`, 'success')
       }
 
       // limpiar algunos campos para el próximo registro
@@ -191,19 +210,18 @@ export default {
         if (!qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad) {
           // si no se pone nada, es 0, o es mayor/igual a la cantidad actual → se elimina el producto completo
           this.items.splice(idx, 1)
-          alert('🗑️ Producto eliminado completamente.')
+          this.mostrarMensaje(`🗑️ Producto ${item.codigo} eliminado completamente.`, 'error')
         } else {
           // caso contrario, se resta la cantidad
           item.cantidad -= qtyToRemove
-          alert(`➖ Se restaron ${qtyToRemove} unidades del producto ${item.codigo}.`)
-          // limpiar el cuadrito después de usarlo
+          this.mostrarMensaje(`➖ Se restaron ${qtyToRemove} unidades del producto con código ${item.codigo}.`, 'warning')
           item.removeQty = null
         }
       }
     },
 
     imprimirFactura() {
-      alert('🖨️ Aquí iría la lógica para imprimir la factura.')
+      this.mostrarMensaje('🖨️ Aquí iría la lógica para imprimir la factura.', 'success')
     },
 
     // Formato numérico simple (2 decimales)
@@ -248,10 +266,27 @@ export default {
   text-align: center;
 }
 
-.form-container {
-  margin-bottom: 20px;
+/* 🔔 Estilo para mensajes */
+.mensaje {
+  padding: 12px 18px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+}
+.mensaje.success { background: #2ecc71; color: white; }
+.mensaje.warning { background: #f1c40f; color: #333; }
+.mensaje.error   { background: #e74c3c; color: white; }
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
+.form-container { margin-bottom: 20px; }
 .form-row {
   display: flex;
   align-items: center;
@@ -260,9 +295,7 @@ export default {
   flex-wrap: wrap;
 }
 
-label {
-  font-weight: bold;
-}
+label { font-weight: bold; }
 
 input {
   padding: 6px;
@@ -280,9 +313,7 @@ input {
   cursor: pointer;
   font-weight: 600;
 }
-.agregar-btn:hover {
-  background: #005f8a;
-}
+.agregar-btn:hover { background: #005f8a; }
 
 /* Tabla de productos */
 .productos-table {
@@ -306,20 +337,9 @@ input {
   align-items: center;
   gap: 6px;
 }
+.total-value { font-weight: 700; color: #0b3954; }
 
-/* Mostrar total en grande */
-.total-value {
-  font-weight: 700;
-  color: #0b3954;
-}
-
-/* mini-controls: input pequeño + boton eliminar */
-.mini-controls {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
+.mini-controls { display: flex; gap: 6px; align-items: center; }
 .mini-input {
   width: 70px;
   padding: 4px 6px;
@@ -339,27 +359,18 @@ input {
   cursor: pointer;
   font-size: 0.9rem;
 }
-.delete-btn:hover {
-  background: #b52a33;
-}
+.delete-btn:hover { background: #b52a33; }
 
-/* Mensaje fila vacía */
-.empty-row {
-  text-align: center;
-  padding: 18px;
-  color: #666;
-}
+.empty-row { text-align: center; padding: 18px; color: #666; }
 
 /* Footer final */
 .footer-venta {
-  margin-top: auto; /* empuja al final */
+  margin-top: auto;
   padding-top: 20px;
   border-top: 2px solid #ccc;
 }
 
-.cliente-datos {
-  margin-bottom: 15px;
-}
+.cliente-datos { margin-bottom: 15px; }
 
 .acciones-footer {
   display: flex;
@@ -377,13 +388,7 @@ button {
   cursor: pointer;
   font-weight: bold;
 }
+button:hover { background: #004466; }
 
-button:hover {
-  background: #004466;
-}
-
-.total {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
+.total { font-size: 1.2rem; font-weight: bold; }
 </style>
