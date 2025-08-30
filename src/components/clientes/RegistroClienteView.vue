@@ -64,6 +64,8 @@
             <td>{{ c.direccion }}</td>
             <td>{{ c.fechaRegistro }}</td> <!-- ⏰ Mostrar fecha -->
             <td>
+              <!-- Nuevo botón de actualizar -->
+              <button class="update-btn" @click="abrirActualizarCliente(c)">✏️</button>
               <button class="delete-btn" @click="eliminarCliente(idx)">🗑️</button>
             </td>
           </tr>
@@ -141,6 +143,7 @@ export default {
         fechaRegistro: new Date().toLocaleString()  // ⏰ aquí agregamos la fecha
       }
       this.clientes.push(nuevo)
+      localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Guardamos en localStorage
 
       this.mostrarMensaje(
         `✅ Cliente ${this.clienteForm.nombre} ${this.clienteForm.apellido} registrado correctamente.`,
@@ -155,8 +158,16 @@ export default {
       if (idx >= 0 && idx < this.clientes.length) {
         const eliminado = this.clientes[idx]
         this.clientes.splice(idx, 1)
+        localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Actualizamos localStorage
         this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} ${eliminado.apellido} eliminado.`, 'error')
       }
+    },
+
+    abrirActualizarCliente(cliente) {
+      // Guardamos el cliente seleccionado para actualizar en localStorage
+      localStorage.setItem('clienteActualizar', JSON.stringify(cliente))
+      // Redirigimos a la vista de actualización
+      this.$router.push({ name: 'ActualizarClienteView' }) // ✅ Nombre de component del index
     }
   }
 }
@@ -236,6 +247,17 @@ input {
   font-weight: 600;
 }
 .agregar-btn:hover { background: #005f8a; }
+
+.update-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-right: 4px;
+}
+.update-btn:hover { background: #e76f51; }
 
 .clientes-table {
   width: 100%;
