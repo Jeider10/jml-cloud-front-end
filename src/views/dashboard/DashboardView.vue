@@ -45,6 +45,6 @@ export default {
 
 /* Cuando el menú está abierto */
 .main-content.expanded {
-  left: 310px; /* 60px + 250px del menú desplegable */
+  left: 200px; /* 60px + 250px del menú desplegable */
 }
 </style>

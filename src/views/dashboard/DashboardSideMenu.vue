@@ -169,7 +169,7 @@ export default {
 
 /* cuando se expande muestra labels y alinea a la izquierda */
 .side-panel.expanded {
-  width: 340px; /* ancho expandido */
+  width: 200px; /* ancho expandido */
   align-items: flex-start;
   padding: 12px 12px;
 }
