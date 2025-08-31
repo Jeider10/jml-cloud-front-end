@@ -19,9 +19,18 @@
           <label>Contraseña:</label>
           <input type="password" v-model="usuario.password" placeholder="Ingrese contraseña" />
         </div>
+        <!-- Código de Rol -->
         <div class="dato-row">
-          <label>Código de Rol:</label>
-          <input type="text" v-model="usuario.rol" placeholder="Ingrese código de rol" />
+          <label for="rolCode">Código de Rol:</label>
+          <input
+            type="number"
+            id="rolCode"
+            v-model.number="usuario.rol"
+            min="1"
+            step="1"
+            placeholder="Ingrese código de rol"
+            required
+          />
         </div>
         <div class="dato-row">
           <label>Correo electrónico:</label>
@@ -71,7 +80,7 @@ export default {
       usuario: {
         nombre: '',
         password: '',
-        rol: '',
+        rol: null,
         email: ''
       }
     }
@@ -79,11 +88,11 @@ export default {
   computed: {
     // Todos los campos completos -> habilita Registrar
     tieneTodos() {
-      return Object.values(this.usuario).every(v => v && v.trim() !== '')
+      return Object.values(this.usuario).every(v => v !== null && v !== '' && String(v).trim() !== '')
     },
     // Algún campo con texto -> habilita Limpiar
     tieneAlgunos() {
-      return Object.values(this.usuario).some(v => v && v.trim() !== '')
+      return Object.values(this.usuario).some(v => v !== null && v !== '' && String(v).trim() !== '')
     }
   },
   methods: {
@@ -96,7 +105,7 @@ export default {
       this.limpiar()
     },
     limpiar() {
-      this.usuario = { nombre: '', password: '', rol: '', email: '' }
+      this.usuario = { nombre: '', password: '', rol: null, email: '' }
     }
   }
 }
