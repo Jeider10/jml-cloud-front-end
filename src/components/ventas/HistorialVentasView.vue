@@ -2,8 +2,8 @@
 
 <template>
   <div class="historial-ventas-wrapper">
-    <!-- Menú lateral -->
-    <DashboardSideMenu @menu-toggle="handleMenuToggle" />
+    <!-- Menú lateral (oculto en impresión) -->
+    <DashboardSideMenu class="no-print" @menu-toggle="handleMenuToggle" />
 
     <!-- Contenido principal -->
     <div :class="['ventas-container', { expanded: menuOpen }]">
@@ -11,28 +11,19 @@
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
-        <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
+        <div v-if="mensaje" :class="['mensaje', mensajeTipo, 'no-print']">
           {{ mensaje }}
         </div>
       </transition>
 
       <!-- Filtro de búsqueda -->
-      <!-- Filtro de búsqueda -->
       <div class="form-filtro no-print">
         <span style="font-weight: bold;">Buscar por Cliente, Producto o Vendedor:</span>
         <div style="display: flex; gap: 4px;">
           <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
-          <button type="button"
-                  class="buscar-btn"
-                  :disabled="!hayDatosFiltro()"
-                  @click="filtrarVentas">Buscar</button>
-          <button type="button"
-                  class="buscar-btn"
-                  :disabled="!hayDatosFiltro()"
-                  @click="limpiarBusqueda">Limpiar</button>
-          <button type="button"
-                  class="imprimir-btn"
-                  @click="imprimirHistorial">🖨️ Imprimir</button>
+          <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro()" @click="filtrarVentas">Buscar</button>
+          <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro()" @click="limpiarBusqueda">Limpiar</button>
+          <button type="button" class="imprimir-btn" @click="imprimirHistorial">🖨️ Imprimir</button>
         </div>
       </div>
 
@@ -67,17 +58,9 @@
         </tbody>
       </table>
 
-      <!-- === Footer final con Total a Pagar === -->
+      <!-- Footer final con Total a Pagar -->
       <div class="footer-ventas">
-        <!-- Total en pantalla -->
-        <div class="acciones-footer no-print">
-          <span class="total">💰 Total a Ventas: {{ totalGeneral }}</span>
-        </div>
-
-        <!-- Total visible también en impresión -->
-        <div class="acciones-footer print-only">
-          <span class="total">💰 Total a Ventas: {{ totalGeneral }}</span>
-        </div>
+        <span class="total">💰 Total a Ventas: {{ totalGeneral }}</span>
       </div>
     </div>
   </div>
@@ -151,7 +134,9 @@ export default {
 </script>
 
 <style scoped>
-.historial-ventas-wrapper { display: flex; }
+.historial-ventas-wrapper {
+  display: flex;
+}
 .ventas-container {
   position: absolute;
   top: 0;
@@ -164,22 +149,55 @@ export default {
   transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
+  margin-left: 0px !important; /* <-- ajusta este valor a lo que necesites */
+  margin-right: 0px !important; /* <-- ajusta este valor a lo que necesites */
 }
+
 .ventas-container.expanded { left: 220px; }
-.titulo { font-size: 2rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
-.mensaje { padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; text-align: center; box-shadow: 0px 4px 8px rgba(0,0,0,0.15); }
+
+.titulo {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.mensaje {
+  padding: 12px 18px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+}
 .mensaje.success { background: #2ecc71; color: white; }
-.mensaje.error   { background: #e74c3c; color: white; }
+.mensaje.error { background: #e74c3c; color: white; }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-.form-filtro { display: flex; flex-direction: column; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 20px; margin-bottom: 12px; }
+
+.form-filtro {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
 input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-.buscar-btn, .imprimir-btn { border-radius: 6px; border: none; cursor: pointer; font-weight: 600; padding: 6px 12px; }
+.buscar-btn, .imprimir-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 12px;
+}
 .buscar-btn { background: #06d6a0; color: white; margin-left: 4px; }
 .buscar-btn:hover { background: #049670; }
 .buscar-btn:disabled { background: #ccc; cursor: not-allowed; }
 .imprimir-btn { background: #0077b6; color: white; margin-left: 10px; }
 .imprimir-btn:hover { background: #005f8a; }
+
 .ventas-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
 .ventas-table th, .ventas-table td { border: 1px solid #ddd; padding: 8px; text-align: center; background: white; }
 .ventas-table ul { list-style: none; padding: 0; margin: 0; }
@@ -191,33 +209,61 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
   margin-top: auto;
   padding-top: 20px;
   border-top: 2px solid #ccc;
+  text-align: right;
 }
+.total { font-size: 1.2rem; font-weight: bold; }
 
-.acciones-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.total {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-/* 🔹 Ocultar elementos con clase no-print al imprimir */
 @media print {
-  .no-print {
+  .no-print { display: none !important; }
+
+  .ventas-container {
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* centra todo horizontalmente */
+  }
+
+  .titulo {
+    text-align: center !important;
+    margin-bottom: 20px !important;
+  }
+
+  .form-filtro {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* centra el formulario */
+    margin-bottom: 20px !important;
+  }
+
+  .ventas-table {
+    width: auto !important; /* que la tabla se ajuste al contenido */
+    min-width: 600px; /* opcional, para que no quede muy estrecha */
+    border-collapse: collapse !important;
+  }
+
+  .ventas-table th, .ventas-table td {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+    text-align: center !important;
+    background: white !important;
+  }
+
+  .form-filtro.no-print {
     display: none !important;
   }
-  .print-only {
-    display: block !important;
-    text-align: right;
-    margin-top: 20px;
-  }
-}
 
-/* Oculto por defecto */
-.print-only {
-  display: none;
+  .footer-ventas {
+    text-align: right !important;
+    position: fixed !important;
+    bottom: 20px !important;
+    width: 100% !important;
+    padding: 0 20px !important;
+  }
 }
 </style>
