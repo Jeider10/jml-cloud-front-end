@@ -17,7 +17,8 @@
       </transition>
 
       <!-- Filtro de búsqueda -->
-      <div class="form-filtro">
+      <!-- Filtro de búsqueda -->
+      <div class="form-filtro no-print">
         <span style="font-weight: bold;">Buscar por Cliente, Producto o Vendedor:</span>
         <div style="display: flex; gap: 4px;">
           <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
@@ -65,6 +66,19 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- === Footer final con Total a Pagar === -->
+      <div class="footer-ventas">
+        <!-- Total en pantalla -->
+        <div class="acciones-footer no-print">
+          <span class="total">💰 Total a Ventas: {{ totalGeneral }}</span>
+        </div>
+
+        <!-- Total visible también en impresión -->
+        <div class="acciones-footer print-only">
+          <span class="total">💰 Total a Ventas: {{ totalGeneral }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -89,6 +103,14 @@ export default {
     // Recuperar historial desde localStorage
     this.ventas = JSON.parse(localStorage.getItem('ventas')) || []
     this.ventasFiltradas = [...this.ventas]
+  },
+  computed: {
+    // 🔹 Calcula el total general de todas las ventas filtradas
+    totalGeneral() {
+      return this.ventasFiltradas
+        .reduce((acc, v) => acc + parseFloat(v.total || 0), 0)
+        .toFixed(2)
+    }
   },
   methods: {
     handleMenuToggle(state) {
@@ -163,4 +185,39 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
 .ventas-table ul { list-style: none; padding: 0; margin: 0; }
 .ventas-table li { text-align: left; }
 .empty-row { text-align: center; padding: 18px; color: #666; }
+
+/* 🔹 Footer fijo al final */
+.footer-ventas {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 2px solid #ccc;
+}
+
+.acciones-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* 🔹 Ocultar elementos con clase no-print al imprimir */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+    text-align: right;
+    margin-top: 20px;
+  }
+}
+
+/* Oculto por defecto */
+.print-only {
+  display: none;
+}
 </style>

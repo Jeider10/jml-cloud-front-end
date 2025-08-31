@@ -2,8 +2,8 @@
 
 <template>
   <div class="nueva-venta-wrapper">
-    <!-- Menú lateral -->
-    <DashboardSideMenu @menu-toggle="handleMenuToggle" />
+    <!-- Menú lateral (oculto en impresión) -->
+    <DashboardSideMenu class="no-print" @menu-toggle="handleMenuToggle" />
 
     <!-- Contenido principal -->
     <div :class="['venta-container', { expanded: menuOpen }]">
@@ -12,13 +12,13 @@
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
-        <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
+        <div v-if="mensaje" :class="['mensaje', mensajeTipo, 'no-print']">
           {{ mensaje }}
         </div>
       </transition>
 
-      <!-- Formulario principal -->
-      <div class="form-container">
+      <!-- Formulario principal (oculto en impresión) -->
+      <div class="form-container no-print">
         <div class="form-row">
           <label>Código</label>
           <input v-model="venta.codigo" type="text" />
@@ -34,13 +34,18 @@
           <input v-model.number="venta.cantidad" type="number" min="1" />
 
           <label>Precio</label>
-          <input v-model.number="venta.precio" type="number" min="0" step="0.01" />
+          <input v-model.number="venta.precio" type="number" min="1" step="0.01" />
 
-          <label>Seleccionar:</label>
+          <label>Fecha:</label>
           <input v-model="venta.fecha" type="date" />
 
           <!-- Botón para agregar producto desde el formulario -->
-          <button type="button" class="agregar-btn" @click="agregarItem">
+          <button
+            type="button"
+            class="agregar-btn"
+            @click="agregarItem"
+            :disabled="!formValido"
+          >
             ➕ Agregar
           </button>
         </div>
@@ -78,7 +83,7 @@
               <div class="total-value">{{ formatNumber(item.cantidad * item.precio) }}</div>
 
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
-              <div class="mini-controls">
+              <div class="mini-controls no-print">
                 <input
                   v-model.number="item.removeQty"
                   type="number"
@@ -103,17 +108,25 @@
       <!-- === Sección final (datos cliente + acciones) === -->
       <div class="footer-venta">
         <!-- Datos de cliente -->
-        <div class="form-row cliente-datos">
-          <label>DNI/RUC</label>
-          <input v-model="cliente.dni" type="text" />
+        <div class="form-row cliente-datos no-print">
+          <label>Identificación</label>
+          <input v-model="cliente.identificacion" type="text" />
 
           <label>Nombre</label>
           <input v-model="cliente.nombre" type="text" />
         </div>
 
-        <!-- Acciones -->
-        <div class="acciones-footer">
-          <button @click="imprimirFactura">🖨️ Imprimir</button>
+        <!-- Acciones normales -->
+        <div class="acciones-footer no-print">
+          <!-- ✅ Ahora el botón también valida identificación y nombre -->
+          <button @click="imprimirFactura" :disabled="!puedeImprimir">🖨️ Imprimir</button>
+          <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
+        </div>
+
+        <!-- ✅ Datos cliente y total SOLO impresión en una sola línea -->
+        <div class="print-only datos-linea">
+          <span><strong>Identificación:</strong> {{ cliente.identificacion }}</span>
+          <span><strong>Nombre:</strong> {{ cliente.nombre }}</span>
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
       </div>
@@ -134,15 +147,15 @@ export default {
         codigo: '',
         producto: '', // 🔹 Nuevo campo
         descripcion: '',
-        cantidad: 1,
-        precio: 0,
+        cantidad: null, // inicia vacío para que el botón quede deshabilitado
+        precio: null,   // inicia vacío para que el botón quede deshabilitado
         stock: 0,
         fecha: new Date().toISOString().substr(0, 10)
       },
       // items: cada item tendrá { codigo, producto, descripcion, cantidad, precio, removeQty }
       items: [],
       cliente: {
-        dni: '',
+        identificacion: '',
         nombre: ''
       },
       // 🔔 mensajes en pantalla
@@ -153,6 +166,24 @@ export default {
   computed: {
     calcularTotal() {
       return this.items.reduce((acc, i) => acc + (Number(i.precio) * Number(i.cantidad)), 0)
+    },
+    // ✅ Validación para habilitar botón "Agregar"
+    formValido() {
+      return (
+        this.venta.codigo?.trim() !== '' &&
+        this.venta.producto?.trim() !== '' &&
+        this.venta.descripcion?.trim() !== '' &&
+        this.venta.cantidad >= 1 &&
+        this.venta.precio >= 1
+      )
+    },
+    // ✅ Validación para habilitar botón "Imprimir"
+    puedeImprimir() {
+      return (
+        this.items.length > 0 &&
+        this.cliente.identificacion.trim() !== '' &&
+        this.cliente.nombre.trim() !== ''
+      )
     }
   },
   methods: {
@@ -171,20 +202,8 @@ export default {
     // Agrega el producto que está en el form a la tabla
     agregarItem() {
       // Validaciones mínimas
-      if (!this.venta.producto) {
-        this.mostrarMensaje('Ingrese el nombre del producto.', 'error')
-        return
-      }
-      if (!this.venta.descripcion) {
-        this.mostrarMensaje('Ingrese la descripción del producto.', 'error')
-        return
-      }
-      if (!this.venta.cantidad || this.venta.cantidad <= 0) {
-        this.mostrarMensaje('Ingrese una cantidad válida.', 'error')
-        return
-      }
-      if (this.venta.precio === '' || this.venta.precio < 0) {
-        this.mostrarMensaje('Ingrese un precio válido.', 'error')
+      if (!this.formValido) {
+        this.mostrarMensaje('⚠️ Complete todos los campos antes de agregar.', 'error')
         return
       }
 
@@ -193,12 +212,15 @@ export default {
       if (existingIndex !== -1) {
         // Si existe → sumar cantidad al mismo producto
         this.items[existingIndex].cantidad += Number(this.venta.cantidad)
-        this.mostrarMensaje(`⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad en el registro existente.`, 'warning')
+        this.mostrarMensaje(
+          `⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad en el registro existente.`,
+          'warning'
+        )
       } else {
         // Si no existe → crear uno nuevo
         const newItem = {
-          codigo: this.venta.codigo || '',
-          producto: this.venta.producto, // 🔹 Guardar Producto
+          codigo: this.venta.codigo,
+          producto: this.venta.producto,
           descripcion: this.venta.descripcion,
           cantidad: Number(this.venta.cantidad),
           precio: Number(this.venta.precio),
@@ -208,12 +230,12 @@ export default {
         this.mostrarMensaje(`✅ Producto ${this.venta.producto} agregado correctamente.`, 'success')
       }
 
-      // limpiar algunos campos para el próximo registro
+      // limpiar campos → el botón "Agregar" queda deshabilitado automáticamente
       this.venta.codigo = ''
       this.venta.producto = ''
       this.venta.descripcion = ''
-      this.venta.cantidad = 1
-      this.venta.precio = 0
+      this.venta.cantidad = null
+      this.venta.precio = null
     },
 
     // Eliminar/restar cantidad
@@ -229,20 +251,27 @@ export default {
         } else {
           // caso contrario, se resta la cantidad
           item.cantidad -= qtyToRemove
-          this.mostrarMensaje(`➖ Se restaron ${qtyToRemove} unidades del producto con código ${item.codigo}.`, 'warning')
+          this.mostrarMensaje(
+            `➖ Se restaron ${qtyToRemove} unidades del producto con código ${item.codigo}.`,
+            'warning'
+          )
           item.removeQty = null
         }
       }
     },
 
+    // ✅ Logica para imprimir
     imprimirFactura() {
-      this.mostrarMensaje('🖨️ Aquí iría la lógica para imprimir la factura.', 'success')
+      window.print()
     },
 
     // Formato numérico simple (2 decimales)
     formatNumber(value) {
       const n = Number(value) || 0
-      return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      return n.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
     }
   }
 }
@@ -329,6 +358,10 @@ input {
   font-weight: 600;
 }
 .agregar-btn:hover { background: #005f8a; }
+.agregar-btn:disabled {
+  background: #a0c4d6;
+  cursor: not-allowed;
+}
 
 /* Tabla de productos */
 .productos-table {
@@ -382,7 +415,6 @@ input {
 .footer-venta {
   margin-top: auto;
   padding-top: 20px;
-  border-top: 2px solid #ccc;
 }
 
 .cliente-datos { margin-bottom: 15px; }
@@ -404,6 +436,42 @@ button {
   font-weight: bold;
 }
 button:hover { background: #004466; }
+button:disabled {
+  background: #a0c4d6;
+  cursor: not-allowed;
+}
 
 .total { font-size: 1.2rem; font-weight: bold; }
+
+/* 🔹 Estilos para impresión */
+@media print {
+  .no-print { display: none !important; }
+  .venta-container {
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+  .footer-venta {
+    margin-top: auto !important;
+    page-break-inside: avoid;
+  }
+  /* ✅ Una sola línea fija al pie de la hoja */
+  .print-only.datos-linea {
+    display: flex !important;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-top: 2px solid #000;
+    padding-top: 10px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+.print-only { display: none; }
 </style>
