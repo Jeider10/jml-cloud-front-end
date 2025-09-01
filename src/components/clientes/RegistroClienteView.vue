@@ -20,7 +20,11 @@
       <transition name="fade">
         <div v-if="modalEliminar.visible" class="modal-overlay">
           <div class="modal-content">
-            <p>⚠️ ¿Está seguro de eliminar al cliente {{ modalEliminar.cliente.nombre }} {{ modalEliminar.cliente.apellido }}?</p>
+            <p>
+              ⚠️ ¿Está seguro de eliminar al cliente
+              {{ modalEliminar.cliente.nombres }}
+              {{ modalEliminar.cliente.apellidos }}?
+            </p>
             <div class="modal-buttons">
               <button class="btn-yes" @click="eliminarCliente(modalEliminar.idx)">Sí</button>
               <button class="btn-no" @click="modalEliminar.visible = false">No</button>
@@ -36,11 +40,9 @@
           <input v-model="clienteForm.identificacion" type="text" />
 
           <label>Nombres</label>
-          <input v-model="clienteForm.nombre" type="text" />
-
+          <input v-model="clienteForm.nombres" type="text" />
           <label>Apellidos</label>
-          <input v-model="clienteForm.apellido" type="text" />
-
+          <input v-model="clienteForm.apellidos" type="text" />
           <label>Teléfono</label>
           <input v-model="clienteForm.telefono" type="text" />
 
@@ -66,7 +68,7 @@
         <!-- 🔍 Filtro de búsqueda -->
         <div class="form-filtro">
           <!-- Texto descriptivo -->
-          <span style="font-weight: bold;">Buscar por Identificación, Nombre o Apellido:</span>
+          <span style="font-weight: bold;">Buscar por Identificación, Nombres o Apellidos:</span>
 
           <!-- Input y botones -->
           <div style="display: flex; gap: 4px;">
@@ -93,7 +95,8 @@
             <th>APELLIDOS</th>
             <th>TELÉFONO</th>
             <th>DIRECCIÓN</th>
-            <th>FECHA REGISTRO</th> <!-- ⏰ Nueva columna -->
+            <th>FECHA REGISTRO</th>
+            <th>FECHA ACTUALIZACIÓN</th>
             <th>ACCIONES</th>
           </tr>
         </thead>
@@ -101,11 +104,12 @@
           <tr v-for="(c, idx) in clientesFiltrados" :key="idx">
             <td>{{ idx + 1 }}</td>
             <td>{{ c.identificacion }}</td>
-            <td>{{ c.nombre }}</td>
-            <td>{{ c.apellido }}</td>
+            <td>{{ c.nombres }}</td>
+            <td>{{ c.apellidos }}</td>
             <td>{{ c.telefono }}</td>
             <td>{{ c.direccion }}</td>
-            <td>{{ c.fechaRegistro }}</td> <!-- ⏰ Mostrar fecha -->
+            <td>{{ formatearFecha(c.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
+            <td>{{ formatearFecha(c.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
               <!-- Nuevo botón de actualizar -->
               <button class="update-btn" @click="abrirActualizarCliente(c)">✏️</button>
@@ -113,7 +117,7 @@
             </td>
           </tr>
           <tr v-if="clientesFiltrados.length === 0">
-            <td colspan="8" class="empty-row">No hay clientes registrados.</td>
+            <td colspan="9" class="empty-row">No hay clientes registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -123,6 +127,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { listarClientes } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'RegistroClienteView',
@@ -132,8 +137,8 @@ export default {
       menuOpen: false,
       clienteForm: {
         identificacion: '',
-        nombre: '',
-        apellido: '',
+        nombres: '',
+        apellidos: '',
         telefono: '',
         direccion: ''
       },
@@ -151,8 +156,8 @@ export default {
     }
   },
   mounted() {
-    this.clientes = JSON.parse(localStorage.getItem('clientes')) || []
-    this.clientesFiltrados = [...this.clientes]
+    // 🔹 Cargar todos los clientes desde backend al iniciar
+    this.cargarClientes()
   },
   methods: {
     handleMenuToggle(state) {
@@ -167,16 +172,34 @@ export default {
       }, 3000)
     },
 
+    // 🔹 Función que llama al endpoint para listar todos los clientes
+    async cargarClientes() {
+      try {
+        const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
+        this.clientes = response.data
+        this.clientesFiltrados = [...this.clientes]
+      } catch (error) {
+        console.error('❌ Error al cargar clientes:', error)
+
+        // Mostrar mensaje real si hay respuesta del backend
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al cargar clientes desde el servidor.', 'error')
+        }
+      }
+    },
+
     agregarCliente() {
       if (!this.clienteForm.identificacion) {
         this.mostrarMensaje('Ingrese la Identificación del cliente.', 'error')
         return
       }
-      if (!this.clienteForm.nombre) {
+      if (!this.clienteForm.nombres) {
         this.mostrarMensaje('Ingrese el nombre del cliente.', 'error')
         return
       }
-      if (!this.clienteForm.apellido) {
+      if (!this.clienteForm.apellidos) {
         this.mostrarMensaje('Ingrese el apellido del cliente.', 'error')
         return
       }
@@ -185,7 +208,7 @@ export default {
       const existente = this.clientes.find(c => c.identificacion === this.clienteForm.identificacion)
       if (existente) {
         this.mostrarMensaje(
-          `⚠️ Ya existe un cliente con esta Identificación (${existente.identificacion}): ${existente.nombre} ${existente.apellido}.`,
+          `⚠️ Ya existe un cliente con esta Identificación (${existente.identificacion}): ${existente.nombres} ${existente.apellidos}.`,
           'error'
         )
         return
@@ -194,29 +217,25 @@ export default {
       // Guardar cliente con fecha y hora
       const nuevo = {
         ...this.clienteForm,
-        fechaRegistro: new Date().toLocaleString()  // ⏰ aquí agregamos la fecha
+        fechaCreacion: new Date().toISOString()  // ⏰ aquí agregamos la fecha
       }
       this.clientes.push(nuevo)
       localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Guardamos en localStorage
       this.clientesFiltrados = [...this.clientes]
-
-      this.mostrarMensaje(
-        `✅ Cliente ${this.clienteForm.nombre} ${this.clienteForm.apellido} registrado correctamente.`,
-        'success'
-      )
+      this.mostrarMensaje(`✅ Cliente ${this.clienteForm.nombres} ${this.clienteForm.apellidos} registrado correctamente.`, 'success')
 
       // limpiar formulario
-      this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
+      this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
     },
 
     // Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.clienteForm.identificacion || this.clienteForm.nombre || this.clienteForm.apellido || this.clienteForm.telefono || this.clienteForm.direccion
+      return this.clienteForm.identificacion || this.clienteForm.nombres || this.clienteForm.apellidos || this.clienteForm.telefono || this.clienteForm.direccion
     },
 
     // Limpiar campos del formulario
     limpiarCampos() {
-      this.clienteForm = { identificacion: '', nombre: '', apellido: '', telefono: '', direccion: '' }
+      this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
     },
 
     // Método para saber si hay datos en el cuadro de filtro
@@ -236,7 +255,7 @@ export default {
       this.clientes.splice(idx, 1)
       localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Actualizamos localStorage
       this.clientesFiltrados = [...this.clientes]
-      this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombre} ${eliminado.apellido} eliminado.`, 'error')
+      this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombres} ${eliminado.apellidos} eliminado.`, 'error')
       this.modalEliminar.visible = false
     },
 
@@ -248,17 +267,25 @@ export default {
     },
 
     filtrarClientes() {
+      if (!this.busqueda.trim()) {
+        this.limpiarBusqueda() // 🔹 Si no hay texto, recarga todos los clientes desde backend
+        return
+      }
       const texto = this.busqueda.toLowerCase()
       this.clientesFiltrados = this.clientes.filter(c =>
         c.identificacion.toLowerCase().includes(texto) ||
-        c.nombre.toLowerCase().includes(texto) ||
-        c.apellido.toLowerCase().includes(texto)
+        c.nombres.toLowerCase().includes(texto) ||
+        c.apellidos.toLowerCase().includes(texto)
       )
     },
 
     limpiarBusqueda() {
       this.busqueda = ''
-      this.clientesFiltrados = [...this.clientes]
+      this.cargarClientes() // 🔹 Llama nuevamente a /clientes/listar-todo
+    },
+    formatearFecha(fecha) {
+      if (!fecha) return ''
+      return new Date(fecha).toLocaleString()
     }
   }
 }
