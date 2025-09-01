@@ -52,10 +52,10 @@ export const listarClientes = () => {
 }
 
 // Crear cliente
-//export const crearCliente = (cliente) => {
-//  // cliente = { identificacion, nombres, apellidos, telefono, direccion }
-//  return apiClient.post('/clientes/register', cliente)
-//}
+export const crearCliente = (cliente) => {
+  // cliente = { identificacion, nombres, apellidos, telefono, direccion }
+  return apiClient.post('/clientes/register', cliente)
+}
 
 //
 //// Buscar cliente por identificación

@@ -127,7 +127,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { listarClientes } from '@/services/apiCustomerService.js'
+import { listarClientes, crearCliente } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'RegistroClienteView',
@@ -190,7 +190,8 @@ export default {
       }
     },
 
-    agregarCliente() {
+    // 🔹 Nuevo: agregar cliente usando API real
+    async agregarCliente() {
       if (!this.clienteForm.identificacion) {
         this.mostrarMensaje('Ingrese la Identificación del cliente.', 'error')
         return
@@ -204,7 +205,7 @@ export default {
         return
       }
 
-      // 🔍 Verificar si ya existe un cliente con la misma identificación
+      // 🔍 Verificar si ya existe un cliente con la misma identificación en la lista local
       const existente = this.clientes.find(c => c.identificacion === this.clienteForm.identificacion)
       if (existente) {
         this.mostrarMensaje(
@@ -214,18 +215,29 @@ export default {
         return
       }
 
-      // Guardar cliente con fecha y hora
-      const nuevo = {
-        ...this.clienteForm,
-        fechaCreacion: new Date().toISOString()  // ⏰ aquí agregamos la fecha
-      }
-      this.clientes.push(nuevo)
-      localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Guardamos en localStorage
-      this.clientesFiltrados = [...this.clientes]
-      this.mostrarMensaje(`✅ Cliente ${this.clienteForm.nombres} ${this.clienteForm.apellidos} registrado correctamente.`, 'success')
+      try {
+        // Llamada al backend
+        const response = await crearCliente(this.clienteForm)
+        const nuevoCliente = response.data
 
-      // limpiar formulario
-      this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
+        // Agregamos el cliente retornado por el backend a la lista local
+        this.clientes.push(nuevoCliente)
+        this.clientesFiltrados = [...this.clientes]
+        this.mostrarMensaje(
+          `✅ Cliente ${nuevoCliente.nombres} ${nuevoCliente.apellidos} registrado correctamente.`,
+          'success'
+        )
+
+        // limpiar formulario
+        this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
+      } catch (error) {
+        console.error('❌ Error al crear cliente:', error)
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al crear cliente en el servidor.', 'error')
+        }
+      }
     },
 
     // Método para saber si hay datos en el formulario
