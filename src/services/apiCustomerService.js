@@ -35,10 +35,9 @@ apiClient.interceptors.response.use(
       console.warn('⚠️ Sesión expirada. Por favor inicia sesión nuevamente.')
     }
 
-    // 👇 Devolver siempre un Error válido
-    return Promise.reject(
-      error instanceof Error ? error : new Error(error.message || 'Error en la petición')
-    )
+    // Pasamos un Error con mensaje más útil (si viene del backend lo usamos)
+    const message = error.response?.data?.message || error.response?.data || error.message || 'Error en la petición'
+    return Promise.reject(new Error(typeof message === 'string' ? message : JSON.stringify(message)))
   }
 )
 
@@ -47,22 +46,23 @@ apiClient.interceptors.response.use(
 // =======================
 
 // Listar todos los clientes
-export const listarClientes = () => {
-  return apiClient.get('/clientes/listar-todos')
-}
+export const listarClientes = () => apiClient.get('/clientes/listar-todos')
 
 // Crear cliente
-export const crearCliente = (cliente) => {
-  // cliente = { identificacion, nombres, apellidos, telefono, direccion }
-  return apiClient.post('/clientes/register', cliente)
-}
+export const crearCliente = (cliente) => apiClient.post('/clientes/register', cliente)
 
-//
-//// Buscar cliente por identificación
-//export const buscarClientePorIdentificacion = (identificacion) => {
-//  return apiClient.get(`/clientes/${identificacion}`)
-//}
-//
+// Búsqueda por identificación
+export const buscarClientePorIdentificacion = (identificacion) =>
+  apiClient.get('/clientes/identificacion', { params: { identificacion } })
+
+// Búsqueda por nombres
+export const buscarClientePorNombres = (nombres) =>
+  apiClient.get('/clientes/nombres', { params: { nombres } })
+
+// Búsqueda por apellidos
+export const buscarClientePorApellidos = (apellidos) =>
+  apiClient.get('/clientes/apellidos', { params: { apellidos } })
+
 //// Actualizar cliente
 //export const actualizarCliente = (cliente) => {
 //  return apiClient.put(`/clientes/${cliente.identificacion}`, cliente)

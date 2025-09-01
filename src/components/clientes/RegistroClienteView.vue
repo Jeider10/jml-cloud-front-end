@@ -68,18 +68,29 @@
         <!-- 🔍 Filtro de búsqueda -->
         <div class="form-filtro">
           <!-- Texto descriptivo -->
-          <span style="font-weight: bold;">Buscar por Identificación, Nombres o Apellidos:</span>
+          <span style="font-weight: bold;">Buscar por:</span>
 
-          <!-- Input y botones -->
+          <!-- Nuevo: selector + input + botones -->
           <div style="display: flex; gap: 4px;">
-            <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
+            <select v-model="tipoBusqueda">
+              <option disabled value="">Seleccione una opción</option>
+              <option value="identificacion">Identificación</option>
+              <option value="nombres">Nombres</option>
+              <option value="apellidos">Apellidos</option>
+            </select>
+
+            <input v-model="busqueda"
+                   type="text"
+                   placeholder="Ingrese término de búsqueda"
+                   :disabled="!tipoBusqueda" />
+
             <button type="button"
                     class="buscar-btn"
-                    :disabled="!hayDatosFiltro()"
+                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
                     @click="filtrarClientes">Buscar</button>
             <button type="button"
                     class="buscar-btn"
-                    :disabled="!hayDatosFiltro()"
+                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
                     @click="limpiarBusqueda">Limpiar</button>
           </div>
         </div>
@@ -127,7 +138,13 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { listarClientes, crearCliente } from '@/services/apiCustomerService.js'
+import {
+  listarClientes,
+  crearCliente,
+  buscarClientePorIdentificacion,
+  buscarClientePorNombres,
+  buscarClientePorApellidos
+} from '@/services/apiCustomerService.js'
 
 export default {
   name: 'RegistroClienteView',
@@ -147,6 +164,7 @@ export default {
       mensaje: '',
       mensajeTipo: '',
       busqueda: '',
+      tipoBusqueda: '', // 🔹 Nuevo: control del tipo de búsqueda
       // Modal de eliminación
       modalEliminar: {
         visible: false,
@@ -278,23 +296,70 @@ export default {
       this.$router.push({ name: 'ActualizarClienteView' }) // ✅ Nombre de component del index
     },
 
-    filtrarClientes() {
+    // 🔹 Nuevo: filtrar clientes según el tipo de búsqueda y llamar endpoint correcto
+    async filtrarClientes() {
       if (!this.busqueda.trim()) {
-        this.limpiarBusqueda() // 🔹 Si no hay texto, recarga todos los clientes desde backend
+        this.limpiarBusqueda()
         return
       }
-      const texto = this.busqueda.toLowerCase()
-      this.clientesFiltrados = this.clientes.filter(c =>
-        c.identificacion.toLowerCase().includes(texto) ||
-        c.nombres.toLowerCase().includes(texto) ||
-        c.apellidos.toLowerCase().includes(texto)
-      )
+
+      const texto = this.busqueda.trim()
+
+      try {
+        let response
+        switch (this.tipoBusqueda) {
+          case 'identificacion':
+            response = await buscarClientePorIdentificacion(texto)
+            break
+          case 'nombres':
+            response = await buscarClientePorNombres(texto)
+            break
+          case 'apellidos':
+            response = await buscarClientePorApellidos(texto)
+            break
+          default:
+            this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
+            return
+        }
+
+        const data = response.data
+
+        if (Array.isArray(data)) {
+          this.clientesFiltrados = data
+        } else if (data) {
+          // backend puede devolver objeto simple
+          this.clientesFiltrados = [data]
+        } else {
+          this.clientesFiltrados = []
+        }
+
+        if (this.clientesFiltrados.length === 0) {
+          this.mostrarMensaje('No se encontraron clientes.', 'error')
+        }
+      } catch (error) {
+        console.error('❌ Error al filtrar clientes:', error)
+
+        // Si es un Error construido en el interceptor lo mostramos con detalle
+        if (error.message) {
+          if (error.message.includes('404')) {
+            this.clientesFiltrados = []
+            this.mostrarMensaje('No se encontró cliente.', 'error')
+          } else {
+            // Intenta mostrar el mensaje del backend si vino
+            this.mostrarMensaje(error.message, 'error')
+          }
+        } else {
+          this.mostrarMensaje('Error al buscar clientes en el servidor.', 'error')
+        }
+      }
     },
 
     limpiarBusqueda() {
       this.busqueda = ''
-      this.cargarClientes() // 🔹 Llama nuevamente a /clientes/listar-todo
+      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
+      this.cargarClientes() // 🔹 Vuelve a cargar todos los clientes
     },
+
     formatearFecha(fecha) {
       if (!fecha) return ''
       return new Date(fecha).toLocaleString()
