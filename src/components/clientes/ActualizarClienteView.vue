@@ -20,13 +20,14 @@
       <div class="form-container">
         <div class="form-row">
           <label>Identificación</label>
-          <input v-model="clienteForm.identificacion" type="text" /> <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
+          <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
+          <input v-model="clienteForm.identificacion" type="text" disabled />
 
           <label>Nombre</label>
-          <input v-model="clienteForm.nombre" type="text" />
+          <input v-model="clienteForm.nombres" type="text" />
 
           <label>Apellido</label>
-          <input v-model="clienteForm.apellido" type="text" />
+          <input v-model="clienteForm.apellidos" type="text" />
 
           <label>Teléfono</label>
           <input v-model="clienteForm.telefono" type="text" />

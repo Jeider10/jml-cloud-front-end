@@ -143,7 +143,8 @@ import {
   crearCliente,
   buscarClientePorIdentificacion,
   buscarClientePorNombres,
-  buscarClientePorApellidos
+  buscarClientePorApellidos,
+  eliminarClientePorIdentificacion
 } from '@/services/apiCustomerService.js'
 
 export default {
@@ -280,13 +281,31 @@ export default {
       this.modalEliminar.visible = true
     },
 
-    eliminarCliente(idx) {
-      const eliminado = this.clientes[idx]
-      this.clientes.splice(idx, 1)
-      localStorage.setItem('clientes', JSON.stringify(this.clientes)) // 🔄 Actualizamos localStorage
-      this.clientesFiltrados = [...this.clientes]
-      this.mostrarMensaje(`🗑️ Cliente ${eliminado.nombres} ${eliminado.apellidos} eliminado.`, 'error')
-      this.modalEliminar.visible = false
+    async eliminarCliente(idx) {
+      const cliente = this.clientes[idx]
+
+      try {
+        await eliminarClientePorIdentificacion(cliente.identificacion)
+
+        // ✅ Eliminamos localmente solo si backend respondió bien
+        this.clientes.splice(idx, 1)
+        this.clientesFiltrados = [...this.clientes]
+
+        this.mostrarMensaje(
+          `🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`,
+          'success'
+        )
+      } catch (error) {
+        console.error('❌ Error al eliminar cliente:', error)
+
+        if (error.response && error.response.status === 404) {
+          this.mostrarMensaje('⚠️ Cliente no encontrado en el servidor.', 'error')
+        } else {
+          this.mostrarMensaje('Error al eliminar cliente en el servidor.', 'error')
+        }
+      } finally {
+        this.modalEliminar.visible = false
+      }
     },
 
     abrirActualizarCliente(cliente) {

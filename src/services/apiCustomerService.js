@@ -68,7 +68,7 @@ export const actualizarCliente = (cliente) => {
   return apiClient.put('/clientes/actualizar', cliente)
 }
 
-//// Eliminar cliente
-//export const eliminarCliente = (identificacion) => {
-//  return apiClient.delete(`/clientes/${identificacion}`)
-//}
+// Eliminar cliente
+export const eliminarClientePorIdentificacion = (identificacion) =>
+  apiClient.delete('/clientes/eliminar-identificacion', { params: { identificacion } })
+
