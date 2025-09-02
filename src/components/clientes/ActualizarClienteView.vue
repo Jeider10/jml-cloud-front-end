@@ -45,6 +45,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { actualizarCliente } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'ActualizarClienteView',
@@ -54,21 +55,19 @@ export default {
       menuOpen: false,
       clienteForm: {
         identificacion: '',
-        nombre: '',
-        apellido: '',
+        nombres: '',
+        apellidos: '',
         telefono: '',
         direccion: ''
       },
       mensaje: '',
-      mensajeTipo: '',
-      identificacionOriginal: '' // para rastrear la identificación original
+      mensajeTipo: ''
     }
   },
   mounted() {
     const cliente = JSON.parse(localStorage.getItem('clienteActualizar'))
     if (cliente) {
       this.clienteForm = { ...cliente }
-      this.identificacionOriginal = cliente.identificacion
     }
   },
   methods: {
@@ -82,33 +81,28 @@ export default {
       setTimeout(() => { this.mensaje = '' }, 3000)
     },
 
-    actualizarCliente() {
-      if (!this.clienteForm.identificacion || !this.clienteForm.nombre || !this.clienteForm.apellido) {
-        this.mostrarMensaje('Identificación, nombre y apellido son obligatorios.', 'error')
+    async actualizarCliente() {
+      if (!this.clienteForm.identificacion || !this.clienteForm.nombres || !this.clienteForm.apellidos) {
+        this.mostrarMensaje('Identificación, nombres y apellidos son obligatorios.', 'error')
         return
       }
 
-      const clientes = JSON.parse(localStorage.getItem('clientes')) || []
+      try {
+        const response = await actualizarCliente(this.clienteForm)
+        const actualizado = response.data
 
-      // Verificamos si la nueva identificación ya existe en otro cliente
-      const duplicado = clientes.find(c => c.identificacion === this.clienteForm.identificacion && c.identificacion !== this.identificacionOriginal)
-      if (duplicado) {
-        this.mostrarMensaje(`⚠️ Ya existe un cliente con esta Identificación (${duplicado.identificacion}).`, 'error')
-        return
-      }
-
-      const idx = clientes.findIndex(c => c.identificacion === this.identificacionOriginal)
-      if (idx !== -1) {
-        // Actualizamos datos y fecha de registro
-        clientes[idx] = { ...clientes[idx], ...this.clienteForm, fechaRegistro: new Date().toLocaleString() }
-        localStorage.setItem('clientes', JSON.stringify(clientes))
-
-        this.mostrarMensaje(`Cliente ${this.clienteForm.nombre} actualizado correctamente.`, 'success')
+        this.mostrarMensaje(
+          `✅ Cliente ${actualizado.nombres} ${actualizado.apellidos} actualizado correctamente.`,
+          'success'
+        )
 
         // Volver automáticamente a la vista de registro después de 2 segundos
         setTimeout(() => {
           this.$router.push({ name: 'RegistroClienteView' })
         }, 2000)
+      } catch (error) {
+        console.error('❌ Error al actualizar cliente:', error)
+        this.mostrarMensaje(error.message || 'Error al actualizar el cliente.', 'error')
       }
     }
   }

@@ -63,11 +63,11 @@ export const buscarClientePorNombres = (nombres) =>
 export const buscarClientePorApellidos = (apellidos) =>
   apiClient.get('/clientes/apellidos', { params: { apellidos } })
 
-//// Actualizar cliente
-//export const actualizarCliente = (cliente) => {
-//  return apiClient.put(`/clientes/${cliente.identificacion}`, cliente)
-//}
-//
+// Actualizar cliente
+export const actualizarCliente = (cliente) => {
+  return apiClient.put('/clientes/actualizar', cliente)
+}
+
 //// Eliminar cliente
 //export const eliminarCliente = (identificacion) => {
 //  return apiClient.delete(`/clientes/${identificacion}`)
