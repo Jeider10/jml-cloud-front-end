@@ -20,7 +20,8 @@
       <div class="form-container">
         <div class="form-row">
           <label>NIC</label>
-          <input v-model="proveedorForm.nic" type="text" />
+          <!-- Deshabilitar <input v-model="proveedorForm.dni" type="text" disabled /> -->
+          <input v-model="proveedorForm.nic" type="text" disabled />
 
           <label>Nombre</label>
           <input v-model="proveedorForm.nombre" type="text" />
@@ -45,6 +46,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { actualizarProveedor } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'ActualizarProveedorView',
@@ -60,15 +62,13 @@ export default {
         correo: ''
       },
       mensaje: '',
-      mensajeTipo: '',
-      nicOriginal: '' // para rastrear el NIC original
+      mensajeTipo: ''
     }
   },
   mounted() {
     const proveedor = JSON.parse(localStorage.getItem('proveedorActualizar'))
     if (proveedor) {
       this.proveedorForm = { ...proveedor }
-      this.nicOriginal = proveedor.nic // guardamos el NIC original
     }
   },
   methods: {
@@ -82,33 +82,28 @@ export default {
       setTimeout(() => { this.mensaje = '' }, 3000)
     },
 
-    actualizarProveedor() {
-      if (!this.proveedorForm.nic || !this.proveedorForm.nombre) {
-        this.mostrarMensaje('NIC y nombre son obligatorios.', 'error')
+    async actualizarProveedor() {
+      if (!this.proveedorForm.nic || !this.proveedorForm.nombre || !this.proveedorForm.telefono || !this.proveedorForm.direccion || !this.proveedorForm.correo) {
+        this.mostrarMensaje('NIC, nombre, telefono, direccion y correo son obligatorios.', 'error')
         return
       }
 
-      const proveedores = JSON.parse(localStorage.getItem('proveedores')) || []
+      try {
+        const response = await actualizarProveedor(this.proveedorForm)
+        const actualizado = response.data
 
-      // Verificamos si el NIC ya existe en otro proveedor
-      const duplicado = proveedores.find(p => p.nic === this.proveedorForm.nic && p.nic !== this.nicOriginal)
-      if (duplicado) {
-        this.mostrarMensaje(`⚠️ Ya existe un proveedor con este NIC (${duplicado.nic}).`, 'error')
-        return
-      }
-
-      const idx = proveedores.findIndex(p => p.nic === this.nicOriginal)
-      if (idx !== -1) {
-        // Actualizamos datos y fecha de registro
-        proveedores[idx] = { ...proveedores[idx], ...this.proveedorForm, fechaRegistro: new Date().toLocaleString() }
-        localStorage.setItem('proveedores', JSON.stringify(proveedores))
-
-        this.mostrarMensaje(`Proveedor ${this.proveedorForm.nombre} actualizado correctamente.`, 'success')
+        this.mostrarMensaje(
+          `✅ Proveedor ${actualizado.nombre} actualizado correctamente.`,
+          'success'
+        )
 
         // Volver automáticamente a la vista de registro después de 2 segundos
         setTimeout(() => {
           this.$router.push({ name: 'RegistroProveedorView' })
         }, 2000)
+      } catch (error) {
+        console.error('❌ Error al actualizar proveedor:', error)
+        this.mostrarMensaje(error.message || 'Error al actualizar el proveedor.', 'error')
       }
     }
   }
