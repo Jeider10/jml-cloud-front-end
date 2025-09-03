@@ -50,9 +50,12 @@
           <label>Precio:</label>
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
-          <label>Proveedor:</label>
-          <select v-model="productoForm.proveedor">
-            <option v-for="p in proveedores" :key="p.nic" :value="p.nombre">{{ p.nombre }}</option>
+          <label for="proveedor">Proveedor</label>
+          <select v-model="productoForm.proveedor" id="proveedor">
+            <option disabled value="">Seleccione un proveedor</option>
+            <option v-for="prov in proveedores" :key="prov.id" :value="prov.id">
+              {{ prov.nombre }}
+            </option>
           </select>
 
           <button type="button"
@@ -130,7 +133,7 @@
             <td>{{ prod.descripcion }}</td>
             <td>{{ prod.cantidad }}</td>
             <td>{{ prod.precio }}</td>
-            <td>{{ prod.proveedor }}</td>
+            <td>{{ prod.proveedor?.nombre || prod.proveedor }}</td>
             <td>{{ formatearFecha(prod.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
             <td>{{ formatearFecha(prod.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
@@ -164,6 +167,8 @@ import {
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
+import { listarProveedores } from '@/services/apiSuppliersService.js'
+
 export default {
   name: 'RegistroProductosView',
   components: { DashboardSideMenu },
@@ -176,10 +181,12 @@ export default {
         descripcion: '',
         cantidad: 0,
         precio: 0,
-        proveedor: ''
+        proveedor: '' // 👈 quedará como el ID seleccionado
       },
       productos: [],
       productosFiltrados: [],
+      proveedores: [],           // ✅ lista completa de proveedores
+      proveedoresFiltrados: [],  // ✅ opcional para búsqueda/filtro
       mensaje: '',
       mensajeTipo: '',
       busqueda: '',
@@ -195,6 +202,7 @@ export default {
   mounted() {
     // 🔹 Cargar todos los productos desde backend al iniciar
     this.cargarProductos()
+    this.cargarProveedores() // ✅ carga los proveedores al iniciar
   },
   methods: {
     handleMenuToggle(state) {
@@ -227,8 +235,8 @@ export default {
       }
     },
 
-    // 🔹 Nuevo: agregar proveedor usando API real
-    async cagregarProducto() {
+    // 🔹 Nuevo: agregar producto usando API real
+    async agregarProducto() {
       if (!this.productoForm.codigo) {
         this.mostrarMensaje('Ingrese el código del producto.', 'error')
         return
@@ -265,8 +273,18 @@ export default {
       }
 
       try {
+        // ⚡ Preparar payload para backend
+        const payload = {
+          codigo: this.productoForm.codigo,
+          nombre: this.productoForm.nombre,
+          descripcion: this.productoForm.descripcion,
+          cantidad: this.productoForm.cantidad,
+          precio: this.productoForm.precio,
+          proveedor: this.productoForm.proveedor
+        }
+
         // Llamada al backend
-        const response = await crearProducto(this.productoForm)
+        const response = await crearProducto(payload)
         const nuevoProducto = response.data
 
         // Agregamos el producto retornado por el backend a la lista local
@@ -278,7 +296,14 @@ export default {
         )
 
         // limpiar formulario
-        this.productoForm = { codigo: '', nombre: '', descripcion: '', cantidad: 0, precio: 0, proveedor: '' }
+        this.productoForm = {
+          codigo: '',
+          nombre: '',
+          descripcion: '',
+          cantidad: 0,
+          precio: 0,
+          proveedor: ''
+        }
       } catch (error) {
         console.error('❌ Error al crear producto:', error)
         if (error.response && error.response.data) {
@@ -441,6 +466,20 @@ export default {
       } catch (error) {
         console.error('❌ Error al actualizar producto:', error)
         this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
+      }
+    },
+    async cargarProveedores() {
+      try {
+        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
+        this.proveedores = response.data
+        this.proveedoresFiltrados = [...this.proveedores]
+      } catch (error) {
+        console.error('❌ Error al cargar proveedores:', error)
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
+        }
       }
     }
   }

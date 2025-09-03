@@ -193,7 +193,7 @@ export default {
     // 🔹 Función que llama al endpoint para listar todos los  proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores() // ⚠️ Llama /proveedores/listarproveedores
+        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
         this.proveedores = response.data
         this.proveedoresFiltrados = [...this.proveedores]
       } catch (error) {
@@ -235,7 +235,7 @@ export default {
       const existente = this.proveedores.find(p => p.nic === this.proveedorForm.nic)
       if (existente) {
         this.mostrarMensaje(
-          `⚠️ Ya existe un proveedor con este NIC (${existente.data.nic}): ${existente.data.nombre}.`,
+          `⚠️ Ya existe un proveedor con este NIC (${existente.nic}): ${existente.nombre}.`,
           'error'
         )
         return
