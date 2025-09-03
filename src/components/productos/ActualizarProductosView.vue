@@ -54,11 +54,12 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { listarProveedores } from '@/services/apiSuppliersService.js'
-import { actualizarProducto } from '@/services/apiProductsService.js'
+import { actualizarProducto, buscarProductoPorCodigo } from '@/services/apiProductsService.js'
 
 export default {
   name: 'ActualizarProductoView',
   components: { DashboardSideMenu },
+  props: ['codigo'], // viene de la ruta
   data() {
     return {
       menuOpen: false,
@@ -76,15 +77,12 @@ export default {
       proveedores: []
     }
   },
-  mounted() {
-    // Recuperar producto a actualizar desde localStorage
-    const producto = JSON.parse(localStorage.getItem('productoActualizar'))
-    if (producto) {
-      this.productoForm = { ...producto }
-    }
+  async mounted() {
+    // 1. Cargar proveedores
+    await this.cargarProveedores()
 
-    // Cargar lista de proveedores
-    this.cargarProveedores()
+    // 2. Cargar producto desde backend usando el código de la ruta
+    await this.cargarProducto()
   },
   methods: {
     handleMenuToggle(state) {
@@ -107,6 +105,29 @@ export default {
       }
     },
 
+    async cargarProducto() {
+      try {
+        const response = await buscarProductoPorCodigo(this.codigo)
+        if (response.data) {
+          const data = response.data
+
+          // Mapear producto + proveedor
+          this.productoForm = {
+            codigo: data.codigo,
+            nombre: data.nombre,
+            descripcion: data.descripcion,
+            cantidad: data.cantidad,
+            precio: data.precio,
+            proveedorId: data.proveedor?.id || '',   // 👈 aquí tomamos el ID
+            proveedorName: data.proveedor?.nombre || ''
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar producto:', error)
+        this.mostrarMensaje('Error al cargar producto.', 'error')
+      }
+    },
+
     async actualizarProductoEnServidor() {
       if (!this.productoForm.codigo || !this.productoForm.nombre || !this.productoForm.descripcion) {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
@@ -118,12 +139,20 @@ export default {
       }
 
       try {
-        // Obtener nombre del proveedor seleccionado
+        // Resolver nombre del proveedor desde la lista
         const proveedorSel = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
         this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : ''
 
-        // Enviar actualización al backend
-        await actualizarProducto(this.productoForm)
+        // 🔧 si el backend espera objeto proveedor, empaquetamos:
+        const payload = {
+          ...this.productoForm,
+          proveedor: {
+            id: this.productoForm.proveedorId,
+            nombre: this.productoForm.proveedorName
+          }
+        }
+
+        await actualizarProducto(payload)
 
         this.mostrarMensaje(`Producto ${this.productoForm.nombre} actualizado correctamente.`, 'success')
 

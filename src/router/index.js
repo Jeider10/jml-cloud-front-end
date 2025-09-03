@@ -72,9 +72,10 @@ const routes = [
     component: RegistroProductosView
   },
   {
-    path: '/actualizar-productos',
+    path: '/actualizar-productos/:codigo',
     name: 'ActualizarProductosView',
-    component: ActualizarProductosView
+    component: ActualizarProductosView,
+    props: true   // 👈 Esto hace que "codigo" llegue como prop
   },
   {
     path: '/historial-ventas',
