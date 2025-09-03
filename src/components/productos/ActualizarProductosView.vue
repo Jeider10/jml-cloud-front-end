@@ -35,10 +35,10 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label>Proveedor</label>
-          <select v-model="productoForm.proveedorId">
-            <option disabled :value="null">Seleccione un proveedor</option>
-            <option v-for="p in proveedores" :key="p.key" :value="p.key">
-              {{ p.nombre || p.name }}
+          <select v-model="productoForm.proveedorId" class="form-control">
+            <option disabled value="">Seleccione un proveedor</option>
+            <option v-for="p in proveedores" :key="p.id" :value="p.id">
+              {{ p.nombre }}
             </option>
           </select>
 
@@ -95,40 +95,21 @@ export default {
       setTimeout(() => { this.mensaje = '' }, 3000)
     },
 
-    // Normaliza y quita duplicados: usa id si existe, sino nic
+    // 🔹 Función que llama al endpoint para listar todos los  proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores()
-        const raw = Array.isArray(response.data) ? response.data : []
-
-        // crear lista con key consistente
-        const lista = raw.map(p => {
-          // elegir la llave que exista (id o nic)
-          const rawKey = (p.id !== undefined && p.id !== null) ? p.id
-                        : (p.nic !== undefined && p.nic !== null) ? p.nic
-                        : null
-
-          // convertir numeric-string a number
-          const key = rawKey !== null && !isNaN(Number(rawKey)) ? Number(rawKey) : rawKey
-
-          return {
-            ...p,
-            key
-          }
-        })
-
-        // deduplicar por key (si key === null dejar también, pero evitar repetidos)
-        const map = new Map()
-        for (const p of lista) {
-          // si no tiene key (null), usamos nombre+correo como fallback para evitar colapsar todo en una sola entry
-          const mapKey = p.key !== null ? p.key : `${p.nombre || ''}::${p.correo || ''}::${p.telefono || ''}`
-          if (!map.has(mapKey)) map.set(mapKey, p)
-        }
-
-        this.proveedores = Array.from(map.values())
+        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
+        this.proveedores = response.data
+        this.proveedoresFiltrados = [...this.proveedores]
       } catch (error) {
         console.error('❌ Error al cargar proveedores:', error)
-        this.mostrarMensaje('Error al cargar proveedores.', 'error')
+
+        // Mostrar mensaje real si hay respuesta del backend
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
+        }
       }
     },
 
@@ -162,16 +143,6 @@ export default {
             precio: data.precio,
             proveedorId: proveedorKey,
             proveedorName
-          }
-
-          // Si la lista de proveedores ya cargó, nos aseguramos de que exista una entrada coincidente.
-          // (si no existe, el select mostrará la opción por defecto; es buena idea verificar si la key existe)
-          if (this.proveedores.length > 0 && proveedorKey !== null) {
-            const existe = this.proveedores.some(p => p.key === proveedorKey)
-            if (!existe) {
-              // si no existe en proveedores, podemos insertar temporalmente para que aparezca seleccionado
-              this.proveedores.unshift({ key: proveedorKey, nombre: proveedorName })
-            }
           }
         }
       } catch (error) {
@@ -222,6 +193,7 @@ export default {
   }
 }
 </script>
+
 
 
 <style scoped>
