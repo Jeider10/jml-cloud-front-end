@@ -20,7 +20,7 @@
       <div class="form-container">
         <div class="form-row">
           <label>Código</label>
-          <input v-model="productoForm.codigo" type="text" />
+          <input v-model="productoForm.codigo" type="text" disabled />
 
           <label>Nombre</label>
           <input v-model="productoForm.nombre" type="text" />
@@ -28,18 +28,21 @@
           <label>Descripción</label>
           <input v-model="productoForm.descripcion" type="text" />
 
-          <label>Proveedor</label>
-          <select v-model="productoForm.proveedor">
-            <option v-for="p in proveedores" :key="p.nic" :value="p.nombre">{{ p.nombre }}</option>
-          </select>
-
-          <label>Stock</label>
+          <label>Cantidad</label>
           <input v-model="productoForm.cantidad" type="number" />
 
-          <label>Precio</label>
+          <label>Precio U.</label>
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
-          <button type="button" class="agregar-btn" @click="actualizarProducto">
+          <label>Proveedor</label>
+          <select v-model="productoForm.proveedorId">
+            <option disabled value="">Seleccione un proveedor</option>
+            <option v-for="p in proveedores" :key="p.id" :value="p.id">
+              {{ p.nombre }}
+            </option>
+          </select>
+
+          <button type="button" class="agregar-btn" @click="actualizarProductoEnServidor">
             💾 Actualizar
           </button>
         </div>
@@ -50,6 +53,8 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { listarProveedores } from '@/services/apiSuppliersService.js'
+import { actualizarProducto } from '@/services/apiProductsService.js'
 
 export default {
   name: 'ActualizarProductoView',
@@ -61,22 +66,25 @@ export default {
         codigo: '',
         nombre: '',
         descripcion: '',
-        proveedor: '',
         cantidad: 0,
-        precio: 0
+        precio: 0,
+        proveedorId: '',
+        proveedorName: ''
       },
       mensaje: '',
       mensajeTipo: '',
-      codigoOriginal: '', // para rastrear el código original
-      proveedores: JSON.parse(localStorage.getItem('proveedores')) || []
+      proveedores: []
     }
   },
   mounted() {
+    // Recuperar producto a actualizar desde localStorage
     const producto = JSON.parse(localStorage.getItem('productoActualizar'))
     if (producto) {
       this.productoForm = { ...producto }
-      this.codigoOriginal = producto.codigo // guardamos el código original
     }
+
+    // Cargar lista de proveedores
+    this.cargarProveedores()
   },
   methods: {
     handleMenuToggle(state) {
@@ -89,38 +97,49 @@ export default {
       setTimeout(() => { this.mensaje = '' }, 3000)
     },
 
-    actualizarProducto() {
+    async cargarProveedores() {
+      try {
+        const response = await listarProveedores()
+        this.proveedores = response.data
+      } catch (error) {
+        console.error('❌ Error al cargar proveedores:', error)
+        this.mostrarMensaje('Error al cargar proveedores.', 'error')
+      }
+    },
+
+    async actualizarProductoEnServidor() {
       if (!this.productoForm.codigo || !this.productoForm.nombre || !this.productoForm.descripcion) {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
         return
       }
-
-      const productos = JSON.parse(localStorage.getItem('productos')) || []
-
-      // Verificamos si el código ya existe en otro producto
-      const duplicado = productos.find(p => p.codigo === this.productoForm.codigo && p.codigo !== this.codigoOriginal)
-      if (duplicado) {
-        this.mostrarMensaje(`⚠️ Ya existe un producto con este código (${duplicado.codigo}).`, 'error')
+      if (!this.productoForm.proveedorId) {
+        this.mostrarMensaje('Seleccione un proveedor.', 'error')
         return
       }
 
-      const idx = productos.findIndex(p => p.codigo === this.codigoOriginal)
-      if (idx !== -1) {
-        // Actualizamos datos
-        productos[idx] = { ...productos[idx], ...this.productoForm }
-        localStorage.setItem('productos', JSON.stringify(productos))
+      try {
+        // Obtener nombre del proveedor seleccionado
+        const proveedorSel = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
+        this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : ''
+
+        // Enviar actualización al backend
+        await actualizarProducto(this.productoForm)
 
         this.mostrarMensaje(`Producto ${this.productoForm.nombre} actualizado correctamente.`, 'success')
 
-        // Volver automáticamente a la vista de registro después de 2 segundos
+        // Volver a la vista principal
         setTimeout(() => {
           this.$router.push({ name: 'RegistroProductosView' })
         }, 2000)
+      } catch (error) {
+        console.error('❌ Error al actualizar producto:', error)
+        this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
       }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-producto-wrapper { display: flex; }

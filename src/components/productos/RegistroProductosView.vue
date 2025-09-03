@@ -377,7 +377,7 @@ export default {
       // Guardamos el producto seleccionado para actualizar en localStorage
       localStorage.setItem('productoActualizar', JSON.stringify(producto))
       // Redirigimos a la vista de actualización
-      this.$router.push({ name: 'ActualizarProductoView' }) // ✅ Nombre de component del index
+      this.$router.push({ name: 'ActualizarProductosView' }) // ✅ Nombre de component del index
     },
 
     // 🔹 Nuevo: filtrar productos según el tipo de búsqueda y llamar endpoint correcto
