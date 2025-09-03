@@ -71,9 +71,14 @@ export const buscarProductoPorCantidad = (cantidad) =>
 export const buscarProductoPorPrecio = (precio) =>
   apiProducts.get('/productos/precio', { params: { precio } })
 
-// Búsqueda por proveedor
-export const buscarProductoPorProveedor = (proveedor) =>
-  apiProducts.get('/productos/proveedor', { params: { proveedor } })
+// Búsqueda por proveedor por id
+export const buscarProductoPorProveedorId = (proveedorId) =>
+  apiProducts.get('/productos/proveedor-id', { params: { 'proveedor-id': proveedorId } })
+
+// Búsqueda por proveedor por nombre
+export const buscarProductoPorProveedorName = (proveedorName) =>
+  apiProducts.get('/productos/proveedor-name', { params: { 'proveedor-name': proveedorName } })
+
 
 // Búsqueda por fechaCreacion
 export const buscarProductoPorFechaCreacion = (fechaCreacion) =>

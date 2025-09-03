@@ -51,9 +51,11 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label for="proveedor">Proveedor</label>
-          <select v-model="productoForm.proveedor" id="proveedor">
+          <select v-model="productoForm.proveedorId" id="proveedor">
             <option disabled value="">Seleccione un proveedor</option>
-            <option v-for="prov in proveedores" :key="prov.id" :value="prov.id">
+            <option v-for="prov in proveedores"
+                    :key="prov.id"
+                    :value="prov.id">
               {{ prov.nombre }}
             </option>
           </select>
@@ -119,7 +121,7 @@
             <th>DESCRIPCIÓN</th>
             <th>CANTIDAD</th>
             <th>PRECIO U.</th>
-            <th>PROVEEDOR.</th>
+            <th>NOMBRE PROVEEDOR</th>
             <th>FECHA REGISTRO</th>
             <th>FECHA ACTUALIZACIÓN</th>
             <th>ACCIONES</th>
@@ -133,7 +135,7 @@
             <td>{{ prod.descripcion }}</td>
             <td>{{ prod.cantidad }}</td>
             <td>{{ prod.precio }}</td>
-            <td>{{ prod.proveedor?.nombre || prod.proveedor }}</td>
+            <td>{{ prod.proveedorName }}</td>
             <td>{{ formatearFecha(prod.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
             <td>{{ formatearFecha(prod.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
@@ -161,7 +163,8 @@ import {
   buscarProductoPorDescripcion,
   buscarProductoPorCantidad,
   buscarProductoPorPrecio,
-  buscarProductoPorProveedor,
+  buscarProductoPorProveedorId,
+  buscarProductoPorProveedorName,
   buscarProductoPorFechaCreacion,
   actualizarProducto,
   eliminarProductoPorCodigo
@@ -181,7 +184,8 @@ export default {
         descripcion: '',
         cantidad: 0,
         precio: 0,
-        proveedor: '' // 👈 quedará como el ID seleccionado
+        proveedorId: '',   // id del proveedor
+        proveedorName: ''  // nombre del proveedor
       },
       productos: [],
       productosFiltrados: [],
@@ -260,7 +264,7 @@ export default {
         this.mostrarMensaje('Ingrese el precio del producto.', 'error')
         return
       }
-      if (!this.productoForm.proveedor) {
+      if (!this.productoForm.proveedorId) {
         this.mostrarMensaje('Seleccione el proveedor del producto.', 'error')
         return
       }
@@ -277,13 +281,18 @@ export default {
 
       try {
         // ⚡ Preparar payload para backend
+        const proveedorSeleccionado = this.proveedores.find(
+          p => p.id === this.productoForm.proveedorId
+        )
+
         const payload = {
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedor: this.productoForm.proveedor
+          proveedorId: this.productoForm.proveedorId,
+          proveedorName: proveedorSeleccionado ? proveedorSeleccionado.nombre : ''
         }
 
         // Llamada al backend
@@ -305,7 +314,8 @@ export default {
           descripcion: '',
           cantidad: 0,
           precio: 0,
-          proveedor: ''
+          proveedorId: '',
+          proveedorName: ''
         }
       } catch (error) {
         console.error('❌ Error al crear producto:', error)
@@ -319,12 +329,12 @@ export default {
 
     // Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.productoForm.codigo || this.productoForm.nombre || this.productoForm.descripcion || this.productoForm.cantidad || this.productoForm.precio || this.productoForm.proveedor
+      return this.productoForm.codigo || this.productoForm.nombre || this.productoForm.descripcion || this.productoForm.cantidad || this.productoForm.precio || this.productoForm.proveedorId
     },
 
     // Limpiar campos del formulario
     limpiarCampos() {
-      this.productoForm = { codigo: '', nombre: '', descripcion: '', cantidad: 0, precio: 0, proveedor: '' }
+      this.productoForm = { codigo: '', nombre: '', descripcion: '', cantidad: 0, precio: 0, proveedorId: '', proveedorName: '' }
     },
 
     // Método para saber si hay datos en el cuadro de filtro
@@ -398,7 +408,11 @@ export default {
             response = await buscarProductoPorPrecio(texto)
             break
           case 'proveedor':
-            response = await buscarProductoPorProveedor(texto)
+            if (!isNaN(texto)) {
+              response = await buscarProductoPorProveedorId(Number(texto))
+            } else {
+              response = await buscarProductoPorProveedorName(texto)
+            }
             break
           case 'fechaCreacion':
             response = await buscarProductoPorFechaCreacion(texto)
