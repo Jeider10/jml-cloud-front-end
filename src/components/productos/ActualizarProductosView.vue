@@ -36,9 +36,9 @@
 
           <label>Proveedor</label>
           <select v-model="productoForm.proveedorId">
-            <option disabled value="">Seleccione un proveedor</option>
-            <option v-for="p in proveedores" :key="p.id" :value="p.id">
-              {{ p.nombre }}
+            <option disabled :value="null">Seleccione un proveedor</option>
+            <option v-for="p in proveedores" :key="p.key" :value="p.key">
+              {{ p.nombre || p.name }}
             </option>
           </select>
 
@@ -59,7 +59,7 @@ import { actualizarProducto, buscarProductoPorCodigo } from '@/services/apiProdu
 export default {
   name: 'ActualizarProductoView',
   components: { DashboardSideMenu },
-  props: ['codigo'], // viene de la ruta
+  props: ['codigo'],
   data() {
     return {
       menuOpen: false,
@@ -69,12 +69,12 @@ export default {
         descripcion: '',
         cantidad: 0,
         precio: 0,
-        proveedorId: '',
+        proveedorId: null,   // aquí guardaremos la key normalizada (number o string)
         proveedorName: ''
       },
       mensaje: '',
       mensajeTipo: '',
-      proveedores: []
+      proveedores: [] // cada item tendrá al menos { key, nombre, ... }
     }
   },
   async mounted() {
@@ -95,31 +95,83 @@ export default {
       setTimeout(() => { this.mensaje = '' }, 3000)
     },
 
+    // Normaliza y quita duplicados: usa id si existe, sino nic
     async cargarProveedores() {
       try {
         const response = await listarProveedores()
-        this.proveedores = response.data
+        const raw = Array.isArray(response.data) ? response.data : []
+
+        // crear lista con key consistente
+        const lista = raw.map(p => {
+          // elegir la llave que exista (id o nic)
+          const rawKey = (p.id !== undefined && p.id !== null) ? p.id
+                        : (p.nic !== undefined && p.nic !== null) ? p.nic
+                        : null
+
+          // convertir numeric-string a number
+          const key = rawKey !== null && !isNaN(Number(rawKey)) ? Number(rawKey) : rawKey
+
+          return {
+            ...p,
+            key
+          }
+        })
+
+        // deduplicar por key (si key === null dejar también, pero evitar repetidos)
+        const map = new Map()
+        for (const p of lista) {
+          // si no tiene key (null), usamos nombre+correo como fallback para evitar colapsar todo en una sola entry
+          const mapKey = p.key !== null ? p.key : `${p.nombre || ''}::${p.correo || ''}::${p.telefono || ''}`
+          if (!map.has(mapKey)) map.set(mapKey, p)
+        }
+
+        this.proveedores = Array.from(map.values())
       } catch (error) {
         console.error('❌ Error al cargar proveedores:', error)
         this.mostrarMensaje('Error al cargar proveedores.', 'error')
       }
     },
 
+    // Carga el producto y asigna proveedorId usando varios fallbacks
     async cargarProducto() {
       try {
         const response = await buscarProductoPorCodigo(this.codigo)
         if (response.data) {
           const data = response.data
 
-          // Mapear producto + proveedor
+          // obtener proveedorId desde diferentes formas que el backend podría devolver
+          let proveedorKey = null
+          if (data.proveedorId !== undefined && data.proveedorId !== null) {
+            proveedorKey = data.proveedorId
+          } else if (data.proveedor && (data.proveedor.id !== undefined || data.proveedor.nic !== undefined)) {
+            proveedorKey = data.proveedor.id !== undefined ? data.proveedor.id : data.proveedor.nic
+          } else if (data.proveedor && data.proveedor.key !== undefined) {
+            proveedorKey = data.proveedor.key
+          }
+
+          // convertir a number si corresponde
+          if (proveedorKey !== null && !isNaN(Number(proveedorKey))) proveedorKey = Number(proveedorKey)
+
+          const proveedorName = data.proveedorName || (data.proveedor && (data.proveedor.nombre || data.proveedor.name)) || ''
+
           this.productoForm = {
             codigo: data.codigo,
             nombre: data.nombre,
             descripcion: data.descripcion,
             cantidad: data.cantidad,
             precio: data.precio,
-            proveedorId: data.proveedor?.id || '',   // 👈 aquí tomamos el ID
-            proveedorName: data.proveedor?.nombre || ''
+            proveedorId: proveedorKey,
+            proveedorName
+          }
+
+          // Si la lista de proveedores ya cargó, nos aseguramos de que exista una entrada coincidente.
+          // (si no existe, el select mostrará la opción por defecto; es buena idea verificar si la key existe)
+          if (this.proveedores.length > 0 && proveedorKey !== null) {
+            const existe = this.proveedores.some(p => p.key === proveedorKey)
+            if (!existe) {
+              // si no existe en proveedores, podemos insertar temporalmente para que aparezca seleccionado
+              this.proveedores.unshift({ key: proveedorKey, nombre: proveedorName })
+            }
           }
         }
       } catch (error) {
@@ -133,23 +185,25 @@ export default {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
         return
       }
-      if (!this.productoForm.proveedorId) {
+      if (this.productoForm.proveedorId === null || this.productoForm.proveedorId === '' || this.productoForm.proveedorId === undefined) {
         this.mostrarMensaje('Seleccione un proveedor.', 'error')
         return
       }
 
       try {
-        // Resolver nombre del proveedor desde la lista
-        const proveedorSel = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
-        this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : ''
+        // buscar nombre del proveedor seleccionado
+        const proveedorSel = this.proveedores.find(p => p.key === this.productoForm.proveedorId)
+        this.productoForm.proveedorName = proveedorSel ? (proveedorSel.nombre || proveedorSel.name || '') : this.productoForm.proveedorName
 
-        // 🔧 si el backend espera objeto proveedor, empaquetamos:
+        // preparar payload: backend espera proveedorId + proveedorName (según tu service)
         const payload = {
-          ...this.productoForm,
-          proveedor: {
-            id: this.productoForm.proveedorId,
-            nombre: this.productoForm.proveedorName
-          }
+          codigo: this.productoForm.codigo,
+          nombre: this.productoForm.nombre,
+          descripcion: this.productoForm.descripcion,
+          cantidad: this.productoForm.cantidad,
+          precio: this.productoForm.precio,
+          proveedorId: this.productoForm.proveedorId,
+          proveedorName: this.productoForm.proveedorName
         }
 
         await actualizarProducto(payload)
@@ -159,7 +213,7 @@ export default {
         // Volver a la vista principal
         setTimeout(() => {
           this.$router.push({ name: 'RegistroProductosView' })
-        }, 2000)
+        }, 1200)
       } catch (error) {
         console.error('❌ Error al actualizar producto:', error)
         this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
