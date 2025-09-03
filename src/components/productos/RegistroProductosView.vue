@@ -221,7 +221,10 @@ export default {
     async cargarProductos() {
       try {
         const response = await listarProductos() // ⚠️ Llama /productos/listar-productos
-        this.productos = response.data
+        this.productos = response.data.map(p => ({
+          ...p,
+          proveedor: p.proveedor?.id || p.proveedor // 👈 asegura que siempre quede como ID
+        }))
         this.productosFiltrados = [...this.productos]
       } catch (error) {
         console.error('❌ Error al cargar productos:', error)
@@ -408,10 +411,15 @@ export default {
         const data = response.data
 
         if (Array.isArray(data)) {
-          this.productosFiltrados = data
+          this.productosFiltrados = data.map(p => ({
+            ...p,
+            proveedor: p.proveedor?.id || p.proveedor
+          }))
         } else if (data) {
-          // backend puede devolver objeto simple
-          this.productosFiltrados = [data]
+          this.productosFiltrados = [{
+            ...data,
+            proveedor: data.proveedor?.id || data.proveedor
+          }]
         } else {
           this.productosFiltrados = []
         }
@@ -485,6 +493,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .registro-producto-wrapper { display: flex; }
