@@ -1,4 +1,4 @@
-<!-- src/components/proveedores/RegistroProductosView.vue -->
+<!-- src/components/productos/RegistroProductosView.vue -->
 
 <template>
   <div class="registro-producto-wrapper">
@@ -184,18 +184,17 @@ export default {
         descripcion: '',
         cantidad: 0,
         precio: 0,
-        proveedorId: '',   // id del proveedor
-        proveedorName: ''  // nombre del proveedor
+        proveedorId: '',
+        proveedorName: ''
       },
       productos: [],
       productosFiltrados: [],
-      proveedores: [],           // ✅ lista completa de proveedores
-      proveedoresFiltrados: [],  // ✅ opcional para búsqueda/filtro
+      proveedores: [],
+      proveedoresFiltrados: [],
       mensaje: '',
       mensajeTipo: '',
       busqueda: '',
-      tipoBusqueda: '', // 🔹 Nuevo: control del tipo de búsqueda
-      // Modal de eliminación
+      tipoBusqueda: '',
       modalEliminar: {
         visible: false,
         idx: null,
@@ -206,7 +205,7 @@ export default {
   mounted() {
     // 🔹 Cargar todos los productos desde backend al iniciar
     this.cargarProductos()
-    this.cargarProveedores() // ✅ carga los proveedores al iniciar
+    this.cargarProveedores()
   },
   methods: {
     handleMenuToggle(state) {
@@ -226,13 +225,13 @@ export default {
       this.productoForm.proveedorName = proveedor ? proveedor.nombre : ''
     },
 
-    // 🔹 Función que llama al endpoint para listar todos los  productos
+    // 🔹 Cargar productos
     async cargarProductos() {
       try {
-        const response = await listarProductos() // ⚠️ Llama /productos/listar-productos
+        const response = await listarProductos()
         this.productos = response.data.map(p => ({
           ...p,
-          proveedor: p.proveedor?.id || p.proveedor // 👈 asegura que siempre quede como ID
+          proveedor: p.proveedor?.id || p.proveedor
         }))
         this.productosFiltrados = [...this.productos]
       } catch (error) {
@@ -247,7 +246,7 @@ export default {
       }
     },
 
-    // 🔹 Nuevo: agregar producto usando API real
+    // 🔹 Agregar producto
     async agregarProducto() {
       if (!this.productoForm.codigo) {
         this.mostrarMensaje('Ingrese el código del producto.', 'error')
@@ -274,22 +273,15 @@ export default {
         return
       }
 
-      // 🔍 Verificar si ya existe un producto con el mismo código en la lista local
-      const existente = this.productos.find(prod => prod.codigo === this.productoForm.codigo)
+      // 🔹 Validar duplicado local
+      const existente = this.productos.find(p => p.codigo === this.productoForm.codigo)
       if (existente) {
-        this.mostrarMensaje(
-          `⚠️ Ya existe un producto con este código (${existente.data.codigo}): ${existente.data.nombre}.`,
-          'error'
-        )
+        this.mostrarMensaje(`⚠️ Ya existe un producto con el código ${existente.codigo}: ${existente.nombre}.`, 'error')
         return
       }
 
       try {
-        // ⚡ Preparar payload para backend
-        const proveedorSeleccionado = this.proveedores.find(
-          p => p.id === this.productoForm.proveedorId
-        )
-
+        const proveedorSeleccionado = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
         const payload = {
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
@@ -307,10 +299,7 @@ export default {
         // Agregamos el producto retornado por el backend a la lista local
         this.productos.push(nuevoProducto)
         this.productosFiltrados = [...this.productos]
-        this.mostrarMensaje(
-          `✅ Producto ${nuevoProducto.nombre} registrado correctamente.`,
-          'success'
-        )
+        this.mostrarMensaje(`✅ Producto ${nuevoProducto.nombre} registrado correctamente.`, 'success')
 
         // limpiar formulario
         this.productoForm = {
@@ -324,17 +313,23 @@ export default {
         }
       } catch (error) {
         console.error('❌ Error al crear producto:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+
+        // Captura específica de duplicado
+        if (error.response && error.response.status === 409) {
+          this.mostrarMensaje(`⚠️ Ya existe un producto con el código ${this.productoForm.codigo}.`, 'error')
+        } else if (error.response && error.response.data) {
+          const mensajeBackend = error.response.data?.message || JSON.stringify(error.response.data)
+          this.mostrarMensaje(`Error del servidor: ${mensajeBackend}`, 'error')
         } else {
-          this.mostrarMensaje('Error al crear producto en el servidor.', 'error')
+          this.mostrarMensaje(`Error inesperado: ${error.message}`, 'error')
         }
       }
     },
 
     // Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.productoForm.codigo || this.productoForm.nombre || this.productoForm.descripcion || this.productoForm.cantidad || this.productoForm.precio || this.productoForm.proveedorId
+      return this.productoForm.codigo || this.productoForm.nombre || this.productoForm.descripcion ||
+             this.productoForm.cantidad || this.productoForm.precio || this.productoForm.proveedorId
     },
 
     // Limpiar campos del formulario
@@ -362,16 +357,15 @@ export default {
         // ✅ Eliminamos localmente solo si backend respondió bien
         this.productos.splice(idx, 1)
         this.productosFiltrados = [...this.productos]
-        this.mostrarMensaje(
-          `🗑️ producto ${producto.nombre} eliminado.`,
-          'success'
-        )
+        this.mostrarMensaje(`🗑️ Producto ${producto.nombre} eliminado.`, 'success')
       } catch (error) {
         console.error('❌ Error al eliminar producto:', error)
         if (error.response && error.response.status === 404) {
-          this.mostrarMensaje('⚠️ Producto (${producto.nombre}): con ${producto.codigo} no encontrado en el servidor.', 'error')
+          this.mostrarMensaje(`⚠️ Producto ${producto.nombre} con código ${producto.codigo} no encontrado en el servidor.`, 'error')
+        } else if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
         } else {
-          this.mostrarMensaje('Error al eliminar producto en el servidor.', 'error')
+          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
         }
       } finally {
         this.modalEliminar.visible = false
@@ -379,7 +373,7 @@ export default {
     },
 
     abrirActualizarProducto(producto) {
-      this.$router.push({ name: 'ActualizarProductosView', params: { codigo: producto.codigo } }) // ✅ Nombre de component del index
+      this.$router.push({ name: 'ActualizarProductosView', params: { codigo: producto.codigo } })
     },
 
     // 🔹 Nuevo: filtrar productos según el tipo de búsqueda y llamar endpoint correcto
@@ -432,10 +426,7 @@ export default {
             proveedor: p.proveedor?.id || p.proveedor
           }))
         } else if (data) {
-          this.productosFiltrados = [{
-            ...data,
-            proveedor: data.proveedor?.id || data.proveedor
-          }]
+          this.productosFiltrados = [{ ...data, proveedor: data.proveedor?.id || data.proveedor }]
         } else {
           this.productosFiltrados = []
         }
@@ -445,26 +436,18 @@ export default {
         }
       } catch (error) {
         console.error('❌ Error al filtrar productos:', error)
-
-        // Si es un Error construido en el interceptor lo mostramos con detalle
-        if (error.message) {
-          if (error.message.includes('404')) {
-            this.productosFiltrados = []
-            this.mostrarMensaje('No se encontró productos.', 'error')
-          } else {
-            // Intenta mostrar el mensaje del backend si vino
-            this.mostrarMensaje(error.message, 'error')
-          }
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
         } else {
-          this.mostrarMensaje('Error al buscar productos en el servidor.', 'error')
+          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
         }
       }
     },
 
     limpiarBusqueda() {
       this.busqueda = ''
-      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
-      this.cargarProductos() // 🔹 Vuelve a cargar todos los proveedores
+      this.tipoBusqueda = ''
+      this.cargarProductos()
     },
 
     // 🔹 Método para formatear fechas
@@ -489,12 +472,17 @@ export default {
         this.mostrarMensaje(`♻️ Producto ${actualizado.nombre} actualizado correctamente.`, 'success')
       } catch (error) {
         console.error('❌ Error al actualizar producto:', error)
-        this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
+        }
       }
     },
+
     async cargarProveedores() {
       try {
-        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
+        const response = await listarProveedores()
         this.proveedores = response.data
         this.proveedoresFiltrados = [...this.proveedores]
       } catch (error) {
