@@ -164,7 +164,7 @@ export default {
       mensaje: '',
       mensajeTipo: '',
       busqueda: '',
-      tipoBusqueda: '', // 🔹 Nuevo: control del tipo de búsqueda
+      tipoBusqueda: '', // 🔹 Control del tipo de búsqueda
       // Modal de eliminación
       modalEliminar: {
         visible: false,
@@ -190,48 +190,26 @@ export default {
       }, 3000)
     },
 
-    // 🔹 Función que llama al endpoint para listar todos los  proveedores
+    // 🔹 Listar todos los proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
+        const response = await listarProveedores()
         this.proveedores = response.data
         this.proveedoresFiltrados = [...this.proveedores]
       } catch (error) {
         console.error('❌ Error al cargar proveedores:', error)
-
-        // Mostrar mensaje real si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
-        }
+        this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
       }
     },
 
-    // 🔹 Nuevo: agregar proveedor usando API real
+    // 🔹 Registrar proveedor
     async agregarProveedor() {
-      if (!this.proveedorForm.nic) {
-        this.mostrarMensaje('Ingrese el NIC del proveedor.', 'error')
-        return
-      }
-      if (!this.proveedorForm.nombre) {
-        this.mostrarMensaje('Ingrese el nombre del proveedor.', 'error')
-        return
-      }
-      if (!this.proveedorForm.telefono) {
-        this.mostrarMensaje('Ingrese el telefono del proveedor.', 'error')
-        return
-      }
-      if (!this.proveedorForm.direccion) {
-        this.mostrarMensaje('Ingrese el direccion del proveedor.', 'error')
-        return
-      }
-      if (!this.proveedorForm.correo) {
-        this.mostrarMensaje('Ingrese el correo del proveedor.', 'error')
+      if (!this.proveedorForm.nic || !this.proveedorForm.nombre || !this.proveedorForm.telefono || !this.proveedorForm.direccion || !this.proveedorForm.correo) {
+        this.mostrarMensaje('⚠️ Complete todos los campos.', 'error')
         return
       }
 
-      // 🔍 Verificar si ya existe un cliente con la misma identificación en la lista local
+      // Validar duplicados en lista local
       const existente = this.proveedores.find(p => p.nic === this.proveedorForm.nic)
       if (existente) {
         this.mostrarMensaje(
@@ -249,26 +227,25 @@ export default {
         // Agregamos el proveedor retornado por el backend a la lista local
         this.proveedores.push(nuevoProveedor)
         this.proveedoresFiltrados = [...this.proveedores]
-        this.mostrarMensaje(
-          `✅ Proveedor ${nuevoProveedor.nombre} registrado correctamente.`,
-          'success'
-        )
+        this.mostrarMensaje(`✅ Proveedor ${nuevoProveedor.nombre} registrado correctamente.`)
 
         // limpiar formulario
-        this.proveedorForm = { nic: '', nombre: '', telefono: '', direccion: '', correo: '' }
+        this.limpiarCampos()
       } catch (error) {
         console.error('❌ Error al crear proveedor:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al crear proveedor en el servidor.', 'error')
-        }
+        this.mostrarMensaje('Error al crear proveedor en el servidor.', 'error')
       }
     },
 
     // Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.proveedorForm.nic || this.proveedorForm.nombre || this.proveedorForm.telefono || this.proveedorForm.direccion || this.proveedorForm.correo
+      return (
+        this.proveedorForm.nic ||
+        this.proveedorForm.nombre ||
+        this.proveedorForm.telefono ||
+        this.proveedorForm.direccion ||
+        this.proveedorForm.correo
+      )
     },
 
     // Limpiar campos del formulario
@@ -281,7 +258,7 @@ export default {
       return this.busqueda.trim().length > 0
     },
 
-    // Abrir modal en vez de window.confirm
+    // Confirmación antes de eliminar
     confirmarEliminar(idx) {
       this.modalEliminar.idx = idx
       this.modalEliminar.proveedor = this.proveedores[idx]
@@ -296,14 +273,11 @@ export default {
         // ✅ Eliminamos localmente solo si backend respondió bien
         this.proveedores.splice(idx, 1)
         this.proveedoresFiltrados = [...this.proveedores]
-        this.mostrarMensaje(
-          `🗑️ Proveedor ${proveedor.nombre} eliminado.`,
-          'success'
-        )
+        this.mostrarMensaje(`🗑️ Proveedor ${proveedor.nombre} eliminado.`)
       } catch (error) {
         console.error('❌ Error al eliminar proveedor:', error)
         if (error.response && error.response.status === 404) {
-          this.mostrarMensaje('⚠️ Proveedor ${proveedor.nombre} no encontrado en el servidor.', 'error')
+          this.mostrarMensaje(`⚠️ Proveedor ${proveedor.nombre} no encontrado en el servidor.`, 'error')
         } else {
           this.mostrarMensaje('Error al eliminar proveedor en el servidor.', 'error')
         }
@@ -312,72 +286,47 @@ export default {
       }
     },
 
+    // Abrir vista de actualización (lo dejamos igual, lo harás en otro archivo)
     abrirActualizarProveedor(proveedor) {
       // Guardamos el cliente seleccionado para actualizar en localStorage
       localStorage.setItem('proveedorActualizar', JSON.stringify(proveedor))
-      // Redirigimos a la vista de actualización
-      this.$router.push({ name: 'ActualizarProveedorView' }) // ✅ Nombre de component del index
+      this.$router.push({ name: 'ActualizarProveedorView' })
     },
 
-    // 🔹 Nuevo: filtrar proveedores según el tipo de búsqueda y llamar endpoint correcto
+    // 🔹 Buscar proveedores según tipo
     async filtrarProveedores() {
       if (!this.busqueda.trim()) {
         this.limpiarBusqueda()
         return
       }
 
-      const texto = this.busqueda.trim()
-
       try {
         let response
-        switch (this.tipoBusqueda) {
-          case 'nic':
-            response = await buscarProveedorPorNic(texto)
-            break
-          case 'nombre':
-            response = await buscarProveedorPorNombre(texto)
-            break
-          default:
-            this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
-            return
+        if (this.tipoBusqueda === 'nic') {
+          response = await buscarProveedorPorNic(Number(this.busqueda.trim())) // ⚠️ backend espera Long
+        } else if (this.tipoBusqueda === 'nombre') {
+          response = await buscarProveedorPorNombre(this.busqueda.trim())
+        } else {
+          this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
+          return
         }
 
         const data = response.data
-
-        if (Array.isArray(data)) {
-          this.proveedoresFiltrados = data
-        } else if (data) {
-          // backend puede devolver objeto simple
-          this.proveedoresFiltrados = [data]
-        } else {
-          this.proveedoresFiltrados = []
-        }
+        this.proveedoresFiltrados = Array.isArray(data) ? data : data ? [data] : []
 
         if (this.proveedoresFiltrados.length === 0) {
           this.mostrarMensaje('No se encontraron proveedores.', 'error')
         }
       } catch (error) {
         console.error('❌ Error al filtrar proveedores:', error)
-
-        // Si es un Error construido en el interceptor lo mostramos con detalle
-        if (error.message) {
-          if (error.message.includes('404')) {
-            this.proveedoresFiltrados = []
-            this.mostrarMensaje('No se encontró proveedores.', 'error')
-          } else {
-            // Intenta mostrar el mensaje del backend si vino
-            this.mostrarMensaje(error.message, 'error')
-          }
-        } else {
-          this.mostrarMensaje('Error al buscar proveedores en el servidor.', 'error')
-        }
+        this.mostrarMensaje('Error al buscar proveedores en el servidor.', 'error')
       }
     },
 
     limpiarBusqueda() {
       this.busqueda = ''
-      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
-      this.cargarProveedores() // 🔹 Vuelve a cargar todos los proveedores
+      this.tipoBusqueda = ''
+      this.cargarProveedores()
     },
 
     // 🔹 Método para formatear fechas
