@@ -51,7 +51,7 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label for="proveedor">Proveedor</label>
-          <select v-model="productoForm.proveedorId" id="proveedor">
+          <select v-model="productoForm.proveedorId" id="proveedor" @change="actualizarProveedorName">
             <option disabled value="">Seleccione un proveedor</option>
             <option v-for="prov in proveedores"
                     :key="prov.id"
@@ -221,6 +221,11 @@ export default {
       }, 3000)
     },
 
+    actualizarProveedorName() {
+      const proveedor = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
+      this.productoForm.proveedorName = proveedor ? proveedor.nombre : ''
+    },
+
     // 🔹 Función que llama al endpoint para listar todos los  productos
     async cargarProductos() {
       try {
@@ -264,7 +269,7 @@ export default {
         this.mostrarMensaje('Ingrese el precio del producto.', 'error')
         return
       }
-      if (!this.productoForm.proveedorId) {
+      if (!this.productoForm.proveedorName) {
         this.mostrarMensaje('Seleccione el proveedor del producto.', 'error')
         return
       }
