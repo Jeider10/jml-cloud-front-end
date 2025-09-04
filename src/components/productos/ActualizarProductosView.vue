@@ -35,7 +35,7 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label>Proveedor</label>
-          <select v-model="productoForm.proveedorId" class="form-control">
+          <select v-model="productoForm.proveedorName" class="form-control">
             <option disabled value="">Seleccione un proveedor</option>
             <option v-for="p in proveedores" :key="p.id" :value="p.id">
               {{ p.nombre }}
@@ -74,7 +74,7 @@ export default {
       },
       mensaje: '',
       mensajeTipo: '',
-      proveedores: [] // cada item tendrá al menos { key, nombre, ... }
+      proveedores: [] // cada item tendrá al menos { id, nombre }
     }
   },
   async mounted() {
@@ -95,12 +95,14 @@ export default {
       setTimeout(() => { this.mensaje = '' }, 3000)
     },
 
-    // 🔹 Función que llama al endpoint para listar todos los  proveedores
+    // 🔹 Cargar lista de proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
-        this.proveedores = response.data
-        this.proveedoresFiltrados = [...this.proveedores]
+        const response = await listarProveedores()
+        this.proveedores = response.data.map(p => ({
+          id: String(p.id), // 👈 normalizamos como string
+          nombre: p.nombre
+        }))
       } catch (error) {
         console.error('❌ Error al cargar proveedores:', error)
 
@@ -113,36 +115,20 @@ export default {
       }
     },
 
-    // Carga el producto y asigna proveedorId usando varios fallbacks
+    // 🔹 Cargar producto y normalizar proveedorId
     async cargarProducto() {
       try {
         const response = await buscarProductoPorCodigo(this.codigo)
         if (response.data) {
           const data = response.data
-
-          // obtener proveedorId desde diferentes formas que el backend podría devolver
-          let proveedorKey = null
-          if (data.proveedorId !== undefined && data.proveedorId !== null) {
-            proveedorKey = data.proveedorId
-          } else if (data.proveedor && (data.proveedor.id !== undefined || data.proveedor.nic !== undefined)) {
-            proveedorKey = data.proveedor.id !== undefined ? data.proveedor.id : data.proveedor.nic
-          } else if (data.proveedor && data.proveedor.key !== undefined) {
-            proveedorKey = data.proveedor.key
-          }
-
-          // convertir a number si corresponde
-          if (proveedorKey !== null && !isNaN(Number(proveedorKey))) proveedorKey = Number(proveedorKey)
-
-          const proveedorName = data.proveedorName || (data.proveedor && (data.proveedor.nombre || data.proveedor.name)) || ''
-
           this.productoForm = {
             codigo: data.codigo,
             nombre: data.nombre,
             descripcion: data.descripcion,
             cantidad: data.cantidad,
             precio: data.precio,
-            proveedorId: proveedorKey,
-            proveedorName
+            proveedorId: data.proveedorId ? String(data.proveedorId) : '',
+            proveedorName: data.proveedorName || ''
           }
         }
       } catch (error) {
@@ -151,29 +137,30 @@ export default {
       }
     },
 
+    // 🔹 Actualizar producto en backend
     async actualizarProductoEnServidor() {
       if (!this.productoForm.codigo || !this.productoForm.nombre || !this.productoForm.descripcion) {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
         return
       }
-      if (this.productoForm.proveedorId === null || this.productoForm.proveedorId === '' || this.productoForm.proveedorId === undefined) {
+      if (!this.productoForm.proveedorId) {
         this.mostrarMensaje('Seleccione un proveedor.', 'error')
         return
       }
 
       try {
         // buscar nombre del proveedor seleccionado
-        const proveedorSel = this.proveedores.find(p => p.key === this.productoForm.proveedorId)
-        this.productoForm.proveedorName = proveedorSel ? (proveedorSel.nombre || proveedorSel.name || '') : this.productoForm.proveedorName
+        const proveedorSel = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
+        this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : this.productoForm.proveedorName
 
-        // preparar payload: backend espera proveedorId + proveedorName (según tu service)
+        // preparar payload
         const payload = {
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedorId: this.productoForm.proveedorId,
+          proveedorId: Number(this.productoForm.proveedorId), // backend espera Long
           proveedorName: this.productoForm.proveedorName
         }
 
