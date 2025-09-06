@@ -170,7 +170,7 @@ import {
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
-import { listarProveedores } from '@/services/apiSuppliersService.js'
+import { listarProveedores, buscarProveedorPorNombre } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'RegistroProductosView',
@@ -281,15 +281,26 @@ export default {
       }
 
       try {
-        const proveedorSeleccionado = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
+        // Buscar proveedor por nombre (puede devolver lista)
+        const responseProveedor = await buscarProveedorPorNombre(this.productoForm.proveedorName)
+        const proveedoresEncontrados = responseProveedor.data
+
+        if (!proveedoresEncontrados || proveedoresEncontrados.length === 0) {
+          this.mostrarMensaje(`⚠️ No se encontró proveedor con nombre ${this.productoForm.proveedorName}.`, 'error')
+          return
+        }
+
+        // Tomamos el primero (puedes luego ajustar para que el usuario seleccione si hay varios)
+        const proveedorSeleccionado = proveedoresEncontrados[0]
+
         const payload = {
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedorId: this.productoForm.proveedorId,
-          proveedorName: proveedorSeleccionado ? proveedorSeleccionado.nombre : ''
+          proveedorId: proveedorSeleccionado.id,
+          proveedorName: proveedorSeleccionado.nombre
         }
 
         // Llamada al backend
