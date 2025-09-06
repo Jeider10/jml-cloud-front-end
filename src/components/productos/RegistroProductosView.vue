@@ -168,7 +168,7 @@ import {
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
-import { listarProveedores } from '@/services/apiSuppliersService.js'
+import { listarProveedores, buscarProveedorPorNombre } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'RegistroProductosView',
@@ -268,7 +268,7 @@ export default {
         this.mostrarMensaje('Ingrese el precio del producto.', 'error')
         return
       }
-      if (!this.productoForm.proveedorName || !this.productoForm.proveedorCodigo) {
+      if (!this.productoForm.proveedorName) {
         this.mostrarMensaje('Seleccione el proveedor del producto.', 'error')
         return
       }
@@ -281,15 +281,26 @@ export default {
       }
 
       try {
-        // 🔹 Construir payload con los datos del form (ya contiene proveedorCodigo y proveedorName)
+        // 🔎 Buscar proveedor por nombre en el micro de proveedores
+        const responseProveedor = await buscarProveedorPorNombre(this.productoForm.proveedorName)
+        const proveedoresEncontrados = responseProveedor.data
+
+        if (!proveedoresEncontrados || proveedoresEncontrados.length === 0) {
+          this.mostrarMensaje(`⚠️ No se encontró proveedor con nombre ${this.productoForm.proveedorName}.`, 'error')
+          return
+        }
+
+        // ✅ Tomar el proveedor correcto (si hay varios con mismo nombre puedes ajustar para que usuario elija)
+        const proveedorSeleccionado = proveedoresEncontrados[0]
+
         const payload = {
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedorCodigo: this.productoForm.proveedorCodigo, // <-- codigoSucursal del proveedor
-          proveedorName: this.productoForm.proveedorName      // <-- nombre del proveedor
+          proveedorId: proveedorSeleccionado.codigoSucursal, // <-- código real del proveedor
+          proveedorName: proveedorSeleccionado.nombre             // <-- nombre del proveedor
         }
 
         // Llamada al backend
