@@ -52,7 +52,7 @@ export const listarProveedores = () => apiSuppliers.get('/proveedores/listar-pro
 export const crearProveedor = (proveedor) => apiSuppliers.post('/proveedores/register', proveedor)
 
 // Búsqueda por Codigo de Sucursal
-export const buscarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.get('/proveedores/codigo-sucursal', { params: { codigoSucursal } })
+export const buscarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.get('/proveedores/codigoSucursal', { params: { codigoSucursal } })
 
 // Búsqueda por nombre
 export const buscarProveedorPorNombre = (nombre) => apiSuppliers.get('/proveedores/nombre', { params: { nombre } })
@@ -61,4 +61,4 @@ export const buscarProveedorPorNombre = (nombre) => apiSuppliers.get('/proveedor
 export const actualizarProveedor = (proveedor) => apiSuppliers.put('/proveedores/actualizar', proveedor)
 
 // Eliminar proveedor
-export const eliminarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.delete('/proveedores/eliminar-codigoSucursal', { params: { codigoSucursal } })
+export const eliminarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.delete('/proveedores/eliminar', { params: { codigoSucursal } })
