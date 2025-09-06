@@ -51,11 +51,9 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label for="proveedor">Proveedor</label>
-          <select v-model="productoForm.proveedorId" id="proveedor" @change="actualizarProveedorName">
+          <select v-model="productoForm.proveedorCodigo" id="proveedor" @change="actualizarProveedorName">
             <option disabled value="">Seleccione un proveedor</option>
-            <option v-for="prov in proveedores"
-                    :key="prov.id"
-                    :value="prov.id">
+            <option v-for="prov in proveedores" :key="prov.codigoSucursal" :value="prov.codigoSucursal">
               {{ prov.nombre }}
             </option>
           </select>
@@ -170,7 +168,7 @@ import {
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
-import { listarProveedores, buscarProveedorPorNombre } from '@/services/apiSuppliersService.js'
+import { listarProveedores } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'RegistroProductosView',
@@ -221,7 +219,9 @@ export default {
     },
 
     actualizarProveedorName() {
-      const proveedor = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
+      const proveedor = this.proveedores.find(
+        p => Number(p.codigoSucursal) === Number(this.productoForm.proveedorCodigo)
+      )
       this.productoForm.proveedorName = proveedor ? proveedor.nombre : ''
     },
 
@@ -268,7 +268,7 @@ export default {
         this.mostrarMensaje('Ingrese el precio del producto.', 'error')
         return
       }
-      if (!this.productoForm.proveedorName) {
+      if (!this.productoForm.proveedorName || !this.productoForm.proveedorCodigo) {
         this.mostrarMensaje('Seleccione el proveedor del producto.', 'error')
         return
       }
@@ -281,26 +281,15 @@ export default {
       }
 
       try {
-        // Buscar proveedor por nombre (puede devolver lista)
-        const responseProveedor = await buscarProveedorPorNombre(this.productoForm.proveedorName)
-        const proveedoresEncontrados = responseProveedor.data
-
-        if (!proveedoresEncontrados || proveedoresEncontrados.length === 0) {
-          this.mostrarMensaje(`⚠️ No se encontró proveedor con nombre ${this.productoForm.proveedorName}.`, 'error')
-          return
-        }
-
-        // Tomamos el primero (puedes luego ajustar para que el usuario seleccione si hay varios)
-        const proveedorSeleccionado = proveedoresEncontrados[0]
-
+        // 🔹 Construir payload con los datos del form (ya contiene proveedorCodigo y proveedorName)
         const payload = {
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedorId: proveedorSeleccionado.id,
-          proveedorName: proveedorSeleccionado.nombre
+          proveedorCodigo: this.productoForm.proveedorCodigo, // <-- codigoSucursal del proveedor
+          proveedorName: this.productoForm.proveedorName      // <-- nombre del proveedor
         }
 
         // Llamada al backend
@@ -319,7 +308,7 @@ export default {
           descripcion: '',
           cantidad: 0,
           precio: 0,
-          proveedorId: '',
+          proveedorCodigo: '',
           proveedorName: ''
         }
       } catch (error) {
