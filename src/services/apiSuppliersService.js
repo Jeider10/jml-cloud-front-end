@@ -51,8 +51,8 @@ export const listarProveedores = () => apiSuppliers.get('/proveedores/listar-pro
 // Crear proveedor
 export const crearProveedor = (proveedor) => apiSuppliers.post('/proveedores/register', proveedor)
 
-// Búsqueda por NIC
-export const buscarProveedorPorNic = (nic) => apiSuppliers.get('/proveedores/nic', { params: { nic } })
+// Búsqueda por Codigo de Sucursal
+export const buscarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.get('/proveedores/codigo-sucursal', { params: { codigoSucursal } })
 
 // Búsqueda por nombre
 export const buscarProveedorPorNombre = (nombre) => apiSuppliers.get('/proveedores/nombre', { params: { nombre } })
@@ -61,4 +61,4 @@ export const buscarProveedorPorNombre = (nombre) => apiSuppliers.get('/proveedor
 export const actualizarProveedor = (proveedor) => apiSuppliers.put('/proveedores/actualizar', proveedor)
 
 // Eliminar proveedor
-export const eliminarProveedorPorNic = (nic) => apiSuppliers.delete('/proveedores/eliminar-nic', { params: { nic } })
+export const eliminarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.delete('/proveedores/eliminar-codigoSucursal', { params: { codigoSucursal } })

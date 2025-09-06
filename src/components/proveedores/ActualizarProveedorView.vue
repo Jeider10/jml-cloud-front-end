@@ -19,9 +19,8 @@
       <!-- Formulario proveedor -->
       <div class="form-container">
         <div class="form-row">
-          <label>NIC</label>
-          <!-- Deshabilitar <input v-model="proveedorForm.dni" type="text" disabled /> -->
-          <input v-model="proveedorForm.nic" type="text" disabled />
+          <label>CÓDIGO SUCURSAL</label>
+          <input v-model="proveedorForm.codigoSucursal" type="text" disabled />
 
           <label>Nombre</label>
           <input v-model="proveedorForm.nombre" type="text" />
@@ -55,7 +54,7 @@ export default {
     return {
       menuOpen: false,
       proveedorForm: {
-        nic: '',
+        codigoSucursal: '',
         nombre: '',
         telefono: '',
         direccion: '',
@@ -83,8 +82,17 @@ export default {
     },
 
     async actualizarProveedor() {
-      if (!this.proveedorForm.nic || !this.proveedorForm.nombre || !this.proveedorForm.telefono || !this.proveedorForm.direccion || !this.proveedorForm.correo) {
-        this.mostrarMensaje('NIC, nombre, telefono, direccion y correo son obligatorios.', 'error')
+      if (
+        !this.proveedorForm.codigoSucursal ||
+        !this.proveedorForm.nombre ||
+        !this.proveedorForm.telefono ||
+        !this.proveedorForm.direccion ||
+        !this.proveedorForm.correo
+      ) {
+        this.mostrarMensaje(
+          'Código sucursal, nombre, teléfono, dirección y correo son obligatorios.',
+          'error'
+        )
         return
       }
 
@@ -109,6 +117,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .registro-proveedor-wrapper { display: flex; }

@@ -35,8 +35,8 @@
       <!-- Formulario proveedor -->
       <div class="form-container">
         <div class="form-row">
-          <label>NIC</label>
-          <input v-model="proveedorForm.nic" type="text" />
+          <label>Codigo Sucursal</label>
+          <input v-model="proveedorForm.codigoSucursal" type="text" />
 
           <label>Nombre</label>
           <input v-model="proveedorForm.nombre" type="text" />
@@ -75,7 +75,7 @@
           <div style="display: flex; gap: 4px;">
             <select v-model="tipoBusqueda">
               <option disabled value="">Seleccione</option>
-              <option value="nic">NIC</option>
+              <option value="codigoSucursal">Codigo Sucursal</option>
               <option value="nombre">Nombre</option>
             </select>
 
@@ -101,7 +101,7 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>NIC</th>
+            <th>CÓDIGO SUCURSAL</th>
             <th>NOMBRE</th>
             <th>TELÉFONO</th>
             <th>DIRECCIÓN</th>
@@ -114,7 +114,7 @@
         <tbody>
           <tr v-for="(p, idx) in proveedoresFiltrados" :key="idx">
             <td>{{ idx + 1 }}</td>
-            <td>{{ p.nic }}</td>
+            <td>{{ p.codigoSucursal }}</td>
             <td>{{ p.nombre }}</td>
             <td>{{ p.telefono }}</td>
             <td>{{ p.direccion }}</td>
@@ -141,9 +141,9 @@ import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import {
   listarProveedores,
   crearProveedor,
-  buscarProveedorPorNic,
+  buscarProveedorPorCodigoSucursal,
   buscarProveedorPorNombre,
-  eliminarProveedorPorNic
+  eliminarProveedorPorCodigoSucursal
 } from '@/services/apiSuppliersService.js'
 
 export default {
@@ -153,7 +153,7 @@ export default {
     return {
       menuOpen: false,
       proveedorForm: {
-        nic: '',
+        codigoSucursal: '',
         nombre: '',
         telefono: '',
         direccion: '',
@@ -210,8 +210,8 @@ export default {
 
     // 🔹 Nuevo: agregar proveedor usando API real
     async agregarProveedor() {
-      if (!this.proveedorForm.nic) {
-        this.mostrarMensaje('Ingrese el NIC del proveedor.', 'error')
+      if (!this.proveedorForm.codigoSucursal) {
+        this.mostrarMensaje('Ingrese el código de la sucursal.', 'error')
         return
       }
       if (!this.proveedorForm.nombre) {
@@ -232,20 +232,20 @@ export default {
       }
 
       // 🔍 Verificar si ya existe un cliente con la misma identificación en la lista local
-      const existente = this.proveedores.find(p => p.nic === Number(this.proveedorForm.nic)) // ✅ NIC convertido a número
+      const existente = this.proveedores.find(p => p.codigoSucursal === Number(this.proveedorForm.codigoSucursal))
       if (existente) {
         this.mostrarMensaje(
-          `⚠️ Ya existe un proveedor con este NIC (${existente.nic}): ${existente.nombre}.`,
+          `⚠️ Ya existe un proveedor con este Codigo de Sucursal (${existente.codigoSucursal}): ${existente.nombre}.`,
           'error'
         )
         return
       }
 
       try {
-        // Llamada al backend (NIC convertido a número)
+        // Llamada al backend (codigoSucursal convertido a número)
         const payload = {
           ...this.proveedorForm,
-          nic: Number(this.proveedorForm.nic) // ✅ conversión explícita
+          codigoSucursal: Number(this.proveedorForm.codigoSucursal)
         }
         const response = await crearProveedor(payload)
         const nuevoProveedor = response.data
@@ -259,7 +259,7 @@ export default {
         )
 
         // limpiar formulario
-        this.proveedorForm = { nic: '', nombre: '', telefono: '', direccion: '', correo: '' }
+        this.proveedorForm = { codigoSucursal: '', nombre: '', telefono: '', direccion: '', correo: '' }
       } catch (error) {
         console.error('❌ Error al crear proveedor:', error)
         if (error.response && error.response.data) {
@@ -272,12 +272,12 @@ export default {
 
     // Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.proveedorForm.nic || this.proveedorForm.nombre || this.proveedorForm.telefono || this.proveedorForm.direccion || this.proveedorForm.correo
+      return this.proveedorForm.codigoSucursal || this.proveedorForm.nombre || this.proveedorForm.telefono || this.proveedorForm.direccion || this.proveedorForm.correo
     },
 
     // Limpiar campos del formulario
     limpiarCampos() {
-      this.proveedorForm = { nic: '', nombre: '', telefono: '', direccion: '', correo: '' }
+      this.proveedorForm = { codigoSucursal: '', nombre: '', telefono: '', direccion: '', correo: '' }
     },
 
     // Método para saber si hay datos en el cuadro de filtro
@@ -295,7 +295,7 @@ export default {
     async eliminarProveedor(idx) {
       const proveedor = this.proveedores[idx]
       try {
-        await eliminarProveedorPorNic(proveedor.nic)
+        await eliminarProveedorPorCodigoSucursal(proveedor.codigoSucursal)
 
         // ✅ Eliminamos localmente solo si backend respondió bien
         this.proveedores.splice(idx, 1)
@@ -317,7 +317,7 @@ export default {
     },
 
     abrirActualizarProveedor(proveedor) {
-      // Guardamos el cliente seleccionado para actualizar en localStorage
+      // Guardamos el proveedor seleccionado para actualizar en localStorage
       localStorage.setItem('proveedorActualizar', JSON.stringify(proveedor))
       // Redirigimos a la vista de actualización
       this.$router.push({ name: 'ActualizarProveedorView' }) // ✅ Nombre de component del index
@@ -335,8 +335,8 @@ export default {
       try {
         let response
         switch (this.tipoBusqueda) {
-          case 'nic':
-            response = await buscarProveedorPorNic(Number(texto)) // ✅ NIC como número
+          case 'codigoSucursal':
+            response = await buscarProveedorPorCodigoSucursal(Number(texto)) // ✅ Codigo de Sucursal como número
             break
           case 'nombre':
             response = await buscarProveedorPorNombre(texto) // ✅ Nombre queda como string
