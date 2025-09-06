@@ -51,9 +51,12 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label for="proveedor">Proveedor</label>
-          <select v-model="productoForm.proveedorCodigo" id="proveedor" @change="actualizarProveedorName">
+          <select v-model="productoForm.proveedorName" id="proveedor">
+            <!-- 🔹 Opción por defecto -->
             <option disabled value="">Seleccione un proveedor</option>
-            <option v-for="prov in proveedores" :key="prov.codigoSucursal" :value="prov.codigoSucursal">
+
+            <!-- 🔹 Opciones de proveedores -->
+            <option v-for="prov in proveedores" :key="prov.codigoSucursal" :value="prov.nombre">
               {{ prov.nombre }}
             </option>
           </select>
