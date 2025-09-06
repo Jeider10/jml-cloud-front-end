@@ -342,8 +342,12 @@ export default {
 
     // Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.productoForm.codigo || this.productoForm.nombre || this.productoForm.descripcion ||
-             this.productoForm.cantidad || this.productoForm.precio || this.productoForm.proveedorId
+      return this.productoForm.codigo ||
+             this.productoForm.nombre ||
+             this.productoForm.descripcion ||
+             this.productoForm.cantidad ||
+             this.productoForm.precio ||
+             this.productoForm.proveedorName;
     },
 
     // Limpiar campos del formulario
