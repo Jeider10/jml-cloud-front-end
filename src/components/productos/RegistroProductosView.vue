@@ -297,6 +297,7 @@ export default {
         const proveedorSeleccionado = proveedoresEncontrados[0]
 
         const payload = {
+          // ...this.productoForm,
           codigo: this.productoForm.codigo,
           nombre: this.productoForm.nombre,
           descripcion: this.productoForm.descripcion,
