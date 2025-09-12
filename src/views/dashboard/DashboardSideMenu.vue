@@ -119,7 +119,7 @@ export default {
       this.$router.push('/registro-proveedor')
     },
     onProductosClick() {
-      this.$router.push('/registro-productos')
+      this.$router.push('/productos')
     },
     onVentasClick() {
       this.$router.push('/historial-ventas')
