@@ -35,12 +35,14 @@
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label>Proveedor</label>
-          <select v-model="productoForm.proveedorName" class="form-control">
-            <option disabled value="">Seleccione un proveedor</option>
-            <option v-for="p in proveedores" :key="p.id" :value="p.id">
-              {{ p.nombre }}
-            </option>
-          </select>
+          <div class="form-group">
+            <select v-model="productoForm.proveedorId" @change="actualizarProveedorName" class="form-control">
+              <option disabled value="">Seleccione un proveedor</option>
+              <option v-for="p in proveedores" :key="p.id" :value="p.id">
+                {{ p.nombre }}
+              </option>
+            </select>
+          </div>
 
           <button type="button" class="agregar-btn" @click="actualizarProductoEnServidor">
             💾 Actualizar
@@ -69,7 +71,7 @@ export default {
         descripcion: '',
         cantidad: 0,
         precio: 0,
-        proveedorId: null,   // aquí guardaremos la key normalizada (number o string)
+        proveedorId: null,
         proveedorName: ''
       },
       mensaje: '',
@@ -100,7 +102,7 @@ export default {
       try {
         const response = await listarProveedores()
         this.proveedores = response.data.map(p => ({
-          id: String(p.id), // 👈 normalizamos como string
+          id: String(p.codigoSucursal),
           nombre: p.nombre
         }))
       } catch (error) {
@@ -149,7 +151,7 @@ export default {
       }
 
       try {
-        // buscar nombre del proveedor seleccionado
+        // buscar nombre del proveedor seleccionado a partir del ID
         const proveedorSel = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
         this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : this.productoForm.proveedorName
 
@@ -160,7 +162,7 @@ export default {
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedorId: Number(this.productoForm.proveedorId), // backend espera Long
+          proveedorId: Number(this.productoForm.proveedorId),
           proveedorName: this.productoForm.proveedorName
         }
 
