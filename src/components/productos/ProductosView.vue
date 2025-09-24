@@ -112,8 +112,8 @@
             <td>{{ prod.cantidad }}</td>
             <td>{{ prod.precio }}</td>
             <td>{{ prod.proveedorName }}</td>
-            <td>{{ formatearFecha(prod.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
-            <td>{{ formatearFecha(prod.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
+            <td>{{ prod.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
+            <td>{{ prod.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
               <!-- Botón de actualizar -->
               <button class="update-btn" @click="abrirActualizarProducto(prod)">✏️</button>
@@ -366,12 +366,6 @@ export default {
       this.busqueda = ''
       this.tipoBusqueda = ''
       this.cargarProductos()
-    },
-
-    // 🔹 Método para formatear fechas
-    formatearFecha(fecha) {
-      if (!fecha) return ''
-      return new Date(fecha).toLocaleString()
     },
 
     // 🔹 Método para cargar proveedores
