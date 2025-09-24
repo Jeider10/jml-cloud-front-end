@@ -44,13 +44,17 @@
             </select>
           </div>
 
-          <!-- Botón Actualizar -->
-          <button type="button" class="agregar-btn" @click="actualizarProductoEnServidor">
+          <!-- 💾 Botón de actualizar -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="actualizarProductoEnServidor">
             💾 Actualizar
           </button>
 
-          <!-- Botón Volver -->
-          <button type="button" class="volver-btn" @click="volverRegistro">
+          <!-- ↩️ Botón de volver -->
+          <button type="button"
+                  class="volver-btn"
+                  @click="volverProductos">
             ↩️ Volver
           </button>
         </div>
@@ -85,25 +89,35 @@ export default {
       proveedores: [] // cada item tendrá al menos { id, nombre }
     }
   },
+
   async mounted() {
-    // 1. Cargar proveedores
+    // 🔹 Cargar todos los proveedores desde backend
     await this.cargarProveedores()
 
-    // 2. Cargar producto desde backend usando el código de la ruta
+    // 🔹 Cargar producto desde backend
     await this.cargarProducto()
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
-      setTimeout(() => { this.mensaje = '' }, 3000)
+      setTimeout(() => {
+        this.mensaje = ''
+
+        // 🔹 Solo redirige si es un mensaje de éxito
+        if (tipo === 'success') {
+          this.$router.push({ name: 'ProductosView' })
+        }
+      }, 3000)
     },
 
-    // 🔹 Cargar lista de proveedores
+    // 🔹 Método para cargar lista de proveedores
     async cargarProveedores() {
       try {
         const response = await listarProveedores()
@@ -114,7 +128,7 @@ export default {
       } catch (error) {
         console.error('❌ Error al cargar proveedores:', error)
 
-        // Mostrar mensaje real si hay respuesta del backend
+        // Mostrar mensaje si hay respuesta del backend
         if (error.response && error.response.data) {
           this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
         } else {
@@ -123,7 +137,7 @@ export default {
       }
     },
 
-    // 🔹 Cargar producto y normalizar proveedorId
+    // 🔹 Método para cargar producto y normalizar proveedorId
     async cargarProducto() {
       try {
         const response = await buscarProductoPorCodigo(this.codigo)
@@ -145,12 +159,13 @@ export default {
       }
     },
 
-    // 🔹 Actualizar producto en backend
+    // 🔹 Método para actualizar producto en backend
     async actualizarProductoEnServidor() {
       if (!this.productoForm.codigo || !this.productoForm.nombre || !this.productoForm.descripcion) {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
         return
       }
+
       if (!this.productoForm.proveedorId) {
         this.mostrarMensaje('Seleccione un proveedor.', 'error')
         return
@@ -175,33 +190,25 @@ export default {
         await actualizarProducto(payload)
 
         this.mostrarMensaje(`Producto ${this.productoForm.nombre} actualizado correctamente.`, 'success')
-
-        // Volver a la vista principal
-        setTimeout(() => {
-          this.$router.push({ name: 'RegistroProductosView' })
-        }, 1200)
       } catch (error) {
         console.error('❌ Error al actualizar producto:', error)
         this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
       }
     },
 
-    // ↩️ Volver a registro de productos
-    volverRegistro() {
-      // Si quieres simplemente volver al listado por nombre de ruta:
+    // 🔹 Método para volver a todos los productos
+    volverProductos() {
       this.$router.push({ name: 'ProductosView' })
-
-      // Si prefieres volver una página en el historial del navegador:
-      // this.$router.go(-1)
     }
   }
 }
 </script>
 
 
-
 <style scoped>
-.registro-producto-wrapper { display: flex; }
+.registro-producto-wrapper {
+  display: flex;
+}
 
 .producto-container {
   position: absolute;
@@ -217,7 +224,9 @@ export default {
   flex-direction: column;
 }
 
-.producto-container.expanded { left: 220px; }
+.producto-container.expanded {
+  left: 220px;
+}
 
 .titulo {
   font-size: 2rem;
@@ -234,19 +243,59 @@ export default {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
 
-.form-container { margin-bottom: 20px; }
-.form-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
 
-label { font-weight: bold; }
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
 
-input, select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+.fade-enter-active {
+  transition: opacity 0.5s;
+}
+
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.form-container {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+label {
+  font-weight: bold;
+}
+
+input, select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 
 .agregar-btn {
   padding: 8px 12px;
@@ -261,6 +310,7 @@ input, select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
 .agregar-btn:hover {
   background: #005f8a;
 }
+
 .volver-btn {
   padding: 8px 12px;
   border-radius: 6px;

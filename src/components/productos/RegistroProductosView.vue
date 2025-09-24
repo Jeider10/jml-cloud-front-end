@@ -64,7 +64,7 @@
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
-                  @click="volverRegistro">
+                  @click="volverProductos">
             ↩️ Volver
           </button>
         </div>
@@ -108,6 +108,7 @@ export default {
       }
     }
   },
+
   mounted() {
     // 🔹 Cargar todos los proveedores desde backend al iniciar para poder obtener los proveedores al registrar un producto
     this.cargarProveedores()
@@ -118,6 +119,7 @@ export default {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -263,8 +265,7 @@ export default {
     },
 
     // 🔹 Método para volver a registro de productos
-    volverRegistro() {
-      // Si quieres simplemente volver al listado por nombre de ruta:
+    volverProductos() {
       this.$router.push({ name: 'ProductosView' })
     }
   }
