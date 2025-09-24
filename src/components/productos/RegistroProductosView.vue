@@ -75,6 +75,11 @@
                   @click="limpiarCampos">
             🧹 Limpiar campos
           </button>
+
+          <!-- Botón Volver -->
+          <button type="button" class="volver-btn" @click="volverRegistro">
+            ↩️ Volver
+          </button>
         </div>
 
         <!-- 🔍 Filtro de búsqueda -->
@@ -512,6 +517,15 @@ export default {
           this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
         }
       }
+    },
+
+    // ↩️ Volver a registro de productos
+    volverRegistro() {
+      // Si quieres simplemente volver al listado por nombre de ruta:
+      this.$router.push({ name: 'ProductosView' })
+
+      // Si prefieres volver una página en el historial del navegador:
+      // this.$router.go(-1)
     }
   }
 }
@@ -569,4 +583,18 @@ input, select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
 .btn-yes:hover { background: #b52a33; }
 .btn-no { padding: 6px 12px; background: #06d6a0; color: white; }
 .btn-no:hover { background: #049670; }
+
+.volver-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.volver-btn:hover {
+  background: #005f8a;
+}
 </style>

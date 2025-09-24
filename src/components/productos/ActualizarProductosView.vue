@@ -189,7 +189,7 @@ export default {
     // ↩️ Volver a registro de productos
     volverRegistro() {
       // Si quieres simplemente volver al listado por nombre de ruta:
-      this.$router.push({ name: 'RegistroProductosView' })
+      this.$router.push({ name: 'ProductosView' })
 
       // Si prefieres volver una página en el historial del navegador:
       // this.$router.go(-1)

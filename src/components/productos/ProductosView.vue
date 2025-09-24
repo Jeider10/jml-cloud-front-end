@@ -7,7 +7,7 @@
 
     <!-- Contenido principal -->
     <div :class="['producto-container', { expanded: menuOpen }]">
-      <h1 class="titulo">Registro Producto</h1>
+      <h1 class="titulo">Productos</h1>
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
@@ -35,46 +35,6 @@
       <!-- Formulario producto -->
       <div class="form-container">
         <div class="form-row">
-          <label>Código:</label>
-          <input v-model="productoForm.codigo" type="text" />
-
-          <label>Nombre:</label>
-          <input v-model="productoForm.nombre" type="text" />
-
-          <label>Descripción:</label>
-          <input v-model="productoForm.descripcion" type="text" />
-
-          <label>Cantidad:</label>
-          <input v-model="productoForm.cantidad" type="number" />
-
-          <label>Precio:</label>
-          <input v-model="productoForm.precio" type="number" step="0.01" />
-
-          <label for="proveedor">Proveedor</label>
-          <select v-model="productoForm.proveedorName" id="proveedor">
-            <!-- 🔹 Opción por defecto -->
-            <option disabled value="">Seleccione un proveedor</option>
-
-            <!-- 🔹 Opciones de proveedores -->
-            <option v-for="prov in proveedores" :key="prov.codigoSucursal" :value="prov.nombre">
-              {{ prov.nombre }}
-            </option>
-          </select>
-
-          <button type="button"
-                  class="agregar-btn"
-                  :disabled="!hayDatos()"
-                  @click="agregarProducto">
-            ➕ Registrar
-          </button>
-
-          <!-- Nuevo botón Limpiar campos -->
-          <button type="button"
-                  class="limpiar-campos-btn"
-                  :disabled="!hayDatos()"
-                  @click="limpiarCampos">
-            🧹 Limpiar campos
-          </button>
         </div>
 
         <!-- 🔍 Filtro de búsqueda -->
@@ -108,6 +68,12 @@
                     class="buscar-btn"
                     :disabled="!hayDatosFiltro() || !tipoBusqueda"
                     @click="limpiarBusqueda">Limpiar</button>
+
+            <button type="button"
+                    class="agregar-btn"
+                    @click="agregarProducto">
+                    ➕ Registrar Producto
+            </button>
           </div>
         </div>
       </div>
@@ -158,7 +124,6 @@
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import {
   listarProductos,
-  crearProducto,
   buscarProductoPorCodigo,
   buscarProductoPorNombre,
   buscarProductoPorDescripcion,
@@ -171,7 +136,7 @@ import {
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
-import { listarProveedores, buscarProveedorPorNombre } from '@/services/apiSuppliersService.js'
+import { listarProveedores } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'ProductosView',
@@ -249,98 +214,6 @@ export default {
       }
     },
 
-    // 🔹 Agregar producto
-    async agregarProducto() {
-      if (!this.productoForm.codigo) {
-        this.mostrarMensaje('Ingrese el código del producto.', 'error')
-        return
-      }
-      if (!this.productoForm.nombre) {
-        this.mostrarMensaje('Ingrese el nombre del producto.', 'error')
-        return
-      }
-      if (!this.productoForm.descripcion) {
-        this.mostrarMensaje('Ingrese la descripción del producto.', 'error')
-        return
-      }
-      if (!this.productoForm.cantidad) {
-        this.mostrarMensaje('Ingrese la cantidad del producto.', 'error')
-        return
-      }
-      if (!this.productoForm.precio) {
-        this.mostrarMensaje('Ingrese el precio del producto.', 'error')
-        return
-      }
-      if (!this.productoForm.proveedorName) {
-        this.mostrarMensaje('Seleccione el proveedor del producto.', 'error')
-        return
-      }
-
-      // 🔹 Validar duplicado local
-      const existente = this.productos.find(p => p.codigo === this.productoForm.codigo)
-      if (existente) {
-        this.mostrarMensaje(`⚠️ Ya existe un producto con el código ${existente.codigo}: ${existente.nombre}.`, 'error')
-        return
-      }
-
-      try {
-        // 🔎 Buscar proveedor por nombre en el micro de proveedores
-        const responseProveedor = await buscarProveedorPorNombre(this.productoForm.proveedorName)
-        const proveedoresEncontrados = responseProveedor.data
-
-        if (!proveedoresEncontrados || proveedoresEncontrados.length === 0) {
-          this.mostrarMensaje(`⚠️ No se encontró proveedor con nombre ${this.productoForm.proveedorName}.`, 'error')
-          return
-        }
-
-        // ✅ Tomar el proveedor correcto (si hay varios con mismo nombre puedes ajustar para que usuario elija)
-        const proveedorSeleccionado = proveedoresEncontrados[0]
-
-        const payload = {
-          // ...this.productoForm,
-          codigo: this.productoForm.codigo,
-          nombre: this.productoForm.nombre,
-          descripcion: this.productoForm.descripcion,
-          cantidad: this.productoForm.cantidad,
-          precio: this.productoForm.precio,
-          proveedorId: proveedorSeleccionado.codigoSucursal, // <-- código real del proveedor
-          proveedorName: proveedorSeleccionado.nombre             // <-- nombre del proveedor
-        }
-
-        // Llamada al backend
-        const response = await crearProducto(payload)
-        const nuevoProducto = response.data
-
-        // Agregamos el producto retornado por el backend a la lista local
-        this.productos.push(nuevoProducto)
-        this.productosFiltrados = [...this.productos]
-        this.mostrarMensaje(`✅ Producto ${nuevoProducto.nombre} registrado correctamente.`, 'success')
-
-        // limpiar formulario
-        this.productoForm = {
-          codigo: '',
-          nombre: '',
-          descripcion: '',
-          cantidad: 0,
-          precio: 0,
-          proveedorCodigo: '',
-          proveedorName: ''
-        }
-      } catch (error) {
-        console.error('❌ Error al crear producto:', error)
-
-        // Captura específica de duplicado
-        if (error.response && error.response.status === 409) {
-          this.mostrarMensaje(`⚠️ Ya existe un producto con el código ${this.productoForm.codigo}.`, 'error')
-        } else if (error.response && error.response.data) {
-          const mensajeBackend = error.response.data?.message || JSON.stringify(error.response.data)
-          this.mostrarMensaje(`Error del servidor: ${mensajeBackend}`, 'error')
-        } else {
-          this.mostrarMensaje(`Error inesperado: ${error.message}`, 'error')
-        }
-      }
-    },
-
     // Método para saber si hay datos en el formulario
     hayDatos() {
       return this.productoForm.codigo ||
@@ -389,6 +262,13 @@ export default {
       } finally {
         this.modalEliminar.visible = false
       }
+    },
+
+    agregarProducto(producto) {
+      this.$router.push({
+        name: 'RegistroProductosView',
+        state: { producto }
+      })
     },
 
     abrirActualizarProducto(producto) {
@@ -519,7 +399,10 @@ export default {
 
 
 <style scoped>
-.registro-producto-wrapper { display: flex; }
+.registro-producto-wrapper {
+  display: flex;
+}
+
 .producto-container {
   position: absolute;
   top: 0;
@@ -533,7 +416,11 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.producto-container.expanded { left: 220px; }
+
+.producto-container.expanded {
+  left: 220px;
+}
+
 .titulo { font-size: 2rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
 .mensaje { padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; text-align: center; box-shadow: 0px 4px 8px rgba(0,0,0,0.15); }
 .mensaje.success { background: #2ecc71; color: white; }
@@ -547,7 +434,14 @@ export default {
 label { font-weight: bold; }
 input, select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
 .agregar-btn, .limpiar-campos-btn, .update-btn, .delete-btn, .buscar-btn { border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
-.agregar-btn { padding: 8px 12px; background: #0077b6; color: white; }
+.agregar-btn {
+  padding: 8px 12px;
+  background: #0077b6;
+  color: white;
+  margin-left: auto; /* empuja el botón a la derecha */
+  display: block;    /* asegura que se respete el auto margin */
+}
+
 .agregar-btn:hover { background: #005f8a; }
 .agregar-btn:disabled { background: #ccc; cursor: not-allowed; }
 .limpiar-campos-btn { padding: 8px 12px; background: #f4a261; color: white; }
