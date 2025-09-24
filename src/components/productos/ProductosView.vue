@@ -55,20 +55,29 @@
               <option value="fechaCreacion">Fecha de Creación</option>
             </select>
 
+            <!-- 🔍 Termino de búsqueda -->
             <input v-model="busqueda"
                    type="text"
                    placeholder="Ingrese término de búsqueda"
                    :disabled="!tipoBusqueda" />
 
+            <!-- 🔍 Botón de búsqueda -->
             <button type="button"
                     class="buscar-btn"
                     :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="filtrarProductos">Buscar</button>
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="limpiarBusqueda">Limpiar</button>
+                    @click="filtrarProductos">
+                    🔍 Buscar
+            </button>
 
+            <!-- 🧹 Botón de limpiar búsqueda -->
+            <button type="button"
+                    class="buscar-btn"
+                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                    @click="limpiarBusqueda">
+                    🧹 Limpiar
+            </button>
+
+            <!-- ➕ Botón de registrar producto -->
             <button type="button"
                     class="agregar-btn"
                     @click="agregarProducto">
@@ -106,7 +115,7 @@
             <td>{{ formatearFecha(prod.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
             <td>{{ formatearFecha(prod.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
-              <!-- Nuevo botón de actualizar -->
+              <!-- Botón de actualizar -->
               <button class="update-btn" @click="abrirActualizarProducto(prod)">✏️</button>
               <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
             </td>
@@ -132,7 +141,6 @@ import {
   buscarProductoPorProveedorId,
   buscarProductoPorProveedorName,
   buscarProductoPorFechaCreacion,
-  actualizarProducto,
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
@@ -169,10 +177,11 @@ export default {
     }
   },
   mounted() {
-    // 🔹 Cargar todos los productos desde backend al iniciar
+    // 🔹 Cargar todos los productos y proveedores desde backend al iniciar
     this.cargarProductos()
     this.cargarProveedores()
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
@@ -186,14 +195,7 @@ export default {
       }, 3000)
     },
 
-    actualizarProveedorName() {
-      const proveedor = this.proveedores.find(
-        p => Number(p.codigoSucursal) === Number(this.productoForm.proveedorCodigo)
-      )
-      this.productoForm.proveedorName = proveedor ? proveedor.nombre : ''
-    },
-
-    // 🔹 Cargar productos
+    // 🔹 Método de cargar productos
     async cargarProductos() {
       try {
         const response = await listarProductos()
@@ -205,7 +207,7 @@ export default {
       } catch (error) {
         console.error('❌ Error al cargar productos:', error)
 
-        // Mostrar mensaje real si hay respuesta del backend
+        // Mostrar mensaje si hay respuesta del backend
         if (error.response && error.response.data) {
           this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
         } else {
@@ -214,7 +216,7 @@ export default {
       }
     },
 
-    // Método para saber si hay datos en el formulario
+    // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.productoForm.codigo ||
              this.productoForm.nombre ||
@@ -224,23 +226,32 @@ export default {
              this.productoForm.proveedorName;
     },
 
-    // Limpiar campos del formulario
+    // 🔹 Método de limpiar campos del formulario
     limpiarCampos() {
-      this.productoForm = { codigo: '', nombre: '', descripcion: '', cantidad: 0, precio: 0, proveedorId: '', proveedorName: '' }
+      this.productoForm = {
+        codigo: '',
+        nombre: '',
+        descripcion: '',
+        cantidad: 0,
+        precio: 0,
+        proveedorId: '',
+        proveedorName: ''
+      }
     },
 
-    // Método para saber si hay datos en el cuadro de filtro
+    // 🔹 Método para saber si hay datos en el cuadro de filtro
     hayDatosFiltro() {
       return this.busqueda.trim().length > 0
     },
 
-    // Abrir modal en vez de window.confirm
+    // 🔹 Método para abrir modal en vez de window.confirm
     confirmarEliminar(idx) {
       this.modalEliminar.idx = idx
       this.modalEliminar.producto = this.productos[idx]
       this.modalEliminar.visible = true
     },
 
+    // 🔹 Método para eliminar producto
     async eliminarProducto(idx) {
       const producto = this.productos[idx]
       try {
@@ -264,6 +275,7 @@ export default {
       }
     },
 
+    // 🔹 Método para llamar al componente de agregar producto
     agregarProducto(producto) {
       this.$router.push({
         name: 'RegistroProductosView',
@@ -271,11 +283,17 @@ export default {
       })
     },
 
+    // 🔹 Método para llamar al componente de actualizar producto
     abrirActualizarProducto(producto) {
-      this.$router.push({ name: 'ActualizarProductosView', params: { codigo: producto.codigo } })
+      this.$router.push({
+        name: 'ActualizarProductosView',
+        params: {
+          codigo: producto.codigo
+        }
+      })
     },
 
-    // 🔹 Nuevo: filtrar productos según el tipo de búsqueda y llamar endpoint correcto
+    // 🔹 Método para filtrar productos según el tipo de búsqueda
     async filtrarProductos() {
       if (!this.busqueda.trim()) {
         this.limpiarBusqueda()
@@ -343,6 +361,7 @@ export default {
       }
     },
 
+    // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = ''
@@ -355,30 +374,7 @@ export default {
       return new Date(fecha).toLocaleString()
     },
 
-    // 🔹 Nuevo: método para actualizar producto usando API
-    async actualizarProductoEnLista(productoActualizado) {
-      try {
-        const response = await actualizarProducto(productoActualizado)
-        const actualizado = response.data
-
-        // Reemplazar en la lista local
-        const idx = this.productos.findIndex(p => p.codigo === actualizado.codigo)
-        if (idx !== -1) {
-          this.$set(this.productos, idx, actualizado)
-          this.productosFiltrados = [...this.productos]
-        }
-
-        this.mostrarMensaje(`♻️ Producto ${actualizado.nombre} actualizado correctamente.`, 'success')
-      } catch (error) {
-        console.error('❌ Error al actualizar producto:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
-        }
-      }
-    },
-
+    // 🔹 Método para cargar proveedores
     async cargarProveedores() {
       try {
         const response = await listarProveedores()
@@ -421,46 +417,243 @@ export default {
   left: 220px;
 }
 
-.titulo { font-size: 2rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
-.mensaje { padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; text-align: center; box-shadow: 0px 4px 8px rgba(0,0,0,0.15); }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-.form-container { margin-bottom: 0px; }
-.form-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-.form-filtro { display: flex; flex-direction: column; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 20px; margin-bottom: 12px; }
-label { font-weight: bold; }
-input, select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-.agregar-btn, .limpiar-campos-btn, .update-btn, .delete-btn, .buscar-btn { border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+.titulo {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.mensaje {
+  padding: 12px 18px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+}
+
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
+
+.fade-enter-active {
+  transition: opacity 0.5s;
+}
+
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.form-container {
+  margin-bottom: 0px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.form-filtro {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+label {
+  font-weight: bold;
+}
+
+
+input, select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .agregar-btn {
-  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 12px; /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
   margin-left: auto; /* empuja el botón a la derecha */
   display: block;    /* asegura que se respete el auto margin */
 }
 
-.agregar-btn:hover { background: #005f8a; }
-.agregar-btn:disabled { background: #ccc; cursor: not-allowed; }
-.limpiar-campos-btn { padding: 8px 12px; background: #f4a261; color: white; }
-.limpiar-campos-btn:disabled { background: #ccc; cursor: not-allowed; }
-.update-btn { padding: 6px 8px; background: #f4a261; color: white; margin-right: 4px; }
-.update-btn:hover { background: #e76f51; }
-.delete-btn { padding: 6px 8px; background: #e63946; color: white; }
-.delete-btn:hover { background: #b52a33; }
-.productos-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-.productos-table th, .productos-table td { border: 1px solid #ddd; padding: 8px; text-align: center; background: white; }
-.empty-row { text-align: center; padding: 18px; color: #666; }
-.buscar-btn { padding: 6px 12px; background: #06d6a0; color: white; margin-left: 4px; }
-.buscar-btn:hover { background: #049670; }
-.buscar-btn:disabled { background: #ccc; cursor: not-allowed; }
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-.modal-content { background: white; padding: 20px 30px; border-radius: 8px; text-align: center; min-width: 300px; box-shadow: 0px 8px 16px rgba(0,0,0,0.25); }
-.modal-buttons { margin-top: 15px; display: flex; justify-content: center; gap: 15px; }
-.btn-yes { padding: 6px 12px; background: #e63946; color: white; }
-.btn-yes:hover { background: #b52a33; }
-.btn-no { padding: 6px 12px; background: #06d6a0; color: white; }
-.btn-no:hover { background: #049670; }
+.limpiar-campos-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 12px; /* De aqui al final del boton era otro */
+  background: #f4a261;
+  color: white;
+}
+
+.update-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 8px; /* De aqui al final del boton era otro */
+  background: #f4a261;
+  color: white;
+  margin-right: 4px;
+}
+
+.delete-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 8px; /* De aqui al final del boton era otro */
+  background: #e63946;
+  color: white;
+}
+
+.buscar-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 12px; /* De aqui al final del boton era otro */
+  background: #06d6a0;
+  color: white;
+  margin-left: 4px;
+}
+
+.agregar-btn:hover {
+  background: #005f8a;
+}
+
+.agregar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.limpiar-campos-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.update-btn:hover {
+  background: #e76f51;
+}
+
+.delete-btn:hover {
+  background: #b52a33;
+}
+
+.productos-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.productos-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  background: white;
+}
+
+.productos-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  background: white;
+}
+
+.empty-row {
+  text-align: center;
+  padding: 18px;
+  color: #666;
+}
+
+.buscar-btn:hover {
+  background: #049670;
+}
+
+.buscar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 300px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
+}
+
+.modal-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-yes {
+  padding: 6px 12px;
+  background: #e63946;
+  color: white;
+}
+
+.btn-yes:hover {
+  background: #b52a33;
+}
+
+.btn-no {
+  padding: 6px 12px;
+  background: #06d6a0;
+  color: white;
+}
+
+.btn-no:hover {
+  background: #049670;
+}
 </style>
