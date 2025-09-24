@@ -123,6 +123,11 @@ export default {
       this.mensajeTipo = tipo
       setTimeout(() => {
         this.mensaje = ''
+
+        // 🔹 Solo redirige si es un mensaje de éxito
+        if (tipo === 'success') {
+          this.$router.push({ name: 'ProductosView' })
+        }
       }, 3000)
     },
 
