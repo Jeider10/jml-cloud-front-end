@@ -100,7 +100,7 @@ export default {
       }, 3000)
     },
 
-    // 🔹 Método de argar un proveedor por códigoSucursal
+    // 🔹 Método de agregar un proveedor por códigoSucursal
     async cargarProveedor() {
       try {
         console.log('👉 codigoSucursal recibido:', this.codigoSucursal) // debug
@@ -140,10 +140,6 @@ export default {
 
         this.mostrarMensaje(`✅ Proveedor ${actualizado.nombre} actualizado correctamente.`, 'success')
 
-        // Volver automáticamente a la vista de registro después de 2 segundos
-        setTimeout(() => {
-          this.$router.push({ name: 'RegistroProveedorView' })
-        }, 2000)
       } catch (error) {
         console.error('❌ Error al actualizar proveedor:', error)
         this.mostrarMensaje(error.message || 'Error al actualizar el proveedor.', 'error')
@@ -193,19 +189,59 @@ export default {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
 
-.form-container { margin-bottom: 20px; }
-.form-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
 
-label { font-weight: bold; }
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
 
-input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+.fade-enter-active {
+  transition: opacity 0.5s;
+}
+
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.form-container {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+label {
+  font-weight: bold;
+}
+
+input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 
 .agregar-btn {
   padding: 8px 12px;
@@ -216,7 +252,10 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
   cursor: pointer;
   font-weight: 600;
 }
-.agregar-btn:hover { background: #005f8a; }
+
+.agregar-btn:hover {
+  background: #005f8a;
+}
 
 .volver-btn {
   padding: 8px 12px;

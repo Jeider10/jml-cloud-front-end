@@ -20,8 +20,8 @@
       <div class="form-container">
         <div class="form-row">
           <label>Identificación</label>
-          <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
           <input v-model="clienteForm.identificacion" type="text" disabled />
+          <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
 
           <label>Nombre</label>
           <input v-model="clienteForm.nombres" type="text" />
@@ -35,8 +35,18 @@
           <label>Dirección</label>
           <input v-model="clienteForm.direccion" type="text" />
 
-          <button type="button" class="agregar-btn" @click="actualizarCliente">
+          <!-- 💾 Botón de actualizar -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="actualizarCliente">
             💾 Actualizar
+          </button>
+
+          <!-- ↩️ Botón de volver -->
+          <button type="button"
+                  class="volver-btn"
+                  @click="volverClientes">
+            ↩️ Volver
           </button>
         </div>
       </div>
@@ -46,11 +56,12 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { actualizarCliente } from '@/services/apiCustomerService.js'
+import { actualizarCliente, buscarClientePorIdentificacion } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'ActualizarClienteView',
   components: { DashboardSideMenu },
+  props: ['identificacion'],
   data() {
     return {
       menuOpen: false,
@@ -65,25 +76,58 @@ export default {
       mensajeTipo: ''
     }
   },
-  mounted() {
-    const cliente = JSON.parse(localStorage.getItem('clienteActualizar'))
-    if (cliente) {
-      this.clienteForm = { ...cliente }
-    }
+
+  async mounted() {
+    // 🔹 Cargar cliente específico desde backend por identificacion
+    await this.cargarCliente()
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
-      setTimeout(() => { this.mensaje = '' }, 3000)
+      setTimeout(() => {
+        this.mensaje = ''
+
+        // 🔹 Solo redirige si es un mensaje de éxito
+        if (tipo === 'success') {
+          this.$router.push({ name: 'ClientesView' })
+        }
+      }, 3000)
     },
 
+    // 🔹 Método para cargar producto y normalizar proveedorId
+    async cargarCliente() {
+      try {
+        const response = await buscarClientePorIdentificacion(this.identificacion)
+        if (response.data) {
+          this.clienteForm = { ...response.data } // ✅ llena el form directamente
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar cliente:', error)
+
+        if (error.response && error.response.status === 404) {
+          this.mostrarMensaje(`Cliente no encontrado con identificacion ${this.identificacion}`, 'error')
+        } else if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al conectarse con el servidor de clientes.', 'error')
+        }
+      }
+    },
+
+    // 🔹 Método para actualizar cliente en backend
     async actualizarCliente() {
-      if (!this.clienteForm.identificacion || !this.clienteForm.nombres || !this.clienteForm.apellidos) {
+      if (
+        !this.clienteForm.identificacion ||
+        !this.clienteForm.nombres ||
+        !this.clienteForm.apellidos
+      ) {
         this.mostrarMensaje('Identificación, nombres y apellidos son obligatorios.', 'error')
         return
       }
@@ -92,19 +136,17 @@ export default {
         const response = await actualizarCliente(this.clienteForm)
         const actualizado = response.data
 
-        this.mostrarMensaje(
-          `✅ Cliente ${actualizado.nombres} ${actualizado.apellidos} actualizado correctamente.`,
-          'success'
-        )
+        this.mostrarMensaje(`✅ Cliente ${actualizado.nombres} ${actualizado.apellidos} actualizado correctamente.`, 'success')
 
-        // Volver automáticamente a la vista de registro después de 2 segundos
-        setTimeout(() => {
-          this.$router.push({ name: 'RegistroClienteView' })
-        }, 2000)
       } catch (error) {
         console.error('❌ Error al actualizar cliente:', error)
         this.mostrarMensaje(error.message || 'Error al actualizar el cliente.', 'error')
       }
+    },
+
+    // 🔹 Método para volver a clientes
+    volverClientes() {
+      this.$router.push({ name: 'ClientesView' })
     }
   }
 }
@@ -148,16 +190,42 @@ export default {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
 
-.fade-enter-active, .fade-leave-active {
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
+
+.fade-enter-active {
   transition: opacity 0.5s;
 }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.form-container { margin-bottom: 20px; }
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.form-container {
+  margin-bottom: 20px;
+}
+
 .form-row {
   display: flex;
   align-items: center;
@@ -166,7 +234,9 @@ export default {
   flex-wrap: wrap;
 }
 
-label { font-weight: bold; }
+label {
+  font-weight: bold;
+}
 
 input {
   padding: 6px;
@@ -183,5 +253,22 @@ input {
   cursor: pointer;
   font-weight: 600;
 }
-.agregar-btn:hover { background: #005f8a; }
+
+.agregar-btn:hover {
+  background: #005f8a;
+}
+
+.volver-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.volver-btn:hover {
+  background: #005f8a;
+}
 </style>
