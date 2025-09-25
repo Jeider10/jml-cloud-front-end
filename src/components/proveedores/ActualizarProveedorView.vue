@@ -34,8 +34,18 @@
           <label>Correo</label>
           <input v-model="proveedorForm.correo" type="text" />
 
-          <button type="button" class="agregar-btn" @click="actualizarProveedor">
+          <!-- 💾 Botón de actualizar -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="actualizarProveedor">
             💾 Actualizar
+          </button>
+
+          <!-- ↩️ Botón de volver -->
+          <button type="button"
+                  class="volver-btn"
+                  @click="volverProveedores">
+            ↩️ Volver
           </button>
         </div>
       </div>
@@ -70,17 +80,27 @@ export default {
       this.proveedorForm = { ...proveedor }
     }
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
-      setTimeout(() => { this.mensaje = '' }, 3000)
+      setTimeout(() => {
+        this.mensaje = ''
+
+        // 🔹 Solo redirige si es un mensaje de éxito
+        if (tipo === 'success') {
+          this.$router.push({ name: 'ProveedoresView' })
+        }
+      }, 3000)
     },
 
+    // 🔹 Método para actualizar proveedor en backend
     async actualizarProveedor() {
       if (
         !this.proveedorForm.codigoSucursal ||
@@ -89,10 +109,7 @@ export default {
         !this.proveedorForm.direccion ||
         !this.proveedorForm.correo
       ) {
-        this.mostrarMensaje(
-          'Código sucursal, nombre, teléfono, dirección y correo son obligatorios.',
-          'error'
-        )
+        this.mostrarMensaje('Código sucursal, nombre, teléfono, dirección y correo son obligatorios.', 'error')
         return
       }
 
@@ -100,10 +117,7 @@ export default {
         const response = await actualizarProveedor(this.proveedorForm)
         const actualizado = response.data
 
-        this.mostrarMensaje(
-          `✅ Proveedor ${actualizado.nombre} actualizado correctamente.`,
-          'success'
-        )
+        this.mostrarMensaje(`✅ Proveedor ${actualizado.nombre} actualizado correctamente.`, 'success')
 
         // Volver automáticamente a la vista de registro después de 2 segundos
         setTimeout(() => {
@@ -113,6 +127,11 @@ export default {
         console.error('❌ Error al actualizar proveedor:', error)
         this.mostrarMensaje(error.message || 'Error al actualizar el proveedor.', 'error')
       }
+    },
+
+    // 🔹 Método para volver a registro de proveedores
+    volverProveedores() {
+      this.$router.push({ name: 'ProveedoresView' })
     }
   }
 }
@@ -177,4 +196,18 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
   font-weight: 600;
 }
 .agregar-btn:hover { background: #005f8a; }
+
+.volver-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.volver-btn:hover {
+  background: #005f8a;
+}
 </style>
