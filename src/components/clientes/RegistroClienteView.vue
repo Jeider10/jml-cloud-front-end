@@ -16,23 +16,6 @@
         </div>
       </transition>
 
-      <!-- Modal de confirmación de eliminación -->
-      <transition name="fade">
-        <div v-if="modalEliminar.visible" class="modal-overlay">
-          <div class="modal-content">
-            <p>
-              ⚠️ ¿Está seguro de eliminar al cliente
-              {{ modalEliminar.cliente.nombres }}
-              {{ modalEliminar.cliente.apellidos }}?
-            </p>
-            <div class="modal-buttons">
-              <button class="btn-yes" @click="eliminarCliente(modalEliminar.idx)">Sí</button>
-              <button class="btn-no" @click="modalEliminar.visible = false">No</button>
-            </div>
-          </div>
-        </div>
-      </transition>
-
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
@@ -41,14 +24,17 @@
 
           <label>Nombres</label>
           <input v-model="clienteForm.nombres" type="text" />
+
           <label>Apellidos</label>
           <input v-model="clienteForm.apellidos" type="text" />
+
           <label>Teléfono</label>
           <input v-model="clienteForm.telefono" type="text" />
 
           <label>Dirección</label>
           <input v-model="clienteForm.direccion" type="text" />
 
+          <!-- ➕ Botón de registrar -->
           <button type="button"
                   class="agregar-btn"
                   :disabled="!hayDatos()"
@@ -56,82 +42,22 @@
             ➕ Registrar
           </button>
 
-          <!-- Nuevo botón Limpiar campos -->
+          <!-- 🧹 Botón de limpiar campos -->
           <button type="button"
                   class="limpiar-campos-btn"
                   :disabled="!hayDatos()"
                   @click="limpiarCampos">
             🧹 Limpiar campos
           </button>
-        </div>
 
-        <!-- 🔍 Filtro de búsqueda -->
-        <div class="form-filtro">
-          <!-- Texto descriptivo -->
-          <span style="font-weight: bold;">Buscar por:</span>
-
-          <!-- Nuevo: selector + input + botones -->
-          <div style="display: flex; gap: 4px;">
-            <select v-model="tipoBusqueda">
-              <option disabled value="">Seleccione una opción</option>
-              <option value="identificacion">Identificación</option>
-              <option value="nombres">Nombres</option>
-              <option value="apellidos">Apellidos</option>
-            </select>
-
-            <input v-model="busqueda"
-                   type="text"
-                   placeholder="Ingrese término de búsqueda"
-                   :disabled="!tipoBusqueda" />
-
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="filtrarClientes">Buscar</button>
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="limpiarBusqueda">Limpiar</button>
-          </div>
+          <!-- ↩️ Botón de volver -->
+          <button type="button"
+                  class="volver-btn"
+                  @click="volverClientes">
+            ↩️ Volver
+          </button>
         </div>
       </div>
-
-      <!-- Tabla de clientes -->
-      <table class="clientes-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>IDENTIFICACIÓN</th>
-            <th>NOMBRES</th>
-            <th>APELLIDOS</th>
-            <th>TELÉFONO</th>
-            <th>DIRECCIÓN</th>
-            <th>FECHA REGISTRO</th>
-            <th>FECHA ACTUALIZACIÓN</th>
-            <th>ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(c, idx) in clientesFiltrados" :key="idx">
-            <td>{{ idx + 1 }}</td>
-            <td>{{ c.identificacion }}</td>
-            <td>{{ c.nombres }}</td>
-            <td>{{ c.apellidos }}</td>
-            <td>{{ c.telefono }}</td>
-            <td>{{ c.direccion }}</td>
-            <td>{{ formatearFecha(c.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
-            <td>{{ formatearFecha(c.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
-            <td>
-              <!-- Nuevo botón de actualizar -->
-              <button class="update-btn" @click="abrirActualizarCliente(c)">✏️</button>
-              <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
-            </td>
-          </tr>
-          <tr v-if="clientesFiltrados.length === 0">
-            <td colspan="9" class="empty-row">No hay clientes registrados.</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </template>
@@ -188,28 +114,15 @@ export default {
       this.mensajeTipo = tipo
       setTimeout(() => {
         this.mensaje = ''
+
+        // 🔹 Solo redirige si es un mensaje de éxito
+        if (tipo === 'success') {
+          this.$router.push({ name: 'ClientesView' })
+        }
       }, 3000)
     },
 
-    // 🔹 Función que llama al endpoint para listar todos los clientes
-    async cargarClientes() {
-      try {
-        const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
-        this.clientes = response.data
-        this.clientesFiltrados = [...this.clientes]
-      } catch (error) {
-        console.error('❌ Error al cargar clientes:', error)
-
-        // Mostrar mensaje real si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al cargar clientes desde el servidor.', 'error')
-        }
-      }
-    },
-
-    // 🔹 Nuevo: agregar cliente usando API real
+    // 🔹 Método de agregar cliente
     async agregarCliente() {
       if (!this.clienteForm.identificacion) {
         this.mostrarMensaje('Ingrese la Identificación del cliente.', 'error')
@@ -259,14 +172,37 @@ export default {
       }
     },
 
-    // Método para saber si hay datos en el formulario
+    // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.clienteForm.identificacion || this.clienteForm.nombres || this.clienteForm.apellidos || this.clienteForm.telefono || this.clienteForm.direccion
     },
 
-    // Limpiar campos del formulario
+    // 🔹 Método de limpiar campos del formulario
     limpiarCampos() {
       this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
+    },
+
+    // 🔹 Método para volver a clientes
+    volverProveedores() {
+      this.$router.push({ name: 'ClientesView' })
+    },
+
+    // 🔹 Función que llama al endpoint para listar todos los clientes
+    async cargarClientes() {
+      try {
+        const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
+        this.clientes = response.data
+        this.clientesFiltrados = [...this.clientes]
+      } catch (error) {
+        console.error('❌ Error al cargar clientes:', error)
+
+        // Mostrar mensaje real si hay respuesta del backend
+        if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al cargar clientes desde el servidor.', 'error')
+        }
+      }
     },
 
     // Método para saber si hay datos en el cuadro de filtro
@@ -382,6 +318,11 @@ export default {
     formatearFecha(fecha) {
       if (!fecha) return ''
       return new Date(fecha).toLocaleString()
+    },
+
+    // 🔹 Método para volver a clientes
+    volverClientes() {
+      this.$router.push({ name: 'ClientesView' })
     }
   }
 }
@@ -425,14 +366,37 @@ export default {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
 
-.fade-enter-active, .fade-leave-active {
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
+
+.fade-enter-active {
   transition: opacity 0.5s;
 }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
 
 .form-container {
   margin-bottom: 0px;
@@ -456,7 +420,9 @@ export default {
   margin-bottom: 12px;     /* espacio debajo del bloque */
 }
 
-label { font-weight: bold; }
+label {
+  font-weight: bold;
+}
 
 input {
   padding: 6px;
@@ -514,7 +480,10 @@ input {
   cursor: pointer;
   margin-right: 4px;
 }
-.update-btn:hover { background: #e76f51; }
+
+.update-btn:hover {
+  background: #e76f51;
+}
 
 .clientes-table {
   width: 100%;
@@ -522,7 +491,13 @@ input {
   margin: 20px 0;
 }
 
-.clientes-table th,
+.clientes-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  background: white;
+}
+
 .clientes-table td {
   border: 1px solid #ddd;
   padding: 8px;
@@ -538,9 +513,16 @@ input {
   border: none;
   cursor: pointer;
 }
-.delete-btn:hover { background: #b52a33; }
 
-.empty-row { text-align: center; padding: 18px; color: #666; }
+.delete-btn:hover {
+  background: #b52a33;
+}
+
+.empty-row {
+  text-align: center;
+  padding: 18px;
+  color: #666;
+}
 
 .buscar-btn {
   padding: 6px 12px;
@@ -621,9 +603,35 @@ input {
   cursor: pointer;
 }
 
-.btn-yes { background: #e63946; color: white; }
-.btn-yes:hover { background: #b52a33; }
+.btn-yes {
+  background: #e63946;
+  color: white;
+}
 
-.btn-no { background: #06d6a0; color: white; }
-.btn-no:hover { background: #049670; }
+.btn-yes:hover {
+  background: #b52a33;
+}
+
+.btn-no {
+  background: #06d6a0;
+  color: white;
+}
+
+.btn-no:hover {
+  background: #049670;
+}
+
+.volver-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.volver-btn:hover {
+  background: #005f8a;
+}
 </style>
