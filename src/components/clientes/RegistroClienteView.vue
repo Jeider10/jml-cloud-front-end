@@ -64,14 +64,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import {
-  listarClientes,
-  crearCliente,
-  buscarClientePorIdentificacion,
-  buscarClientePorNombres,
-  buscarClientePorApellidos,
-  eliminarClientePorIdentificacion
-} from '@/services/apiCustomerService.js'
+import { crearCliente } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'RegistroClienteView',
@@ -102,7 +95,7 @@ export default {
   },
   mounted() {
     // 🔹 Cargar todos los clientes desde backend al iniciar
-    this.cargarClientes()
+    // this.cargarClientes()
   },
   methods: {
     handleMenuToggle(state) {
@@ -187,24 +180,6 @@ export default {
       this.$router.push({ name: 'ClientesView' })
     },
 
-    // 🔹 Función que llama al endpoint para listar todos los clientes
-    async cargarClientes() {
-      try {
-        const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
-        this.clientes = response.data
-        this.clientesFiltrados = [...this.clientes]
-      } catch (error) {
-        console.error('❌ Error al cargar clientes:', error)
-
-        // Mostrar mensaje real si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al cargar clientes desde el servidor.', 'error')
-        }
-      }
-    },
-
     // Método para saber si hay datos en el cuadro de filtro
     hayDatosFiltro() {
       return this.busqueda.trim().length > 0
@@ -217,33 +192,6 @@ export default {
       this.modalEliminar.visible = true
     },
 
-    async eliminarCliente(idx) {
-      const cliente = this.clientes[idx]
-
-      try {
-        await eliminarClientePorIdentificacion(cliente.identificacion)
-
-        // ✅ Eliminamos localmente solo si backend respondió bien
-        this.clientes.splice(idx, 1)
-        this.clientesFiltrados = [...this.clientes]
-
-        this.mostrarMensaje(
-          `🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`,
-          'success'
-        )
-      } catch (error) {
-        console.error('❌ Error al eliminar cliente:', error)
-
-        if (error.response && error.response.status === 404) {
-          this.mostrarMensaje('⚠️ Cliente no encontrado en el servidor.', 'error')
-        } else {
-          this.mostrarMensaje('Error al eliminar cliente en el servidor.', 'error')
-        }
-      } finally {
-        this.modalEliminar.visible = false
-      }
-    },
-
     abrirActualizarCliente(cliente) {
       // Guardamos el cliente seleccionado para actualizar en localStorage
       localStorage.setItem('clienteActualizar', JSON.stringify(cliente))
@@ -251,68 +199,9 @@ export default {
       this.$router.push({ name: 'ActualizarClienteView' }) // ✅ Nombre de component del index
     },
 
-    // 🔹 Nuevo: filtrar clientes según el tipo de búsqueda y llamar endpoint correcto
-    async filtrarClientes() {
-      if (!this.busqueda.trim()) {
-        this.limpiarBusqueda()
-        return
-      }
-
-      const texto = this.busqueda.trim()
-
-      try {
-        let response
-        switch (this.tipoBusqueda) {
-          case 'identificacion':
-            response = await buscarClientePorIdentificacion(texto)
-            break
-          case 'nombres':
-            response = await buscarClientePorNombres(texto)
-            break
-          case 'apellidos':
-            response = await buscarClientePorApellidos(texto)
-            break
-          default:
-            this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
-            return
-        }
-
-        const data = response.data
-
-        if (Array.isArray(data)) {
-          this.clientesFiltrados = data
-        } else if (data) {
-          // backend puede devolver objeto simple
-          this.clientesFiltrados = [data]
-        } else {
-          this.clientesFiltrados = []
-        }
-
-        if (this.clientesFiltrados.length === 0) {
-          this.mostrarMensaje('No se encontraron clientes.', 'error')
-        }
-      } catch (error) {
-        console.error('❌ Error al filtrar clientes:', error)
-
-        // Si es un Error construido en el interceptor lo mostramos con detalle
-        if (error.message) {
-          if (error.message.includes('404')) {
-            this.clientesFiltrados = []
-            this.mostrarMensaje('No se encontró cliente.', 'error')
-          } else {
-            // Intenta mostrar el mensaje del backend si vino
-            this.mostrarMensaje(error.message, 'error')
-          }
-        } else {
-          this.mostrarMensaje('Error al buscar clientes en el servidor.', 'error')
-        }
-      }
-    },
-
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
-      this.cargarClientes() // 🔹 Vuelve a cargar todos los clientes
     },
 
     formatearFecha(fecha) {
