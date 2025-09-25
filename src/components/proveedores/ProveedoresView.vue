@@ -132,7 +132,7 @@ import {
 } from '@/services/apiSuppliersService.js'
 
 export default {
-  name: 'RegistroProveedorView',
+  name: 'ProveedoresView',
   components: { DashboardSideMenu },
   data() {
     return {

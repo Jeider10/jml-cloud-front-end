@@ -84,7 +84,7 @@ export default {
       mensaje: '',
       mensajeTipo: '',
       busqueda: '',
-      tipoBusqueda: '', // 🔹 Nuevo: control del tipo de búsqueda
+      tipoBusqueda: '',
       // Modal de eliminación
       modalEliminar: {
         visible: false,
@@ -93,15 +93,18 @@ export default {
       }
     }
   },
+
   mounted() {
     // 🔹 Cargar todos los clientes desde backend al iniciar
     // this.cargarClientes()
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -133,10 +136,7 @@ export default {
       // 🔍 Verificar si ya existe un cliente con la misma identificación en la lista local
       const existente = this.clientes.find(c => c.identificacion === this.clienteForm.identificacion)
       if (existente) {
-        this.mostrarMensaje(
-          `⚠️ Ya existe un cliente con esta Identificación (${existente.identificacion}): ${existente.nombres} ${existente.apellidos}.`,
-          'error'
-        )
+        this.mostrarMensaje(`⚠️ Ya existe un cliente con esta Identificación (${existente.identificacion}): ${existente.nombres} ${existente.apellidos}.`, 'error')
         return
       }
 
@@ -148,10 +148,7 @@ export default {
         // Agregamos el cliente retornado por el backend a la lista local
         this.clientes.push(nuevoCliente)
         this.clientesFiltrados = [...this.clientes]
-        this.mostrarMensaje(
-          `✅ Cliente ${nuevoCliente.nombres} ${nuevoCliente.apellidos} registrado correctamente.`,
-          'success'
-        )
+        this.mostrarMensaje(`✅ Cliente ${nuevoCliente.nombres} ${nuevoCliente.apellidos} registrado correctamente.`, 'success')
 
         // limpiar formulario
         this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
@@ -167,46 +164,22 @@ export default {
 
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.clienteForm.identificacion || this.clienteForm.nombres || this.clienteForm.apellidos || this.clienteForm.telefono || this.clienteForm.direccion
+      return this.clienteForm.identificacion ||
+             this.clienteForm.nombres ||
+             this.clienteForm.apellidos ||
+             this.clienteForm.telefono ||
+             this.clienteForm.direccion;
     },
 
     // 🔹 Método de limpiar campos del formulario
     limpiarCampos() {
-      this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
-    },
-
-    // 🔹 Método para volver a clientes
-    volverProveedores() {
-      this.$router.push({ name: 'ClientesView' })
-    },
-
-    // Método para saber si hay datos en el cuadro de filtro
-    hayDatosFiltro() {
-      return this.busqueda.trim().length > 0
-    },
-
-    // Abrir modal en vez de window.confirm
-    confirmarEliminar(idx) {
-      this.modalEliminar.idx = idx
-      this.modalEliminar.cliente = this.clientes[idx]
-      this.modalEliminar.visible = true
-    },
-
-    abrirActualizarCliente(cliente) {
-      // Guardamos el cliente seleccionado para actualizar en localStorage
-      localStorage.setItem('clienteActualizar', JSON.stringify(cliente))
-      // Redirigimos a la vista de actualización
-      this.$router.push({ name: 'ActualizarClienteView' }) // ✅ Nombre de component del index
-    },
-
-    limpiarBusqueda() {
-      this.busqueda = ''
-      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
-    },
-
-    formatearFecha(fecha) {
-      if (!fecha) return ''
-      return new Date(fecha).toLocaleString()
+      this.clienteForm = {
+        identificacion: '',
+        nombres: '',
+        apellidos: '',
+        telefono: '',
+        direccion: ''
+      }
     },
 
     // 🔹 Método para volver a clientes
