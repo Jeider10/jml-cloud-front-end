@@ -7,7 +7,7 @@
 
     <!-- Contenido principal -->
     <div :class="['proveedor-container', { expanded: menuOpen }]">
-      <h1 class="titulo">Registro Proveedor</h1>
+      <h1 class="titulo">Proveedores</h1>
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">

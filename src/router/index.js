@@ -69,9 +69,10 @@ const routes = [
     component: ProveedoresView
   },
   {
-    path: '/actualizar-proveedor',
+    path: '/actualizar-proveedor/:codigoSucursal',
     name: 'ActualizarProveedorView',
-    component: ActualizarProveedorView
+    component: ActualizarProveedorView,
+    props: true   // 👈 Esto hace que "codigoSucursal" llegue como prop
   },
   {
     path: '/registro-productos',

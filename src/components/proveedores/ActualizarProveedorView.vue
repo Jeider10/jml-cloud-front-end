@@ -55,11 +55,12 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { actualizarProveedor } from '@/services/apiSuppliersService.js'
+import { actualizarProveedor, buscarProveedorPorCodigoSucursal } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'ActualizarProveedorView',
   components: { DashboardSideMenu },
+  props: ['codigoSucursal'],
   data() {
     return {
       menuOpen: false,
@@ -74,11 +75,10 @@ export default {
       mensajeTipo: ''
     }
   },
-  mounted() {
-    const proveedor = JSON.parse(localStorage.getItem('proveedorActualizar'))
-    if (proveedor) {
-      this.proveedorForm = { ...proveedor }
-    }
+
+  async mounted() {
+    // 🔹 Cargar proveedor específico desde backend por codigoSucursal
+    await this.cargarProveedor()
   },
 
   methods: {
@@ -98,6 +98,27 @@ export default {
           this.$router.push({ name: 'ProveedoresView' })
         }
       }, 3000)
+    },
+
+    // 🔹 Método de argar un proveedor por códigoSucursal
+    async cargarProveedor() {
+      try {
+        console.log('👉 codigoSucursal recibido:', this.codigoSucursal) // debug
+        const response = await buscarProveedorPorCodigoSucursal(this.codigoSucursal)
+        if (response.data) {
+          this.proveedorForm = { ...response.data } // ✅ llena el form directamente
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar proveedor:', error)
+
+        if (error.response && error.response.status === 404) {
+          this.mostrarMensaje(`Proveedor no encontrado con códigoSucursal ${this.codigoSucursal}`, 'error')
+        } else if (error.response && error.response.data) {
+          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+        } else {
+          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
+        }
+      }
     },
 
     // 🔹 Método para actualizar proveedor en backend
