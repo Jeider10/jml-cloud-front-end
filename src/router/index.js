@@ -60,9 +60,10 @@ const routes = [
     component: RegistroClienteView
   },
   {
-    path: '/actualizar-cliente',
+    path: '/actualizar-cliente/:identificacion',
     name: 'ActualizarClienteView',
-    component: ActualizarClienteView
+    component: ActualizarClienteView,
+    props: true   // 👈 Esto hace que "identificacion" llegue como prop
   },
   {
     path: '/registro-proveedor',

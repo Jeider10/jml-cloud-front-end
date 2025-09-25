@@ -235,10 +235,7 @@ export default {
         // ✅ Eliminamos localmente solo si backend respondió bien
         this.proveedores.splice(idx, 1)
         this.proveedoresFiltrados = [...this.proveedores]
-        this.mostrarMensaje(
-          `🗑️ Proveedor ${proveedor.nombre} eliminado.`,
-          'success'
-        )
+        this.mostrarMensaje(`🗑️ Proveedor ${proveedor.nombre} eliminado.`, 'success')
       } catch (error) {
         console.error('❌ Error al eliminar proveedor:', error)
         if (error.response && error.response.status === 404) {

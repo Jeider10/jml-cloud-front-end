@@ -7,7 +7,7 @@
 
     <!-- Contenido principal -->
     <div :class="['cliente-container', { expanded: menuOpen }]">
-      <h1 class="titulo">Registro Cliente</h1>
+      <h1 class="titulo">Clientes</h1>
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
@@ -36,33 +36,6 @@
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
-          <label>Identificación</label>
-          <input v-model="clienteForm.identificacion" type="text" />
-
-          <label>Nombres</label>
-          <input v-model="clienteForm.nombres" type="text" />
-          <label>Apellidos</label>
-          <input v-model="clienteForm.apellidos" type="text" />
-          <label>Teléfono</label>
-          <input v-model="clienteForm.telefono" type="text" />
-
-          <label>Dirección</label>
-          <input v-model="clienteForm.direccion" type="text" />
-
-          <button type="button"
-                  class="agregar-btn"
-                  :disabled="!hayDatos()"
-                  @click="agregarCliente">
-            ➕ Registrar
-          </button>
-
-          <!-- Nuevo botón Limpiar campos -->
-          <button type="button"
-                  class="limpiar-campos-btn"
-                  :disabled="!hayDatos()"
-                  @click="limpiarCampos">
-            🧹 Limpiar campos
-          </button>
         </div>
 
         <!-- 🔍 Filtro de búsqueda -->
@@ -79,19 +52,34 @@
               <option value="apellidos">Apellidos</option>
             </select>
 
+            <!-- 🔍 Termino de búsqueda -->
             <input v-model="busqueda"
                    type="text"
                    placeholder="Ingrese término de búsqueda"
                    :disabled="!tipoBusqueda" />
 
+            <!-- 🔍 Botón de búsqueda -->
             <button type="button"
                     class="buscar-btn"
                     :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="filtrarClientes">Buscar</button>
+                    @click="filtrarProveedores">
+                    🔍 Buscar
+            </button>
+
+            <!-- 🧹 Botón de limpiar búsqueda -->
             <button type="button"
                     class="buscar-btn"
                     :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="limpiarBusqueda">Limpiar</button>
+                    @click="limpiarBusqueda">
+                    🧹 Limpiar
+            </button>
+
+            <!-- ➕ Botón de registrar producto -->
+            <button type="button"
+                    class="agregar-btn"
+                    @click="agregarCliente">
+                    ➕ Registrar Cliente
+            </button>
           </div>
         </div>
       </div>
@@ -119,10 +107,10 @@
             <td>{{ c.apellidos }}</td>
             <td>{{ c.telefono }}</td>
             <td>{{ c.direccion }}</td>
-            <td>{{ formatearFecha(c.fechaCreacion) }}</td> <!-- ⏰ Fecha de registro -->
-            <td>{{ formatearFecha(c.fechaActualizacion) }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
+            <td>{{ c.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
+            <td>{{ c.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
-              <!-- Nuevo botón de actualizar -->
+              <!-- Botón de actualizar -->
               <button class="update-btn" @click="abrirActualizarCliente(c)">✏️</button>
               <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
             </td>
@@ -140,7 +128,6 @@
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import {
   listarClientes,
-  crearCliente,
   buscarClientePorIdentificacion,
   buscarClientePorNombres,
   buscarClientePorApellidos,
@@ -165,7 +152,7 @@ export default {
       mensaje: '',
       mensajeTipo: '',
       busqueda: '',
-      tipoBusqueda: '', // 🔹 Nuevo: control del tipo de búsqueda
+      tipoBusqueda: '',
       // Modal de eliminación
       modalEliminar: {
         visible: false,
@@ -178,6 +165,7 @@ export default {
     // 🔹 Cargar todos los clientes desde backend al iniciar
     this.cargarClientes()
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
@@ -191,7 +179,7 @@ export default {
       }, 3000)
     },
 
-    // 🔹 Función que llama al endpoint para listar todos los clientes
+    // 🔹 Método de cargar clientes
     async cargarClientes() {
       try {
         const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
@@ -200,87 +188,48 @@ export default {
       } catch (error) {
         console.error('❌ Error al cargar clientes:', error)
 
-        // Mostrar mensaje real si hay respuesta del backend
+        // Mostrar mensaje si hay respuesta del backend
         if (error.response && error.response.data) {
           this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
         } else {
-          this.mostrarMensaje('Error al cargar clientes desde el servidor.', 'error')
+          this.mostrarMensaje('Error al conectarse con el servidor de clientes.', 'error')
         }
       }
     },
 
-    // 🔹 Nuevo: agregar cliente usando API real
-    async agregarCliente() {
-      if (!this.clienteForm.identificacion) {
-        this.mostrarMensaje('Ingrese la Identificación del cliente.', 'error')
-        return
-      }
-      if (!this.clienteForm.nombres) {
-        this.mostrarMensaje('Ingrese el nombre del cliente.', 'error')
-        return
-      }
-      if (!this.clienteForm.apellidos) {
-        this.mostrarMensaje('Ingrese el apellido del cliente.', 'error')
-        return
-      }
-
-      // 🔍 Verificar si ya existe un cliente con la misma identificación en la lista local
-      const existente = this.clientes.find(c => c.identificacion === this.clienteForm.identificacion)
-      if (existente) {
-        this.mostrarMensaje(
-          `⚠️ Ya existe un cliente con esta Identificación (${existente.identificacion}): ${existente.nombres} ${existente.apellidos}.`,
-          'error'
-        )
-        return
-      }
-
-      try {
-        // Llamada al backend
-        const response = await crearCliente(this.clienteForm)
-        const nuevoCliente = response.data
-
-        // Agregamos el cliente retornado por el backend a la lista local
-        this.clientes.push(nuevoCliente)
-        this.clientesFiltrados = [...this.clientes]
-        this.mostrarMensaje(
-          `✅ Cliente ${nuevoCliente.nombres} ${nuevoCliente.apellidos} registrado correctamente.`,
-          'success'
-        )
-
-        // limpiar formulario
-        this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
-      } catch (error) {
-        console.error('❌ Error al crear cliente:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al crear cliente en el servidor.', 'error')
-        }
-      }
-    },
-
-    // Método para saber si hay datos en el formulario
+    // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.clienteForm.identificacion || this.clienteForm.nombres || this.clienteForm.apellidos || this.clienteForm.telefono || this.clienteForm.direccion
+      return this.clienteForm.identificacion ||
+             this.clienteForm.nombres ||
+             this.clienteForm.apellidos ||
+             this.clienteForm.telefono ||
+             this.clienteForm.direccion;
     },
 
-    // Limpiar campos del formulario
+    // 🔹 Método de limpiar campos del formulario
     limpiarCampos() {
-      this.clienteForm = { identificacion: '', nombres: '', apellidos: '', telefono: '', direccion: '' }
+      this.clienteForm = {
+        identificacion: '',
+        nombres: '',
+        apellidos: '',
+        telefono: '',
+        direccion: ''
+      }
     },
 
-    // Método para saber si hay datos en el cuadro de filtro
+    // 🔹 Método para saber si hay datos en el cuadro de filtro
     hayDatosFiltro() {
       return this.busqueda.trim().length > 0
     },
 
-    // Abrir modal en vez de window.confirm
+    // 🔹 Método para abrir modal en vez de window.confirm
     confirmarEliminar(idx) {
       this.modalEliminar.idx = idx
       this.modalEliminar.cliente = this.clientes[idx]
       this.modalEliminar.visible = true
     },
 
+    // 🔹 Método para eliminar cliente
     async eliminarCliente(idx) {
       const cliente = this.clientes[idx]
 
@@ -291,31 +240,39 @@ export default {
         this.clientes.splice(idx, 1)
         this.clientesFiltrados = [...this.clientes]
 
-        this.mostrarMensaje(
-          `🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`,
-          'success'
-        )
+        this.mostrarMensaje(`🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`, 'success')
       } catch (error) {
         console.error('❌ Error al eliminar cliente:', error)
 
         if (error.response && error.response.status === 404) {
-          this.mostrarMensaje('⚠️ Cliente no encontrado en el servidor.', 'error')
+          this.mostrarMensaje('⚠️ Cliente ${cliente.nombres} no encontrado en el servidor.', 'error')
         } else {
-          this.mostrarMensaje('Error al eliminar cliente en el servidor.', 'error')
+          this.mostrarMensaje('Error al eliminar cliente ${cliente.nombres} en el servidor.', 'error')
         }
       } finally {
         this.modalEliminar.visible = false
       }
     },
 
-    abrirActualizarCliente(cliente) {
-      // Guardamos el cliente seleccionado para actualizar en localStorage
-      localStorage.setItem('clienteActualizar', JSON.stringify(cliente))
-      // Redirigimos a la vista de actualización
-      this.$router.push({ name: 'ActualizarClienteView' }) // ✅ Nombre de component del index
+    // 🔹 Método para llamar al componente de agregar cliente
+    async agregarCliente(cliente) {
+      this.$router.push({
+        name: 'RegistroClienteView',
+        state: { cliente }
+      })
     },
 
-    // 🔹 Nuevo: filtrar clientes según el tipo de búsqueda y llamar endpoint correcto
+    // 🔹 Método para llamar al componente de actualizar cliente
+    abrirActualizarCliente(cliente) {
+      this.$router.push({
+        name: 'ActualizarClienteView', // ✅ Nombre de component del index
+        params: {
+          identificacion: cliente.identificacion
+        }
+      })
+    },
+
+    // 🔹 Método para filtrar clientes según el tipo de búsqueda
     async filtrarClientes() {
       if (!this.busqueda.trim()) {
         this.limpiarBusqueda()
@@ -328,7 +285,7 @@ export default {
         let response
         switch (this.tipoBusqueda) {
           case 'identificacion':
-            response = await buscarClientePorIdentificacion(texto)
+            response = await buscarClientePorIdentificacion(Number(texto)) // ✅ Identificacion como número
             break
           case 'nombres':
             response = await buscarClientePorNombres(texto)
@@ -373,15 +330,11 @@ export default {
       }
     },
 
+    // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
       this.cargarClientes() // 🔹 Vuelve a cargar todos los clientes
-    },
-
-    formatearFecha(fecha) {
-      if (!fecha) return ''
-      return new Date(fecha).toLocaleString()
     }
   }
 }
@@ -425,14 +378,37 @@ export default {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
 
-.fade-enter-active, .fade-leave-active {
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
+
+.fade-enter-active {
   transition: opacity 0.5s;
 }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
 
 .form-container {
   margin-bottom: 0px;
@@ -456,7 +432,9 @@ export default {
   margin-bottom: 12px;     /* espacio debajo del bloque */
 }
 
-label { font-weight: bold; }
+label {
+  font-weight: bold;
+}
 
 input {
   padding: 6px;
@@ -522,8 +500,14 @@ input {
   margin: 20px 0;
 }
 
-.clientes-table th,
 .clientes-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  background: white;
+}
+
+.clientes-table th {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
@@ -538,9 +522,16 @@ input {
   border: none;
   cursor: pointer;
 }
-.delete-btn:hover { background: #b52a33; }
 
-.empty-row { text-align: center; padding: 18px; color: #666; }
+.delete-btn:hover {
+  background: #b52a33;
+}
+
+.empty-row {
+  text-align: center;
+  padding: 18px;
+  color: #666;
+}
 
 .buscar-btn {
   padding: 6px 12px;
@@ -559,7 +550,8 @@ input {
 
 .buscar-btn:disabled {
   background: #ccc;
-  cursor: not-allowed; }
+  cursor: not-allowed;
+}
 
 .buscar-btn:not(:disabled):hover {
   background: #e76f51;
@@ -582,7 +574,8 @@ input {
 
 .limpiar-btn:disabled {
   background: #ccc;
-  cursor: not-allowed; }
+  cursor: not-allowed;
+}
 
 .limpiar-btn:not(:disabled):hover {
   background: #e76f51;
@@ -621,9 +614,21 @@ input {
   cursor: pointer;
 }
 
-.btn-yes { background: #e63946; color: white; }
-.btn-yes:hover { background: #b52a33; }
+.btn-yes {
+  background: #e63946;
+  color: white;
+}
 
-.btn-no { background: #06d6a0; color: white; }
-.btn-no:hover { background: #049670; }
+.btn-yes:hover {
+  background: #b52a33;
+}
+
+.btn-no {
+  background: #06d6a0;
+  color: white;
+}
+
+.btn-no:hover {
+  background: #049670;
+}
 </style>
