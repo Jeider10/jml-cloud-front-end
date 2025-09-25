@@ -113,7 +113,7 @@ export default {
       this.$router.push('/nueva-venta')
     },
     onClientesClick() {
-      this.$router.push('/registro-cliente')
+      this.$router.push('/clientes')
     },
     onProveedoresClick() {
       this.$router.push('/proveedores')

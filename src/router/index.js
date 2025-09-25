@@ -6,6 +6,7 @@ import DashboardView from '@/views/dashboard/DashboardView.vue'
 import ForgotPasswordView from '@/views/auth/forgotPassword/ForgotPasswordView.vue'
 import RegisterUserView from '@/views/auth/registerUser/RegisterUserView.vue'
 import NuevaVentaView from '@/components/ventas/NuevaVentaView.vue'
+import ClientesView from '@/components/clientes/ClientesView.vue'
 import RegistroClienteView from '@/components/clientes/RegistroClienteView.vue'
 import ActualizarClienteView from '@/components/clientes/ActualizarClienteView.vue'
 import RegistroProveedorView from '@/components/proveedores/RegistroProveedorView.vue'
@@ -47,6 +48,11 @@ const routes = [
     path: '/nueva-venta',
     name: 'NuevaVentaView',
     component: NuevaVentaView
+  },
+  {
+    path: '/clientes',
+    name: 'ClientesView',
+    component: ClientesView
   },
   {
     path: '/registro-cliente',
