@@ -149,12 +149,12 @@
                   🖨️ Imprimir
           </button>
 
-          <!-- 🧹 Botón de limpiar campos -->
+          <!-- 🧹 Botón de limpiar -->
           <button type="button"
                   class="limpiar-campos-btn"
                   :disabled="!hayDatosCliente()"
                   @click="limpiarCamposCliente">
-                  🧹 Limpiar campos
+                  🧹 Limpiar
           </button>
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
@@ -473,6 +473,8 @@ export default {
         identificacion: '',
         nombre: ''
       };
+      // 👇 Deshabilitar de nuevo los campos de producto
+      this.clienteEncontrado = false
     },
 
     // ✅ Logica para imprimir
