@@ -305,6 +305,10 @@ export default {
     limpiarFiltro() {
         this.filtroEstado = ''   // Reinicia select
         this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
+        // Reset cliente si quieres deshabilitar botones nuevamente
+        this.cliente = { identificacion: '', nombres: '' }
+        this.clienteEncontrado = false
+        this.ordenEstado = 'ABIERTA'  // o '' si quieres deshabilitar todo
     },
 
     async cargarOrdenesFiltradas() {
@@ -317,6 +321,17 @@ export default {
         }
         this.ordenesFiltradas = response.data || []
         this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
+
+        // ✅ Si se filtró por ABIERTA y hay órdenes, completar datos del cliente
+        if (this.filtroEstado === 'ABIERTA' && this.ordenesFiltradas.length > 0) {
+          const primeraOrden = this.ordenesFiltradas[0]
+          // Suponiendo que la orden contiene la info del cliente
+          this.cliente.identificacion = primeraOrden.identificacionCliente || ''
+          this.cliente.nombres = primeraOrden.nombreCliente || ''
+          this.clienteEncontrado = true
+          this.ordenEstado = 'ABIERTA'
+          // habilitar botones automáticamente
+        }
       } catch (error) {
         console.error('❌ Error al cargar órdenes filtradas:', error)
         this.mostrarMensaje('Error al obtener órdenes filtradas.', 'error')
