@@ -195,7 +195,7 @@ export default {
       items: [],
       cliente: {
         identificacion: '',
-        nombre: ''
+        nombres: ''
       },
       empleado: {
         identificacion: '',
@@ -348,7 +348,11 @@ export default {
         producto: this.venta.producto,
         descripcion: this.venta.descripcion,
         cantidad: Number(this.venta.cantidad),
-        precio: Number(this.venta.precio)
+        precio: Number(this.venta.precio),
+        identificacionCliente: Number(this.cliente.identificacion),
+        nombreCliente: this.cliente.nombres,
+        identificacionEmpleado: Number(this.empleado.identificacion),
+        nombreEmpleado: this.empleado.nombre
       }
 
       try {
