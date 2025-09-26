@@ -39,14 +39,14 @@
           <button type="button"
                   class="agregar-btn"
                   @click="actualizarCliente">
-            💾 Actualizar
+                  💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverClientes">
-            ↩️ Volver
+                  ↩️ Volver
           </button>
         </div>
       </div>
@@ -206,32 +206,8 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
 .form-container {
   margin-bottom: 20px;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 label {

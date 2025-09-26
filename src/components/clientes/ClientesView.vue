@@ -26,61 +26,63 @@
               {{ modalEliminar.cliente.apellidos }}?
             </p>
             <div class="modal-buttons">
-              <button class="btn-yes" @click="eliminarCliente(modalEliminar.idx)">Sí</button>
-              <button class="btn-no" @click="modalEliminar.visible = false">No</button>
+              <!-- ✅ Botón de si -->
+              <button class="btn-yes"
+                      @click="eliminarCliente(modalEliminar.idx)">
+                      Sí
+              </button>
+              <!-- ❌️ Botón de no -->
+              <button class="btn-no"
+                      @click="modalEliminar.visible = false">
+                      No
+              </button>
             </div>
           </div>
         </div>
       </transition>
 
-      <!-- Formulario cliente -->
-      <div class="form-container">
-        <div class="form-row">
-        </div>
+      <!-- 🔍 Filtro de búsqueda -->
+      <div class="form-filtro">
+        <!-- Texto descriptivo -->
+        <span style="font-weight: bold;">Buscar por:</span>
 
-        <!-- 🔍 Filtro de búsqueda -->
-        <div class="form-filtro">
-          <!-- Texto descriptivo -->
-          <span style="font-weight: bold;">Buscar por:</span>
+        <!-- Nuevo: selector + input + botones -->
+        <div style="display: flex; gap: 4px;">
+          <select v-model="tipoBusqueda">
+            <option disabled value="">Seleccione una opción</option>
+            <option value="identificacion">Identificación</option>
+            <option value="nombres">Nombres</option>
+            <option value="apellidos">Apellidos</option>
+          </select>
 
-          <!-- Nuevo: selector + input + botones -->
-          <div style="display: flex; gap: 4px;">
-            <select v-model="tipoBusqueda">
-              <option disabled value="">Seleccione una opción</option>
-              <option value="identificacion">Identificación</option>
-              <option value="nombres">Nombres</option>
-              <option value="apellidos">Apellidos</option>
-            </select>
+          <!-- 🔍 Termino de búsqueda -->
+          <input v-model="busqueda"
+                 type="text"
+                 placeholder="Ingrese término de búsqueda"
+                 :disabled="!tipoBusqueda" />
 
-            <!-- 🔍 Termino de búsqueda -->
-            <input v-model="busqueda"
-                   type="text"
-                   placeholder="Ingrese término de búsqueda"
-                   :disabled="!tipoBusqueda" />
+          <!-- 🔍 Botón de búsqueda -->
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="filtrarClientes">
+                  🔍 Buscar
+          </button>
 
-            <!-- 🔍 Botón de búsqueda -->
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="filtrarProveedores">
-                    🔍 Buscar
-            </button>
+          <!-- 🧹 Botón de limpiar búsqueda -->
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="limpiarBusqueda">
+                  🧹 Limpiar
+          </button>
 
-            <!-- 🧹 Botón de limpiar búsqueda -->
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="limpiarBusqueda">
-                    🧹 Limpiar
-            </button>
-
-            <!-- ➕ Botón de registrar producto -->
-            <button type="button"
-                    class="agregar-btn"
-                    @click="agregarCliente">
-                    ➕ Registrar Cliente
-            </button>
-          </div>
+          <!-- ➕ Botón de registrar producto -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="agregarCliente">
+                  ➕ Registrar Cliente
+          </button>
         </div>
       </div>
 
@@ -110,9 +112,16 @@
             <td>{{ c.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
             <td>{{ c.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
-              <!-- Botón de actualizar -->
-              <button class="update-btn" @click="abrirActualizarCliente(c)">✏️</button>
-              <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
+              <!-- ✏️ Botón de editar -->
+              <button class="update-btn"
+                      @click="abrirActualizarCliente(c)">
+                      ✏️
+              </button>
+              <!-- 🗑️️ Botón de eliminar -->
+              <button class="delete-btn"
+                      @click="confirmarEliminar(idx)">
+                      🗑️
+              </button>
             </td>
           </tr>
           <tr v-if="clientesFiltrados.length === 0">
@@ -161,8 +170,9 @@ export default {
       }
     }
   },
+
+  // 🔹 Cargar todos los clientes desde backend al iniciar
   mounted() {
-    // 🔹 Cargar todos los clientes desde backend al iniciar
     this.cargarClientes()
   },
 
@@ -171,6 +181,7 @@ export default {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -185,6 +196,7 @@ export default {
         const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
         this.clientes = response.data
         this.clientesFiltrados = [...this.clientes]
+
       } catch (error) {
         console.error('❌ Error al cargar clientes:', error)
 
@@ -236,11 +248,12 @@ export default {
       try {
         await eliminarClientePorIdentificacion(cliente.identificacion)
 
-        // ✅ Eliminamos localmente solo si backend respondió bien
+        // ✅ Eliminamos solo si backend respondió bien
         this.clientes.splice(idx, 1)
         this.clientesFiltrados = [...this.clientes]
 
         this.mostrarMensaje(`🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`, 'success')
+
       } catch (error) {
         console.error('❌ Error al eliminar cliente:', error)
 
@@ -265,7 +278,7 @@ export default {
     // 🔹 Método para llamar al componente de actualizar cliente
     abrirActualizarCliente(cliente) {
       this.$router.push({
-        name: 'ActualizarClienteView', // ✅ Nombre de component del index
+        name: 'ActualizarClienteView',
         params: {
           identificacion: cliente.identificacion
         }
@@ -352,7 +365,7 @@ export default {
   right: 0;
   bottom: 0;
   padding: 20px;
-  background-color: #6fffd4; /* ✅ mismo color que NuevaVentaView.vue */
+  background-color: #6fffd4;
   overflow-y: auto;
   transition: left 0.3s ease;
   display: flex;
@@ -394,46 +407,14 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
-.form-container {
-  margin-bottom: 0px;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
 .form-filtro {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  align-items: center; /* o center según prefieras */
-  gap: 4px;                /* espacio entre el texto y los inputs/botones */
+  align-items: center;      /* o center según prefieras */
+  gap: 4px;                 /* espacio entre el texto y los inputs/botones */
   margin-top: 20px;         /* espacio arriba del bloque */
-  margin-bottom: 12px;     /* espacio debajo del bloque */
-}
-
-label {
-  font-weight: bold;
+  margin-bottom: 12px;      /* espacio debajo del bloque */
 }
 
 input {
@@ -464,25 +445,6 @@ input {
   background: #e76f51;
 }
 
-/* Nuevo botón limpiar campos */
-.limpiar-campos-btn {
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: #f4a261;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.limpiar-campos-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed; }
-
-.limpiar-campos-btn:not(:disabled):hover {
-  background: #e76f51;
-}
-
 .update-btn {
   padding: 6px 8px;
   border-radius: 6px;
@@ -492,7 +454,10 @@ input {
   cursor: pointer;
   margin-right: 4px;
 }
-.update-btn:hover { background: #e76f51; }
+
+.update-btn:hover {
+  background: #e76f51;
+}
 
 .clientes-table {
   width: 100%;
@@ -557,31 +522,6 @@ input {
   background: #e76f51;
 }
 
-.limpiar-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  background: #06d6a0;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-left: 4px;
-  font-weight: 600;
-}
-
-.limpiar-btn:hover {
-  background: #049670;
-}
-
-.limpiar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.limpiar-btn:not(:disabled):hover {
-  background: #e76f51;
-}
-
-/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -606,26 +546,28 @@ input {
   gap: 15px;
 }
 
-.btn-yes, .btn-no {
+.btn-yes {
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
   font-weight: 600;
   cursor: pointer;
+  background: #e63946;
+  color: white;
 }
 
-.btn-yes {
-  background: #e63946;
+.btn-no {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #06d6a0;
   color: white;
 }
 
 .btn-yes:hover {
   background: #b52a33;
-}
-
-.btn-no {
-  background: #06d6a0;
-  color: white;
 }
 
 .btn-no:hover {
