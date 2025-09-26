@@ -358,50 +358,56 @@ export default {
       // 🚀 Construir el payload para enviar al backend
       const payload = {
         codigo: Number(this.venta.codigo),
-        producto: this.venta.producto,
-        descripcion: this.venta.descripcion,
-        cantidad: Number(this.venta.cantidad),
-        precio: Number(this.venta.precio),
         identificacionCliente: Number(this.cliente.identificacion),
         nombreCliente: this.cliente.nombres,
         identificacionEmpleado: Number(this.empleado.identificacion),
-        nombreEmpleado: this.empleado.nombre
+        nombreEmpleado: this.empleado.nombre,
+        detalles: [
+          {
+            codigo: Number(this.venta.codigo),
+            producto: this.venta.producto,
+            descripcion: this.venta.descripcion,
+            cantidad: Number(this.venta.cantidad),
+            precio: Number(this.venta.precio)
+          }
+        ]
       }
 
       try {
         // 1️⃣ Registrar en órdenes
         const response = await agregarProducto(payload)
-        const productoActualizado = response.data
+        const ordenActualizada = response.data
+        const detalle = ordenActualizada.detalles[0]
 
         // 2️⃣ Restar stock en productos
         await restarStockProducto(this.venta.codigo, this.venta.cantidad)
 
         // 3️⃣ Manejar tabla local
-        const existingIndex = this.items.findIndex(i => i.codigo === productoActualizado.codigo)
+        const existingIndex = this.items.findIndex(i => i.codigo === detalle.codigo)
 
         if (existingIndex !== -1) {
           // Actualizar el producto en la tabla con la respuesta del backend
           this.items[existingIndex] = {
             ...this.items[existingIndex],
-            cantidad: productoActualizado.cantidad,
-            precio: productoActualizado.precio,
-            descripcion: productoActualizado.descripcion,
-            producto: productoActualizado.producto
+            cantidad: detalle.cantidad,
+            precio: detalle.precio,
+            descripcion: detalle.descripcion,
+            producto: detalle.producto
           }
-          this.mostrarMensaje(`⚠️ El producto con código ${productoActualizado.codigo} ya existía. Se actualizó la cantidad.`, 'warning')
+          this.mostrarMensaje(`⚠️ El producto con código ${detalle.codigo} ya existía. Se actualizó la cantidad.`, 'warning')
         } else {
           // Si no existía → agregarlo a la tabla
           this.items.push({
-            codigo: productoActualizado.codigo,
-            producto: productoActualizado.producto,
-            descripcion: productoActualizado.descripcion,
-            cantidad: productoActualizado.cantidad,
-            precio: productoActualizado.precio,
-            fechaCreacion: productoActualizado.fechaCreacion,
-            fechaActualizacion: productoActualizado.fechaActualizacion,
+            codigo: detalle.codigo,
+            producto: detalle.producto,
+            descripcion: detalle.descripcion,
+            cantidad: detalle.cantidad,
+            precio: detalle.precio,
+            fechaCreacion: ordenActualizada.fechaCreacion,
+            fechaActualizacion: ordenActualizada.fechaActualizacion,
             removeQty: null
           })
-          this.mostrarMensaje(`✅ Producto ${productoActualizado.producto} agregado correctamente.`, 'success')
+          this.mostrarMensaje(`✅ Producto ${detalle.producto} agregado correctamente.`, 'success')
         }
 
         // 4️⃣ Limpiar campos
@@ -430,17 +436,18 @@ export default {
           // 1️⃣ Actualizar en órdenes
           const response = await restarCantidadProducto(item.codigo, cantidadARestar)
           const ordenActualizada = response.data
+          const detalle = ordenActualizada.detalles[0]
 
           // 2️⃣ Actualizar en productos (stock global)
           await restarStockProducto(item.codigo, -cantidadARestar) // 👈 ojo, aquí sería sumar de nuevo al stock (negativo = devolver)
 
-          if (ordenActualizada.cantidad === 0) {
+          if (detalle.cantidad === 0) {
             // producto eliminado totalmente
             this.items.splice(idx, 1)
             this.mostrarMensaje(`🗑️ Producto ${item.codigo} eliminado de la orden.`, 'error')
           } else {
             // actualizar cantidad en tabla
-            this.items[idx].cantidad = ordenActualizada.cantidad
+            this.items[idx].cantidad = detalle.cantidad
             this.mostrarMensaje(`➖ Se restaron ${cantidadARestar} unidades del producto ${item.codigo}.`, 'warning')
           }
         } catch (error) {
