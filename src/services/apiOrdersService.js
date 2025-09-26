@@ -52,47 +52,6 @@ export const agregarProducto = (producto) => apiOrders.post('/ordenes-ventas/reg
 export const restarCantidadProducto = (codigo, cantidad) =>
   apiOrders.put(`/ordenes-ventas/restar/${codigo}`, null, { params: { cantidad } })
 
-// Listar todos los productos
-export const listarProductos = () => apiOrders.get('/productos/listar-productos')
-
-// Búsqueda por codigo
-export const buscarProductoPorCodigo = (codigo) =>
-  apiOrders.get('/productos/codigo', { params: { codigo } })
-
-// Búsqueda por nombre
-export const buscarProductoPorNombre = (nombre) =>
-  apiOrders.get('/productos/nombre', { params: { nombre } })
-
-// Búsqueda por descripcion
-export const buscarProductoPorDescripcion = (descripcion) =>
-  apiOrders.get('/productos/descripcion', { params: { descripcion } })
-
-// Búsqueda por cantidad
-export const buscarProductoPorCantidad = (cantidad) =>
-  apiOrders.get('/productos/cantidad', { params: { cantidad } })
-
-// Búsqueda por precio
-export const buscarProductoPorPrecio = (precio) =>
-  apiOrders.get('/productos/precio', { params: { precio } })
-
-// Búsqueda por proveedor por id
-export const buscarProductoPorProveedorId = (proveedorId) =>
-  apiOrders.get('/productos/proveedorId', { params: { 'proveedorId': proveedorId } })
-
-// Búsqueda por proveedor por nombre
-export const buscarProductoPorProveedorName = (proveedorName) =>
-  apiOrders.get('/productos/proveedorName', { params: { 'proveedorName': proveedorName } })
-
-// Búsqueda por fechaCreacion
-export const buscarProductoPorFechaCreacion = (fechaCreacion) =>
-  apiOrders.get('/productos/fechaCreacion', { params: { fechaCreacion } })
-
-// Actualizar producto
-export const actualizarProducto = (producto) => {
-  return apiOrders.put('/productos/actualizar', producto)
-}
-
-// Eliminar producto por codigo
-export const eliminarProductoPorCodigo = (codigo) =>
-  apiOrders.delete('/productos/eliminar-codigo', { params: { codigo } })
-
+// Cerrar orden (PATCH /ordenes/{id}/cerrar)
+export const cerrarOrden = (id) =>
+  apiOrders.patch(`/ordenes/${id}/cerrar`)

@@ -24,25 +24,25 @@
           <input v-model="venta.codigo"
                  type="text"
                  @keyup.enter="buscarProducto"
-                 :disabled="!clienteEncontrado" />
+                 :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
 
           <label>Producto</label>
-          <input v-model="venta.producto" type="text" :disabled="!clienteEncontrado" />
+          <input v-model="venta.producto" type="text" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
 
           <label>Descripción</label>
-          <input v-model="venta.descripcion" type="text" :disabled="!clienteEncontrado" />
+          <input v-model="venta.descripcion" type="text" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
 
           <label>Cantidad</label>
-          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!clienteEncontrado" />
+          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
 
           <label>Precio</label>
-          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!clienteEncontrado" />
+          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
 
           <!-- ➕ Botón para agregar producto -->
           <button type="button"
                   class="agregar-btn"
                   @click="agregarItem"
-                  :disabled="!formValido || !clienteEncontrado">
+                  :disabled="!formValido || !clienteEncontrado || ordenEstado !== 'ABIERTA'">
                   ➕ Agregar Producto
           </button>
 
@@ -96,7 +96,7 @@
               <div class="total-value">{{ item.cantidad * item.precio }}</div>
 
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
-              <div class="mini-controls no-print">
+              <div class="mini-controls no-print" v-if="ordenEstado === 'ABIERTA'">
                 <input v-model.number="item.removeQty"
                        type="number"
                        min="0"
@@ -156,6 +156,15 @@
                   @click="limpiarCamposCliente">
                   🧹 Limpiar
           </button>
+
+          <!-- ✅ Botón de cerrar venta -->
+          <button type="button"
+                  class="cerrar-venta-btn"
+                  @click="cerrarVenta"
+                  :disabled="ordenEstado !== 'ABIERTA' || items.length === 0">
+                  ✅ Cerrar Venta
+          </button>
+
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
 
@@ -175,7 +184,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
-import { agregarProducto, restarCantidadProducto } from '@/services/apiOrdersService.js'
+import { agregarProducto, restarCantidadProducto, cerrarOrden } from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 
 export default {
@@ -202,6 +211,8 @@ export default {
         nombre: ''
       },
       clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
+      ordenId: null, // 🔹 Id de la orden actual
+      ordenEstado: 'ABIERTA', // 🔹 Estado de la orden (ABIERTA o CERRADA)
       // 🔔 mensajes en pantalla
       mensaje: '',
       mensajeTipo: '' // success | warning | error
@@ -226,7 +237,7 @@ export default {
     puedeImprimir() {
       return (
         this.items.length > 0 &&
-        this.clienteEncontrado,
+        this.clienteEncontrado &&
         this.empleado.identificacion.trim() !== '' &&
         this.empleado.nombre.trim() !== ''
       )
@@ -495,6 +506,22 @@ export default {
     agregarCliente() {
       this.limpiarCamposCliente();
       this.mostrarMensaje('✅ Listo para registrar una nueva venta.', 'success');
+    },
+
+    // ✅ Nuevo método para cerrar la venta
+    async cerrarVenta() {
+      if (!this.ordenId) {
+        this.mostrarMensaje('⚠️ No hay una orden activa para cerrar.', 'warning')
+        return
+      }
+      try {
+        await cerrarOrden(this.ordenId)
+        this.ordenEstado = 'CERRADA'
+        this.mostrarMensaje('✅ Venta cerrada correctamente.', 'success')
+      } catch (error) {
+        console.error('❌ Error al cerrar venta:', error)
+        this.mostrarMensaje(error.message || 'Error al cerrar la venta en el servidor.', 'error')
+      }
     },
 
     // ✅ Logica para imprimir
