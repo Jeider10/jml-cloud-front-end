@@ -3,7 +3,7 @@
 import axios from 'axios'
 import router from '@/router'
 
-const apiProducts = axios.create({
+const apiOrders = axios.create({
   baseURL: process.env.VUE_APP_ORDERS_BASE_URL, // ⚠️ backend orders ventas
   headers: {
     'Content-Type': 'application/json'
@@ -11,7 +11,7 @@ const apiProducts = axios.create({
 })
 
 // 🔐 Interceptor para añadir token en cada request
-apiProducts.interceptors.request.use(config => {
+apiOrders.interceptors.request.use(config => {
   const token = localStorage.getItem('sessionToken')
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
@@ -20,7 +20,7 @@ apiProducts.interceptors.request.use(config => {
 })
 
 // ⚠️ Interceptor para manejar respuestas de error
-apiProducts.interceptors.response.use(
+apiOrders.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
@@ -45,50 +45,50 @@ apiProducts.interceptors.response.use(
 // 🔹 Endpoints del microservicio de producto
 // =======================
 
-// Listar todos los productos
-export const listarProductos = () => apiProducts.get('/productos/listar-productos')
+// Agregar producto a tabla
+export const agregarProducto = (producto) => apiOrders.post('/ordenes-ventas/register', producto)
 
-// Crear producto
-export const crearProducto = (producto) => apiProducts.post('/productos/register', producto)
+// Listar todos los productos
+export const listarProductos = () => apiOrders.get('/productos/listar-productos')
 
 // Búsqueda por codigo
 export const buscarProductoPorCodigo = (codigo) =>
-  apiProducts.get('/productos/codigo', { params: { codigo } })
+  apiOrders.get('/productos/codigo', { params: { codigo } })
 
 // Búsqueda por nombre
 export const buscarProductoPorNombre = (nombre) =>
-  apiProducts.get('/productos/nombre', { params: { nombre } })
+  apiOrders.get('/productos/nombre', { params: { nombre } })
 
 // Búsqueda por descripcion
 export const buscarProductoPorDescripcion = (descripcion) =>
-  apiProducts.get('/productos/descripcion', { params: { descripcion } })
+  apiOrders.get('/productos/descripcion', { params: { descripcion } })
 
 // Búsqueda por cantidad
 export const buscarProductoPorCantidad = (cantidad) =>
-  apiProducts.get('/productos/cantidad', { params: { cantidad } })
+  apiOrders.get('/productos/cantidad', { params: { cantidad } })
 
 // Búsqueda por precio
 export const buscarProductoPorPrecio = (precio) =>
-  apiProducts.get('/productos/precio', { params: { precio } })
+  apiOrders.get('/productos/precio', { params: { precio } })
 
 // Búsqueda por proveedor por id
 export const buscarProductoPorProveedorId = (proveedorId) =>
-  apiProducts.get('/productos/proveedorId', { params: { 'proveedorId': proveedorId } })
+  apiOrders.get('/productos/proveedorId', { params: { 'proveedorId': proveedorId } })
 
 // Búsqueda por proveedor por nombre
 export const buscarProductoPorProveedorName = (proveedorName) =>
-  apiProducts.get('/productos/proveedorName', { params: { 'proveedorName': proveedorName } })
+  apiOrders.get('/productos/proveedorName', { params: { 'proveedorName': proveedorName } })
 
 // Búsqueda por fechaCreacion
 export const buscarProductoPorFechaCreacion = (fechaCreacion) =>
-  apiProducts.get('/productos/fechaCreacion', { params: { fechaCreacion } })
+  apiOrders.get('/productos/fechaCreacion', { params: { fechaCreacion } })
 
 // Actualizar producto
 export const actualizarProducto = (producto) => {
-  return apiProducts.put('/productos/actualizar', producto)
+  return apiOrders.put('/productos/actualizar', producto)
 }
 
 // Eliminar producto por codigo
 export const eliminarProductoPorCodigo = (codigo) =>
-  apiProducts.delete('/productos/eliminar-codigo', { params: { codigo } })
+  apiOrders.delete('/productos/eliminar-codigo', { params: { codigo } })
 

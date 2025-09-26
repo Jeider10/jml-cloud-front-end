@@ -138,6 +138,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarProductoPorCodigo } from '@/services/apiProductsService.js'
+import { agregarProducto } from '@/services/apiOrdersService.js'
 
 export default {
   name: 'NuevaVentaView',
@@ -244,32 +245,59 @@ export default {
         return
       }
 
-      const existingIndex = this.items.findIndex(i => i.codigo === this.venta.codigo)
-      if (existingIndex !== -1) {
-        // Si existe → sumar cantidad al mismo producto
-        this.items[existingIndex].cantidad += Number(this.venta.cantidad)
-        this.mostrarMensaje(`⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad.`, 'warning')
-      } else {
-        // Si no existe → crear uno nuevo
-        const newItem = {
-          codigo: this.venta.codigo,
-          producto: this.venta.producto,
-          descripcion: this.venta.descripcion,
-          cantidad: Number(this.venta.cantidad),
-          precio: Number(this.venta.precio),
-          removeQty: null
-        }
-        this.items.push(newItem)
-        this.mostrarMensaje(`✅ Producto ${this.venta.producto} agregado correctamente.`, 'success')
-      }
+      // 🚀 Construir el payload para enviar al backend
+      const payload = {
+        codigo: Number(this.venta.codigo),
+        producto: this.venta.producto,
+        descripcion: this.venta.descripcion,
+        cantidad: Number(this.venta.cantidad),
+        precio: Number(this.venta.precio)
+    };
 
-      // limpiar campos
-      this.venta.codigo = ''
-      this.venta.producto = ''
-      this.venta.descripcion = ''
-      this.venta.cantidad = null
-      this.venta.precio = null
-      this.venta.stock = 0
+    // 🔹 Llamar API backend
+    agregarProducto(payload)
+      .then(response => {
+        const productoActualizado = response.data
+
+        // 🔹 Verificar si ya existe en la tabla local
+        const existingIndex = this.items.findIndex(i => i.codigo === productoActualizado.codigo)
+
+        if (existingIndex !== -1) {
+          // Actualizar el producto en la tabla con la respuesta del backend
+          this.items[existingIndex] = {
+            ...this.items[existingIndex],
+            cantidad: productoActualizado.cantidad,
+            precio: productoActualizado.precio,
+            descripcion: productoActualizado.descripcion,
+            producto: productoActualizado.producto
+          }
+          this.mostrarMensaje(`⚠️ El producto con código ${productoActualizado.codigo} ya existía. Se actualizó la cantidad.`, 'warning')
+        } else {
+          // Si no existía → agregarlo a la tabla
+          this.items.push({
+            codigo: productoActualizado.codigo,
+            producto: productoActualizado.producto,
+            descripcion: productoActualizado.descripcion,
+            cantidad: productoActualizado.cantidad,
+            precio: productoActualizado.precio,
+            fecha: productoActualizado.fechaCreacion,
+            removeQty: null
+          })
+          this.mostrarMensaje(`✅ Producto ${productoActualizado.producto} agregado correctamente.`, 'success')
+        }
+
+        // limpiar campos
+        this.venta.codigo = ''
+        this.venta.producto = ''
+        this.venta.descripcion = ''
+        this.venta.cantidad = null
+        this.venta.precio = null
+        this.venta.stock = 0
+      })
+      .catch(error => {
+        console.error('❌ Error al agregar producto:', error)
+        this.mostrarMensaje('Error al agregar producto en el servidor.', 'error')
+      })
     },
 
     // Eliminar/restar cantidad
@@ -310,6 +338,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .nueva-venta-wrapper {
