@@ -25,65 +25,67 @@
               {{ modalEliminar.producto.nombre }}?
             </p>
             <div class="modal-buttons">
-              <button class="btn-yes" @click="eliminarProducto(modalEliminar.idx)">Sí</button>
-              <button class="btn-no" @click="modalEliminar.visible = false">No</button>
+              <!-- ✅ Botón de si -->
+              <button class="btn-yes"
+                      @click="eliminarProducto(modalEliminar.idx)">
+                      Sí
+              </button>
+              <!-- ❌️ Botón de no -->
+              <button class="btn-no"
+                      @click="modalEliminar.visible = false">
+                      No
+              </button>
             </div>
           </div>
         </div>
       </transition>
 
-      <!-- Formulario producto -->
-      <div class="form-container">
-        <div class="form-row">
-        </div>
+      <!-- 🔍 Filtro de búsqueda -->
+      <div class="form-filtro">
+        <!-- Texto descriptivo -->
+        <span style="font-weight: bold;">Buscar por:</span>
 
-        <!-- 🔍 Filtro de búsqueda -->
-        <div class="form-filtro">
-          <!-- Texto descriptivo -->
-          <span style="font-weight: bold;">Buscar por:</span>
+        <!-- Nuevo: selector + input + botones -->
+        <div style="display: flex; gap: 4px;">
+          <select v-model="tipoBusqueda">
+            <option disabled value="">Seleccione</option>
+            <option value="codigo">Código</option>
+            <option value="nombre">Nombre</option>
+            <option value="descripcion">Descripción</option>
+            <option value="cantidad">Cantidad</option>
+            <option value="precio">Precio</option>
+            <option value="proveedor">Proveedor</option>
+            <option value="fechaCreacion">Fecha de Creación</option>
+          </select>
 
-          <!-- Nuevo: selector + input + botones -->
-          <div style="display: flex; gap: 4px;">
-            <select v-model="tipoBusqueda">
-              <option disabled value="">Seleccione</option>
-              <option value="codigo">Código</option>
-              <option value="nombre">Nombre</option>
-              <option value="descripcion">Descripción</option>
-              <option value="cantidad">Cantidad</option>
-              <option value="precio">Precio</option>
-              <option value="proveedor">Proveedor</option>
-              <option value="fechaCreacion">Fecha de Creación</option>
-            </select>
+          <!-- 🔍 Termino de búsqueda -->
+          <input v-model="busqueda"
+                 type="text"
+                 placeholder="Ingrese término de búsqueda"
+                 :disabled="!tipoBusqueda" />
 
-            <!-- 🔍 Termino de búsqueda -->
-            <input v-model="busqueda"
-                   type="text"
-                   placeholder="Ingrese término de búsqueda"
-                   :disabled="!tipoBusqueda" />
+          <!-- 🔍 Botón de búsqueda -->
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="filtrarProductos">
+                  🔍 Buscar
+          </button>
 
-            <!-- 🔍 Botón de búsqueda -->
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="filtrarProductos">
-                    🔍 Buscar
-            </button>
+          <!-- 🧹 Botón de limpiar búsqueda -->
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="limpiarBusqueda">
+                  🧹 Limpiar
+          </button>
 
-            <!-- 🧹 Botón de limpiar búsqueda -->
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="limpiarBusqueda">
-                    🧹 Limpiar
-            </button>
-
-            <!-- ➕ Botón de registrar producto -->
-            <button type="button"
-                    class="agregar-btn"
-                    @click="agregarProducto">
-                    ➕ Registrar Producto
-            </button>
-          </div>
+          <!-- ➕ Botón de registrar producto -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="agregarProducto">
+                  ➕ Registrar Producto
+          </button>
         </div>
       </div>
 
@@ -115,9 +117,16 @@
             <td>{{ prod.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
             <td>{{ prod.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
-              <!-- Botón de actualizar -->
-              <button class="update-btn" @click="abrirActualizarProducto(prod)">✏️</button>
-              <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
+              <!-- ✏️ Botón de editar -->
+              <button class="update-btn"
+                      @click="abrirActualizarProducto(prod)">
+                      ✏️
+              </button>
+              <!-- 🗑️️ Botón de eliminar -->
+              <button class="delete-btn"
+                      @click="confirmarEliminar(idx)">
+                      🗑️
+              </button>
             </td>
           </tr>
           <tr v-if="productosFiltrados.length === 0">
@@ -140,7 +149,6 @@ import {
   buscarProductoPorPrecio,
   buscarProductoPorProveedorId,
   buscarProductoPorProveedorName,
-  buscarProductoPorFechaCreacion,
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
@@ -176,9 +184,12 @@ export default {
       }
     }
   },
+
   mounted() {
-    // 🔹 Cargar todos los productos y proveedores desde backend al iniciar
+    // 🔹 Cargar todos los productos desde backend al iniciar
     this.cargarProductos()
+
+    // 🔹 Cargar todos los proveedores desde backend al iniciar
     this.cargarProveedores()
   },
 
@@ -187,6 +198,7 @@ export default {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -199,10 +211,7 @@ export default {
     async cargarProductos() {
       try {
         const response = await listarProductos()
-        this.productos = response.data.map(p => ({
-          ...p,
-          proveedor: p.proveedor?.id || p.proveedor
-        }))
+        this.productos = response.data
         this.productosFiltrados = [...this.productos]
       } catch (error) {
         console.error('❌ Error al cargar productos:', error)
@@ -257,10 +266,12 @@ export default {
       try {
         await eliminarProductoPorCodigo(producto.codigo)
 
-        // ✅ Eliminamos localmente solo si backend respondió bien
+        // ✅ Eliminamos solo si backend respondió bien
         this.productos.splice(idx, 1)
         this.productosFiltrados = [...this.productos]
+
         this.mostrarMensaje(`🗑️ Producto ${producto.nombre} eliminado.`, 'success')
+
       } catch (error) {
         console.error('❌ Error al eliminar producto:', error)
         if (error.response && error.response.status === 404) {
@@ -306,7 +317,7 @@ export default {
         let response
         switch (this.tipoBusqueda) {
           case 'codigo':
-            response = await buscarProductoPorCodigo(texto)
+            response = await buscarProductoPorCodigo(Number(texto))
             break
           case 'nombre':
             response = await buscarProductoPorNombre(texto)
@@ -327,9 +338,6 @@ export default {
               response = await buscarProductoPorProveedorName(texto)
             }
             break
-          case 'fechaCreacion':
-            response = await buscarProductoPorFechaCreacion(texto)
-            break
           default:
             this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
             return
@@ -338,12 +346,10 @@ export default {
         const data = response.data
 
         if (Array.isArray(data)) {
-          this.productosFiltrados = data.map(p => ({
-            ...p,
-            proveedor: p.proveedor?.id || p.proveedor
-          }))
+          this.productosFiltrados = data
         } else if (data) {
-          this.productosFiltrados = [{ ...data, proveedor: data.proveedor?.id || data.proveedor }]
+          // backend puede devolver objeto simple
+          this.productosFiltrados = [data]
         } else {
           this.productosFiltrados = []
         }
@@ -353,8 +359,16 @@ export default {
         }
       } catch (error) {
         console.error('❌ Error al filtrar productos:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
+
+        // Si es un Error construido en el interceptor lo mostramos con detalle
+        if (error.mensaje) {
+          if(error.mensaje.includes('404')) {
+            this.productosFiltrados = []
+            this.mostrarMensaje('No se encontró producto', 'error')
+          } else {
+            // Intenta mostrar el mensaje del backend si vino
+            this.mostrarMensaje(error.mensaje, 'error')
+          }
         } else {
           this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
         }
@@ -364,8 +378,8 @@ export default {
     // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
       this.busqueda = ''
-      this.tipoBusqueda = ''
-      this.cargarProductos()
+      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
+      this.cargarProductos() // 🔹 Vuelve a cargar todos los productos
     },
 
     // 🔹 Método para cargar proveedores
@@ -386,7 +400,6 @@ export default {
   }
 }
 </script>
-
 
 <style scoped>
 .registro-producto-wrapper {
@@ -442,34 +455,6 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
-.form-container {
-  margin-bottom: 0px;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
 .form-filtro {
   display: flex;
   flex-direction: column;
@@ -480,12 +465,13 @@ export default {
   margin-bottom: 12px;
 }
 
-label {
-  font-weight: bold;
+input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-
-input, select {
+select {
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -496,21 +482,11 @@ input, select {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
+  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
-  margin-left: auto; /* empuja el botón a la derecha */
-  display: block;    /* asegura que se respete el auto margin */
-}
-
-.limpiar-campos-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
-  background: #f4a261;
-  color: white;
+  margin-left: auto;        /* empuja el botón a la derecha */
+  display: block;           /* asegura que se respete el auto margin */
 }
 
 .update-btn {
@@ -518,7 +494,7 @@ input, select {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
+  padding: 6px 8px;         /* De aqui al final del boton era otro */
   background: #f4a261;
   color: white;
   margin-right: 4px;
@@ -529,7 +505,7 @@ input, select {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
+  padding: 6px 8px;         /* De aqui al final del boton era otro */
   background: #e63946;
   color: white;
 }
@@ -539,7 +515,7 @@ input, select {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 12px; /* De aqui al final del boton era otro */
+  padding: 6px 12px;        /* De aqui al final del boton era otro */
   background: #06d6a0;
   color: white;
   margin-left: 4px;
@@ -550,11 +526,6 @@ input, select {
 }
 
 .agregar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.limpiar-campos-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }

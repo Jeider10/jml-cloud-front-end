@@ -38,7 +38,7 @@
           <div class="form-group">
             <select v-model="productoForm.proveedorId" @change="actualizarProveedorName" class="form-control">
               <option disabled value="">Seleccione un proveedor</option>
-              <option v-for="p in proveedores" :key="p.id" :value="p.id">
+              <option v-for="p in proveedores" :key="p.codigoSucursal" :value="p.codigoSucursal">
                 {{ p.nombre }}
               </option>
             </select>
@@ -48,14 +48,14 @@
           <button type="button"
                   class="agregar-btn"
                   @click="actualizarProductoEnServidor">
-            💾 Actualizar
+                  💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverProductos">
-            ↩️ Volver
+                  ↩️ Volver
           </button>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default {
       },
       mensaje: '',
       mensajeTipo: '',
-      proveedores: [] // cada item tendrá al menos { id, nombre }
+      proveedores: []
     }
   },
 
@@ -122,7 +122,7 @@ export default {
       try {
         const response = await listarProveedores()
         this.proveedores = response.data.map(p => ({
-          id: String(p.codigoSucursal),
+          codigoSucursal: String(p.codigoSucursal),
           nombre: p.nombre
         }))
       } catch (error) {
@@ -141,39 +141,53 @@ export default {
     async cargarProducto() {
       try {
         const response = await buscarProductoPorCodigo(this.codigo)
-        if (response.data) {
-          const data = response.data
-          this.productoForm = {
-            codigo: data.codigo,
-            nombre: data.nombre,
-            descripcion: data.descripcion,
-            cantidad: data.cantidad,
-            precio: data.precio,
-            proveedorId: data.proveedorId ? String(data.proveedorId) : '',
-            proveedorName: data.proveedorName || ''
-          }
+        const data = response.data
+
+        this.productoForm = {
+          codigo: data.codigo,
+          nombre: data.nombre,
+          descripcion: data.descripcion,
+          cantidad: data.cantidad,
+          precio: data.precio,
+          proveedorId: data.proveedorId ? String(data.proveedorId) : '',
+          proveedorName: data.proveedorName || ''
+        }
+
+        // 🔹 Verificar si el proveedor está en la lista
+        const existe = this.proveedores.find(p => String(p.codigoSucursal) === this.productoForm.proveedorId)
+        if (!existe && this.productoForm.proveedorId) {
+          this.proveedores.push({
+            codigoSucursal: this.productoForm.proveedorId,
+            nombre: this.productoForm.proveedorName || 'Proveedor seleccionado'
+          })
         }
       } catch (error) {
-        console.error('❌ Error al cargar producto:', error)
-        this.mostrarMensaje('Error al cargar producto.', 'error')
+        console.error('❌ Error al cargar el producto:', error)
+        this.mostrarMensaje('Error al cargar el producto.', 'error')
       }
     },
 
     // 🔹 Método para actualizar producto en backend
     async actualizarProductoEnServidor() {
-      if (!this.productoForm.codigo || !this.productoForm.nombre || !this.productoForm.descripcion) {
+      if (
+        !this.productoForm.codigo ||
+        !this.productoForm.nombre ||
+        !this.productoForm.descripcion
+      ) {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
         return
       }
 
-      if (!this.productoForm.proveedorId) {
+      if (
+        !this.productoForm.proveedorId
+      ) {
         this.mostrarMensaje('Seleccione un proveedor.', 'error')
         return
       }
 
       try {
         // buscar nombre del proveedor seleccionado a partir del ID
-        const proveedorSel = this.proveedores.find(p => p.id === this.productoForm.proveedorId)
+        const proveedorSel = this.proveedores.find(p => p.codigoSucursal === this.productoForm.proveedorId)
         this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : this.productoForm.proveedorName
 
         // preparar payload
@@ -190,6 +204,7 @@ export default {
         await actualizarProducto(payload)
 
         this.mostrarMensaje(`Producto ${this.productoForm.nombre} actualizado correctamente.`, 'success')
+
       } catch (error) {
         console.error('❌ Error al actualizar producto:', error)
         this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
@@ -203,7 +218,6 @@ export default {
   }
 }
 </script>
-
 
 <style scoped>
 .registro-producto-wrapper {
@@ -259,22 +273,6 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
 .form-container {
   margin-bottom: 20px;
 }
@@ -291,7 +289,13 @@ label {
   font-weight: bold;
 }
 
-input, select {
+input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+select {
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;

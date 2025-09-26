@@ -50,7 +50,7 @@
                   class="agregar-btn"
                   :disabled="!hayDatos()"
                   @click="agregarProducto">
-            ➕ Registrar
+                  ➕ Registrar
           </button>
 
           <!-- 🧹 Botón de limpiar campos -->
@@ -58,14 +58,14 @@
                   class="limpiar-campos-btn"
                   :disabled="!hayDatos()"
                   @click="limpiarCampos">
-            🧹 Limpiar campos
+                  🧹 Limpiar campos
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverProductos">
-            ↩️ Volver
+                  ↩️ Volver
           </button>
         </div>
       </div>
@@ -139,22 +139,27 @@ export default {
         this.mostrarMensaje('Ingrese el código del producto.', 'error')
         return
       }
+
       if (!this.productoForm.nombre) {
         this.mostrarMensaje('Ingrese el nombre del producto.', 'error')
         return
       }
+
       if (!this.productoForm.descripcion) {
         this.mostrarMensaje('Ingrese la descripción del producto.', 'error')
         return
       }
+
       if (!this.productoForm.cantidad) {
         this.mostrarMensaje('Ingrese la cantidad del producto.', 'error')
         return
       }
+
       if (!this.productoForm.precio) {
         this.mostrarMensaje('Ingrese el precio del producto.', 'error')
         return
       }
+
       if (!this.productoForm.proveedorName) {
         this.mostrarMensaje('Seleccione el proveedor del producto.', 'error')
         return
@@ -163,7 +168,7 @@ export default {
       // 🔹 Validar duplicado local
       const existente = this.productos.find(p => p.codigo === this.productoForm.codigo)
       if (existente) {
-        this.mostrarMensaje(`⚠️ Ya existe un producto con el código ${existente.codigo}: ${existente.nombre}.`, 'error')
+        this.mostrarMensaje(`⚠️ Ya existe un producto: ${existente.nombre} con el código ${existente.codigo}.`, 'error')
         return
       }
 
@@ -187,8 +192,8 @@ export default {
           descripcion: this.productoForm.descripcion,
           cantidad: this.productoForm.cantidad,
           precio: this.productoForm.precio,
-          proveedorId: proveedorSeleccionado.codigoSucursal, // <-- código real del proveedor
-          proveedorName: proveedorSeleccionado.nombre             // <-- nombre del proveedor
+          proveedorId: proveedorSeleccionado.codigoSucursal,     // <-- código real del proveedor
+          proveedorName: proveedorSeleccionado.nombre            // <-- nombre del proveedor
         }
 
         // Llamada al backend
@@ -198,18 +203,11 @@ export default {
         // Agregamos el producto retornado por el backend a la lista local
         this.productos.push(nuevoProducto)
         this.productosFiltrados = [...this.productos]
+
         this.mostrarMensaje(`✅ Producto ${nuevoProducto.nombre} registrado correctamente.`, 'success')
 
         // limpiar formulario
-        this.productoForm = {
-          codigo: '',
-          nombre: '',
-          descripcion: '',
-          cantidad: 0,
-          precio: 0,
-          proveedorCodigo: '',
-          proveedorName: ''
-        }
+        this.limpiarCampos();
       } catch (error) {
         console.error('❌ Error al crear producto:', error)
 
@@ -327,22 +325,6 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
 .form-container {
   margin-bottom: 0px;
 }
@@ -355,21 +337,17 @@ export default {
   flex-wrap: wrap;
 }
 
-.form-filtro {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 20px;
-  margin-bottom: 12px;
-}
-
 label {
   font-weight: bold;
 }
 
-input, select {
+input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+select {
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -380,7 +358,7 @@ input, select {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
+  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
 }
@@ -390,41 +368,9 @@ input, select {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
+  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #f4a261;
   color: white;
-}
-
-.update-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
-  background: #f4a261;
-  color: white;
-  margin-right: 4px;
-}
-
-.delete-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
-  background: #e63946;
-  color: white;
-}
-
-.buscar-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 12px; /* De aqui al final del boton era otro */
-  background: #06d6a0;
-  color: white;
-  margin-left: 4px;
 }
 
 .agregar-btn:hover {
@@ -439,98 +385,6 @@ input, select {
 .limpiar-campos-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
-}
-
-.update-btn:hover {
-  background: #e76f51;
-}
-
-.delete-btn:hover {
-  background: #b52a33;
-}
-
-.productos-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-
-.productos-table th {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  background: white;
-}
-
-.productos-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  background: white;
-}
-
-.empty-row {
-  text-align: center;
-  padding: 18px;
-  color: #666;
-}
-
-.buscar-btn:hover {
-  background: #049670;
-}
-
-.buscar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px 30px;
-  border-radius: 8px;
-  text-align: center;
-  min-width: 300px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
-}
-
-.modal-buttons {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.btn-yes {
-  padding: 6px 12px;
-  background: #e63946;
-  color: white;
-}
-
-.btn-yes:hover {
-  background: #b52a33;
-}
-
-.btn-no {
-  padding: 6px 12px;
-  background: #06d6a0;
-  color: white;
-}
-
-.btn-no:hover {
-  background: #049670;
 }
 
 .volver-btn {
