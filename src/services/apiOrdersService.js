@@ -45,13 +45,14 @@ apiOrders.interceptors.response.use(
 // 🔹 Endpoints del microservicio de producto
 // =======================
 
-// Agregar producto a tabla
+// Agregar producto a tabla (crea o actualiza orden ABIERTA del cliente)
 export const agregarProducto = (producto) => apiOrders.post('/ordenes-ventas/register', producto)
 
 // Restar cantidad (o eliminar si llega a 0) en órdenes
-export const restarCantidadProducto = (codigo, cantidad) =>
-  apiOrders.put(`/ordenes-ventas/restar/${codigo}`, null, { params: { cantidad } })
+// ahora recibe numeroOrden (String), codigoProducto (Long) y cantidad (int)
+export const restarCantidadProducto = (numeroOrden, codigoProducto, cantidad) =>
+  apiOrders.put(`/ordenes-ventas/restar/${numeroOrden}`, null, { params: { codigo: codigoProducto, cantidad } })
 
-  // Cerrar orden por cliente
+// Cerrar orden por cliente
 export const cerrarOrdenPorCliente = (identificacionCliente) =>
   apiOrders.patch(`/ordenes-ventas/cliente/orden/cerrar/${identificacionCliente}`)

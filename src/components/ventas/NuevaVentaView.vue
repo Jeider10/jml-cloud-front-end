@@ -211,7 +211,7 @@ export default {
         nombre: ''
       },
       clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
-      ordenId: null, // 🔹 Id de la orden actual
+      ordenId: null, // 🔹 numeroOrden (UUID) de la orden actual
       ordenEstado: 'ABIERTA', // 🔹 Estado de la orden (ABIERTA o CERRADA)
       // 🔔 mensajes en pantalla
       mensaje: '',
@@ -357,14 +357,15 @@ export default {
 
       // 🚀 Construir el payload para enviar al backend
       const payload = {
-        codigo: Number(this.venta.codigo),
         identificacionCliente: Number(this.cliente.identificacion),
         nombreCliente: this.cliente.nombres,
         identificacionEmpleado: Number(this.empleado.identificacion),
         nombreEmpleado: this.empleado.nombre,
+        identificacionProveedor: null,
+        nombreProveedor: null,
         detalles: [
           {
-            codigo: Number(this.venta.codigo),
+            codigo: Number(this.venta.codigo), // código del producto
             producto: this.venta.producto,
             descripcion: this.venta.descripcion,
             cantidad: Number(this.venta.cantidad),
@@ -374,43 +375,34 @@ export default {
       }
 
       try {
-        // 1️⃣ Registrar en órdenes
+        // 1️⃣ Registrar en órdenes (crea o agrega a orden ABIERTA del cliente)
         const response = await agregarProducto(payload)
         const ordenActualizada = response.data
-        const detalle = ordenActualizada.detalles[0]
+
+        // guardar el numeroOrden (UUID) para futuras operaciones (restar)
+        this.ordenId = ordenActualizada.numeroOrden
+
+        // Construir/actualizar la tabla local con la respuesta completa (detalles)
+        if (ordenActualizada.detalles && ordenActualizada.detalles.length > 0) {
+          // Reemplazar items por resultados del backend (más seguro)
+          this.items = ordenActualizada.detalles.map(d => ({
+            codigo: d.codigo,
+            producto: d.producto,
+            descripcion: d.descripcion,
+            cantidad: d.cantidad,
+            precio: d.precio,
+            fechaCreacion: d.fechaCreacion,
+            fechaActualizacion: d.fechaActualizacion,
+            removeQty: null
+          }))
+        }
 
         // 2️⃣ Restar stock en productos
         await restarStockProducto(this.venta.codigo, this.venta.cantidad)
 
-        // 3️⃣ Manejar tabla local
-        const existingIndex = this.items.findIndex(i => i.codigo === detalle.codigo)
+        this.mostrarMensaje(`✅ Producto ${this.venta.producto} agregado correctamente.`, 'success')
 
-        if (existingIndex !== -1) {
-          // Actualizar el producto en la tabla con la respuesta del backend
-          this.items[existingIndex] = {
-            ...this.items[existingIndex],
-            cantidad: detalle.cantidad,
-            precio: detalle.precio,
-            descripcion: detalle.descripcion,
-            producto: detalle.producto
-          }
-          this.mostrarMensaje(`⚠️ El producto con código ${detalle.codigo} ya existía. Se actualizó la cantidad.`, 'warning')
-        } else {
-          // Si no existía → agregarlo a la tabla
-          this.items.push({
-            codigo: detalle.codigo,
-            producto: detalle.producto,
-            descripcion: detalle.descripcion,
-            cantidad: detalle.cantidad,
-            precio: detalle.precio,
-            fechaCreacion: ordenActualizada.fechaCreacion,
-            fechaActualizacion: ordenActualizada.fechaActualizacion,
-            removeQty: null
-          })
-          this.mostrarMensaje(`✅ Producto ${detalle.producto} agregado correctamente.`, 'success')
-        }
-
-        // 4️⃣ Limpiar campos
+        // 3️⃣ Limpiar campos
         this.venta.codigo = ''
         this.venta.producto = ''
         this.venta.descripcion = ''
@@ -423,7 +415,7 @@ export default {
       }
     },
 
-    // Eliminar/restar cantidad
+    // 🔹 Metódo de eliminar/restar cantidad
     async eliminarItem(idx) {
       if (idx >= 0 && idx < this.items.length) {
         const item = this.items[idx]
@@ -432,23 +424,37 @@ export default {
         // si no se pone nada o qty >= cantidad actual → eliminar todo
         const cantidadARestar = !qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad
           ? item.cantidad : qtyToRemove
+
+        if (!this.ordenId) {
+          this.mostrarMensaje('⚠️ No hay orden abierta asociada. Vuelve a agregar el producto.', 'error')
+          return
+        }
+
         try {
-          // 1️⃣ Actualizar en órdenes
-          const response = await restarCantidadProducto(item.codigo, cantidadARestar)
+          // 1️⃣ Actualizar en órdenes (pass numeroOrden, codigoProducto, cantidad)
+          const response = await restarCantidadProducto(this.ordenId, item.codigo, cantidadARestar)
           const ordenActualizada = response.data
-          const detalle = ordenActualizada.detalles[0]
 
           // 2️⃣ Actualizar en productos (stock global)
           await restarStockProducto(item.codigo, -cantidadARestar) // 👈 ojo, aquí sería sumar de nuevo al stock (negativo = devolver)
 
-          if (detalle.cantidad === 0) {
-            // producto eliminado totalmente
-            this.items.splice(idx, 1)
-            this.mostrarMensaje(`🗑️ Producto ${item.codigo} eliminado de la orden.`, 'error')
-          } else {
-            // actualizar cantidad en tabla
-            this.items[idx].cantidad = detalle.cantidad
+          // 3️⃣ Actualizar tabla local con los detalles devueltos por el backend
+          if (ordenActualizada.detalles && ordenActualizada.detalles.length > 0) {
+            this.items = ordenActualizada.detalles.map(d => ({
+              codigo: d.codigo,
+              producto: d.producto,
+              descripcion: d.descripcion,
+              cantidad: d.cantidad,
+              precio: d.precio,
+              fechaCreacion: d.fechaCreacion,
+              fechaActualizacion: d.fechaActualizacion,
+              removeQty: null
+            }))
             this.mostrarMensaje(`➖ Se restaron ${cantidadARestar} unidades del producto ${item.codigo}.`, 'warning')
+          } else {
+            // si no hay detalles => la orden quedó vacía
+            this.items = []
+            this.mostrarMensaje(`🗑️ Producto ${item.codigo} eliminado de la orden.`, 'error')
           }
         } catch (error) {
           console.error('❌ Error al restar producto:', error)
@@ -509,6 +515,7 @@ export default {
       this.items = [];
       // 👇 Deshabilitar de nuevo los campos de producto
       this.clienteEncontrado = false
+      this.ordenId = null
     },
 
     // 🔹 Método para iniciar nueva venta
@@ -527,6 +534,8 @@ export default {
       try {
         await cerrarOrdenPorCliente(this.cliente.identificacion)
         this.ordenEstado = 'CERRADA'
+        // opcional: limpiar ordenId si ya cerraste
+        this.ordenId = null
         this.mostrarMensaje('✅ Venta cerrada correctamente.', 'success')
       } catch (error) {
         console.error('❌ Error al cerrar venta:', error)
@@ -550,6 +559,7 @@ export default {
   }
 }
 </script>
+
 
 
 <style scoped>
