@@ -477,8 +477,24 @@ export default {
         identificacion: '',
         nombre: ''
       };
+      this.venta = {
+        codigo: '',
+        producto: '',
+        descripcion: '',
+        cantidad: null,
+        precio: null,
+        stock: 0
+      };
+      // 👇 limpiar tabla
+      this.items = [];
       // 👇 Deshabilitar de nuevo los campos de producto
       this.clienteEncontrado = false
+    },
+
+    // 🔹 Método para iniciar nueva venta
+    agregarCliente() {
+      this.limpiarCamposCliente();
+      this.mostrarMensaje('✅ Listo para registrar una nueva venta.', 'success');
     },
 
     // ✅ Logica para imprimir
