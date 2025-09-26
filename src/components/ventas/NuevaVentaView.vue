@@ -322,15 +322,34 @@ export default {
         this.ordenesFiltradas = response.data || []
         this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
 
-        // ✅ Si se filtró por ABIERTA y hay órdenes, completar datos del cliente
+        // ✅ Si se filtró por ABIERTA y hay órdenes, completar datos del cliente y cargar items
         if (this.filtroEstado === 'ABIERTA' && this.ordenesFiltradas.length > 0) {
           const primeraOrden = this.ordenesFiltradas[0]
-          // Suponiendo que la orden contiene la info del cliente
+
+          // Llenar datos del cliente
           this.cliente.identificacion = primeraOrden.identificacionCliente || ''
           this.cliente.nombres = primeraOrden.nombreCliente || ''
           this.clienteEncontrado = true
+
+          // Guardar ordenId para operaciones futuras
+          this.ordenId = primeraOrden.numeroOrden || null
           this.ordenEstado = 'ABIERTA'
-          // habilitar botones automáticamente
+
+          // Cargar items para que puedan modificarse
+          if (primeraOrden.detalles && primeraOrden.detalles.length > 0) {
+            this.items = primeraOrden.detalles.map(d => ({
+              codigo: d.codigo,
+              producto: d.producto,
+              descripcion: d.descripcion,
+              cantidad: d.cantidad,
+              precio: d.precio,
+              fechaCreacion: d.fechaCreacion,
+              fechaActualizacion: d.fechaActualizacion,
+              removeQty: null
+            }))
+          } else {
+            this.items = []
+          }
         }
       } catch (error) {
         console.error('❌ Error al cargar órdenes filtradas:', error)
