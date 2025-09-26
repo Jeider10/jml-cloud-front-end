@@ -48,6 +48,10 @@ apiOrders.interceptors.response.use(
 // Agregar producto a tabla
 export const agregarProducto = (producto) => apiOrders.post('/ordenes-ventas/register', producto)
 
+// Restar cantidad (o eliminar si llega a 0) en órdenes
+export const restarCantidadProducto = (codigo, cantidad) =>
+  apiOrders.put(`/ordenes-ventas/restar/${codigo}`, null, { params: { cantidad } })
+
 // Listar todos los productos
 export const listarProductos = () => apiOrders.get('/productos/listar-productos')
 

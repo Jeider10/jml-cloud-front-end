@@ -43,6 +43,14 @@
                   :disabled="!formValido">
                   ➕ Agregar
           </button>
+
+          <!-- 🧹 Botón de limpiar campos -->
+          <button type="button"
+                  class="limpiar-campos-btn"
+                  :disabled="!hayDatos()"
+                  @click="limpiarCampos">
+                  🧹 Limpiar campos
+          </button>
         </div>
 
         <div class="form-row">
@@ -138,7 +146,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
-import { agregarProducto } from '@/services/apiOrdersService.js'
+import { agregarProducto, restarCantidadProducto } from '@/services/apiOrdersService.js'
 
 export default {
   name: 'NuevaVentaView',
@@ -307,24 +315,63 @@ export default {
     },
 
     // Eliminar/restar cantidad
-    eliminarItem(idx) {
+    async eliminarItem(idx) {
       if (idx >= 0 && idx < this.items.length) {
         const item = this.items[idx]
         const qtyToRemove = Number(item.removeQty)
 
-        if (!qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad) {
-          // si no se pone nada, es 0, o es mayor/igual a la cantidad actual → se elimina el producto completo
-          this.items.splice(idx, 1)
-          this.mostrarMensaje(`🗑️ Producto ${item.codigo} eliminado completamente.`, 'error')
-        } else {
-          // caso contrario, se resta la cantidad
-          item.cantidad -= qtyToRemove
-          this.mostrarMensaje(
-            `➖ Se restaron ${qtyToRemove} unidades del producto con código ${item.codigo}.`,
-            'warning'
-          )
-          item.removeQty = null
+        // si no se pone nada o qty >= cantidad actual → eliminar todo
+        const cantidadARestar =
+          !qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad
+            ? item.cantidad
+            : qtyToRemove
+
+        try {
+          // 1️⃣ Actualizar en órdenes
+          const response = await restarCantidadProducto(item.codigo, cantidadARestar)
+          const ordenActualizada = response.data
+
+          // 2️⃣ Actualizar en productos (stock global)
+          await restarStockProducto(item.codigo, -cantidadARestar) // 👈 ojo, aquí sería sumar de nuevo al stock (negativo = devolver)
+
+          if (ordenActualizada.cantidad === 0) {
+            // producto eliminado totalmente
+            this.items.splice(idx, 1)
+            this.mostrarMensaje(`🗑️ Producto ${item.codigo} eliminado de la orden.`, 'error')
+          } else {
+            // actualizar cantidad en tabla
+            this.items[idx].cantidad = ordenActualizada.cantidad
+            this.mostrarMensaje(
+              `➖ Se restaron ${cantidadARestar} unidades del producto ${item.codigo}.`,
+              'warning'
+            )
+          }
+        } catch (error) {
+          console.error('❌ Error al restar producto:', error)
+          this.mostrarMensaje(error.message || 'Error al restar producto en el servidor.', 'error')
         }
+      }
+    },
+
+    // 🔹 Método para saber si hay datos en el formulario
+    hayDatos() {
+      return this.venta.codigo ||
+             this.venta.producto ||
+             this.venta.descripcion ||
+             this.venta.cantidad ||
+             this.venta.precio ||
+             this.venta.stock;
+    },
+
+    // 🔹 Método para limpiar campos del formulario
+    limpiarCampos() {
+      this.venta = {
+        codigo: '',
+        producto: '',
+        descripcion: '',
+        cantidad: null,
+        precio: null,
+        stock: 0
       }
     },
 
@@ -439,6 +486,21 @@ input {
 
 .agregar-btn:disabled {
   background: #a0c4d6;
+  cursor: not-allowed;
+}
+
+.limpiar-campos-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 12px;        /* De aqui al final del boton era otro */
+  background: #f4a261;
+  color: white;
+}
+
+.limpiar-campos-btn:disabled {
+  background: #ccc;
   cursor: not-allowed;
 }
 
