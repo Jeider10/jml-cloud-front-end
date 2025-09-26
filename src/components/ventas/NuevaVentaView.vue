@@ -75,22 +75,26 @@
           <!-- Select de estados -->
           <select
             v-model="filtroEstado"
-            id="filtroEstado"
-            @change="cargarOrdenesFiltradas"
-          >
+            id="filtroEstado">
             <option disabled value="">Seleccione un estado</option>
             <option value="ABIERTA">ABIERTA</option>
             <option value="CERRADA">CERRADA</option>
           </select>
 
           <!-- 🔍 Botón de búsqueda, deshabilitado si no hay estado seleccionado -->
-          <button
-            type="button"
-            class="buscar-btn"
-            @click="filtrarProductos"
-            :disabled="!filtroEstado"
-          >
-            🔍 Buscar
+          <button type="button"
+                  class="buscar-btn"
+                  @click="cargarOrdenesFiltradas"
+                  :disabled="!filtroEstado">
+                  🔍 Buscar
+          </button>
+
+          <!-- 🧹 Botón de limpiar filtro -->
+          <button type="button"
+                    class="limpiar-campos-btn"
+                    @click="limpiarFiltro"
+                    :disabled="!filtroEstado">
+                    🧹 Limpiar filtro
           </button>
         </div>
       </div>
@@ -254,7 +258,7 @@ export default {
       // 🔔 mensajes en pantalla
       mensaje: '',
       mensajeTipo: '', // success | warning | error
-      filtroEstado: 'ABIERTA',
+      filtroEstado: '',
       ordenesFiltradas: []
     }
   },
@@ -296,6 +300,11 @@ export default {
       setTimeout(() => {
         this.mensaje = ''
       }, 3000)
+    },
+
+    limpiarFiltro() {
+        this.filtroEstado = ''   // Reinicia select
+        this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
     },
 
     async cargarOrdenesFiltradas() {
