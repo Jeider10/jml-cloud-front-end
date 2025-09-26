@@ -38,14 +38,14 @@
           <button type="button"
                   class="agregar-btn"
                   @click="actualizarProveedor">
-            💾 Actualizar
+                  💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverProveedores">
-            ↩️ Volver
+                  ↩️ Volver
           </button>
         </div>
       </div>
@@ -103,7 +103,6 @@ export default {
     // 🔹 Método de agregar un proveedor por códigoSucursal
     async cargarProveedor() {
       try {
-        console.log('👉 codigoSucursal recibido:', this.codigoSucursal) // debug
         const response = await buscarProveedorPorCodigoSucursal(this.codigoSucursal)
         if (response.data) {
           this.proveedorForm = { ...response.data } // ✅ llena el form directamente
@@ -154,9 +153,10 @@ export default {
 }
 </script>
 
-
 <style scoped>
-.registro-proveedor-wrapper { display: flex; }
+.registro-proveedor-wrapper {
+  display: flex;
+}
 
 .proveedor-container {
   position: absolute;
@@ -172,7 +172,9 @@ export default {
   flex-direction: column;
 }
 
-.proveedor-container.expanded { left: 220px; }
+.proveedor-container.expanded {
+  left: 220px;
+}
 
 .titulo {
   font-size: 2rem;
@@ -203,22 +205,6 @@ export default {
 .mensaje.error {
   background: #e74c3c;
   color: white;
-}
-
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
 }
 
 .form-container {

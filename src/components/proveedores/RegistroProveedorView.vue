@@ -39,7 +39,7 @@
                   class="agregar-btn"
                   :disabled="!hayDatos()"
                   @click="agregarProveedor">
-            ➕ Registrar
+                  ➕ Registrar
           </button>
 
           <!-- 🧹 Botón de limpiar campos -->
@@ -47,14 +47,14 @@
                   class="limpiar-campos-btn"
                   :disabled="!hayDatos()"
                   @click="limpiarCampos">
-            🧹 Limpiar campos
+                  🧹 Limpiar campos
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverProveedores">
-            ↩️ Volver
+                  ↩️ Volver
           </button>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default {
   },
 
   mounted() {
-    // 🔹 Cargar todos los proveedores desde backend al iniciar para poder obtener los proveedores al registrar un producto
+    // 🔹 Cargar todos los proveedores desde backend al iniciar
     // this.cargarProveedores()
   },
 
@@ -124,18 +124,22 @@ export default {
         this.mostrarMensaje('Ingrese el código de la sucursal.', 'error')
         return
       }
+
       if (!this.proveedorForm.nombre) {
         this.mostrarMensaje('Ingrese el nombre del proveedor.', 'error')
         return
       }
+
       if (!this.proveedorForm.telefono) {
         this.mostrarMensaje('Ingrese el telefono del proveedor.', 'error')
         return
       }
+
       if (!this.proveedorForm.direccion) {
         this.mostrarMensaje('Ingrese el direccion del proveedor.', 'error')
         return
       }
+
       if (!this.proveedorForm.correo) {
         this.mostrarMensaje('Ingrese el correo del proveedor.', 'error')
         return
@@ -144,7 +148,7 @@ export default {
       // 🔍 Verificar si ya existe un cliente con la misma identificación en la lista local
       const existente = this.proveedores.find(p => p.codigoSucursal === Number(this.proveedorForm.codigoSucursal))
       if (existente) {
-        this.mostrarMensaje(`⚠️ Ya existe un proveedor con este Código de Sucursal (${existente.codigoSucursal}): ${existente.nombre}.`, 'error')
+        this.mostrarMensaje(`⚠️ Ya existe un proveedor: ${existente.nombre} con este Código de Sucursal (${existente.codigoSucursal}).`, 'error')
         return
       }
 
@@ -161,16 +165,11 @@ export default {
         // 🔹 Agregamos el proveedor retornado por el backend a la lista local
         this.proveedores.push(nuevoProveedor)
         this.proveedoresFiltrados = [...this.proveedores]
+
         this.mostrarMensaje(`✅ Proveedor ${nuevoProveedor.nombre} registrado correctamente.`, 'success')
 
         // limpiar formulario
-        this.proveedorForm = {
-          codigoSucursal: '',
-          nombre: '',
-          telefono: '',
-          direccion: '',
-          correo: ''
-        }
+        this.limpiarCampos();
       } catch (error) {
         console.error('❌ Error al crear proveedor:', error)
         if (error.response && error.response.data) {
@@ -263,22 +262,6 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
 .form-container {
   margin-bottom: 0px;
 }
@@ -289,16 +272,6 @@ export default {
   gap: 10px;
   margin-bottom: 12px;
   flex-wrap: wrap;
-}
-
-.form-filtro {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 20px;
-  margin-bottom: 12px;
 }
 
 label {
@@ -316,7 +289,7 @@ input {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
+  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
 }
@@ -326,41 +299,9 @@ input {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
+  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #f4a261;
   color: white;
-}
-
-.update-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
-  background: #f4a261;
-  color: white;
-  margin-right: 4px;
-}
-
-.delete-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
-  background: #e63946;
-  color: white;
-}
-
-.buscar-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 12px; /* De aqui al final del boton era otro */
-  background: #06d6a0;
-  color: white;
-  margin-left: 4px;
 }
 
 .agregar-btn:hover {
@@ -375,98 +316,6 @@ input {
 .limpiar-campos-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
-}
-
-.update-btn:hover {
-  background: #e76f51;
-}
-
-.delete-btn:hover {
-  background: #b52a33;
-}
-
-.proveedores-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-
-.proveedores-table th {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  background: white;
-}
-
-.proveedores-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  background: white;
-}
-
-.empty-row {
-  text-align: center;
-  padding: 18px;
-  color: #666;
-}
-
-.buscar-btn:hover {
-  background: #049670;
-}
-
-.buscar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px 30px;
-  border-radius: 8px;
-  text-align: center;
-  min-width: 300px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
-}
-
-.modal-buttons {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.btn-yes {
-  padding: 6px 12px;
-  background: #e63946;
-  color: white;
-}
-
-.btn-yes:hover {
-  background: #b52a33;
-}
-
-.btn-no {
-  padding: 6px 12px;
-  background: #06d6a0;
-  color: white;
-}
-
-.btn-no:hover {
-  background: #049670;
 }
 
 .volver-btn {

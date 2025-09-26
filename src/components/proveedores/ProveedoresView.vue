@@ -32,53 +32,47 @@
         </div>
       </transition>
 
-      <!-- Formulario proveedor -->
-      <div class="form-container">
-        <div class="form-row">
-        </div>
+      <!-- 🔍 Filtro de búsqueda -->
+      <div class="form-filtro">
+        <!-- Texto descriptivo -->
+        <span style="font-weight: bold;">Buscar por:</span>
 
-        <!-- 🔍 Filtro de búsqueda -->
-        <div class="form-filtro">
-          <!-- Texto descriptivo -->
-          <span style="font-weight: bold;">Buscar por:</span>
+        <!-- Nuevo: selector + input + botones -->
+        <div style="display: flex; gap: 4px;">
+          <select v-model="tipoBusqueda">
+            <option disabled value="">Seleccione</option>
+            <option value="codigoSucursal">Código Sucursal</option>
+            <option value="nombre">Nombre</option>
+          </select>
 
-          <!-- Nuevo: selector + input + botones -->
-          <div style="display: flex; gap: 4px;">
-            <select v-model="tipoBusqueda">
-              <option disabled value="">Seleccione</option>
-              <option value="codigoSucursal">Código Sucursal</option>
-              <option value="nombre">Nombre</option>
-            </select>
+          <!-- 🔍 Termino de búsqueda -->
+          <input v-model="busqueda"
+                 type="text"
+                 placeholder="Ingrese término de búsqueda"
+                 :disabled="!tipoBusqueda" />
 
-            <!-- 🔍 Termino de búsqueda -->
-            <input v-model="busqueda"
-                   type="text"
-                   placeholder="Ingrese término de búsqueda"
-                   :disabled="!tipoBusqueda" />
+          <!-- 🔍 Botón de búsqueda -->
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="filtrarProveedores">
+                  🔍 Buscar
+          </button>
 
-            <!-- 🔍 Botón de búsqueda -->
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="filtrarProveedores">
-                    🔍 Buscar
-            </button>
+          <!-- 🧹 Botón de limpiar búsqueda -->
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="limpiarBusqueda">
+                  🧹 Limpiar
+          </button>
 
-            <!-- 🧹 Botón de limpiar búsqueda -->
-            <button type="button"
-                    class="buscar-btn"
-                    :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                    @click="limpiarBusqueda">
-                    🧹 Limpiar
-            </button>
-
-            <!-- ➕ Botón de registrar producto -->
-            <button type="button"
-                    class="agregar-btn"
-                    @click="agregarProveedor">
-                    ➕ Registrar Proveedor
-            </button>
-          </div>
+          <!-- ➕ Botón de registrar producto -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="agregarProveedor">
+                  ➕ Registrar Proveedor
+          </button>
         </div>
       </div>
 
@@ -108,9 +102,16 @@
             <td>{{ p.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
             <td>{{ p.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
             <td>
-              <!-- Botón de actualizar -->
-              <button class="update-btn" @click="abrirActualizarProveedor(p)">✏️</button>
-              <button class="delete-btn" @click="confirmarEliminar(idx)">🗑️</button>
+              <!-- ✏️ Botón de editar -->
+              <button class="update-btn"
+                      @click="abrirActualizarProveedor(p)">
+                      ✏️
+              </button>
+              <!-- 🗑️️ Botón de eliminar -->
+              <button class="delete-btn"
+                      @click="confirmarEliminar(idx)">
+                      🗑️
+              </button>
             </td>
           </tr>
           <tr v-if="proveedoresFiltrados.length === 0">
@@ -168,6 +169,7 @@ export default {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -182,6 +184,7 @@ export default {
         const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
         this.proveedores = response.data
         this.proveedoresFiltrados = [...this.proveedores]
+
       } catch (error) {
         console.error('❌ Error al cargar proveedores:', error)
 
@@ -232,10 +235,12 @@ export default {
       try {
         await eliminarProveedorPorCodigoSucursal(proveedor.codigoSucursal)
 
-        // ✅ Eliminamos localmente solo si backend respondió bien
+        // ✅ Eliminamos solo si backend respondió bien
         this.proveedores.splice(idx, 1)
         this.proveedoresFiltrados = [...this.proveedores]
+
         this.mostrarMensaje(`🗑️ Proveedor ${proveedor.nombre} eliminado.`, 'success')
+
       } catch (error) {
         console.error('❌ Error al eliminar proveedor:', error)
         if (error.response && error.response.status === 404) {
@@ -259,7 +264,7 @@ export default {
     // 🔹 Método para llamar al componente de actualizar proveedor
     abrirActualizarProveedor(proveedor) {
       this.$router.push({
-        name: 'ActualizarProveedorView', // ✅ Nombre de component del index
+        name: 'ActualizarProveedorView',
         params: {
           codigoSucursal: proveedor.codigoSucursal
         }
@@ -282,7 +287,7 @@ export default {
             response = await buscarProveedorPorCodigoSucursal(Number(texto)) // ✅ Codigo de Sucursal como número
             break
           case 'nombre':
-            response = await buscarProveedorPorNombre(texto) // ✅ Nombre queda como string
+            response = await buscarProveedorPorNombre(texto)
             break
           default:
             this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
@@ -385,34 +390,6 @@ export default {
   color: white;
 }
 
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from {
-  opacity: 0;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
-.form-container {
-  margin-bottom: 0px;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
 .form-filtro {
   display: flex;
   flex-direction: column;
@@ -421,10 +398,6 @@ export default {
   gap: 4px;
   margin-top: 20px;
   margin-bottom: 12px;
-}
-
-label {
-  font-weight: bold;
 }
 
 input {
@@ -438,18 +411,8 @@ input {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
+  padding: 8px 12px;         /* De aqui al final del boton era otro */
   background: #0077b6;
-  color: white;
-}
-
-.limpiar-campos-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 12px; /* De aqui al final del boton era otro */
-  background: #f4a261;
   color: white;
 }
 
@@ -458,7 +421,7 @@ input {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
+  padding: 6px 8px;          /* De aqui al final del boton era otro */
   background: #f4a261;
   color: white;
   margin-right: 4px;
@@ -469,7 +432,7 @@ input {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 8px; /* De aqui al final del boton era otro */
+  padding: 6px 8px;         /* De aqui al final del boton era otro */
   background: #e63946;
   color: white;
 }
@@ -479,22 +442,13 @@ input {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 12px; /* De aqui al final del boton era otro */
+  padding: 6px 12px;         /* De aqui al final del boton era otro */
   background: #06d6a0;
   color: white;
   margin-left: 4px;
 }
 
-.agregar-btn:hover {
-  background: #005f8a;
-}
-
 .agregar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.limpiar-campos-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
