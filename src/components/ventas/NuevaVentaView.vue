@@ -97,6 +97,16 @@
                     🧹 Limpiar filtro
           </button>
         </div>
+
+        <div v-if="ordenesFiltradas.length > 0 && filtroEstado === 'ABIERTA'" class="form-row" style="margin-top: 8px;">
+          <label for="ordenSeleccionada">Seleccione Orden ABIERTA</label>
+          <select v-model="ordenSeleccionada" id="ordenSeleccionada" @change="cargarItemsOrdenSeleccionada">
+            <option disabled value="">Seleccione una orden</option>
+            <option v-for="orden in ordenesFiltradas" :key="orden.numeroOrden" :value="orden.numeroOrden">
+              Orden {{ orden.numeroOrden }} - Total: {{ formatNumber(orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0)) }}
+            </option>
+          </select>
+        </div>
       </div>
 
       <!-- Tabla de productos y órdenes filtradas combinada -->
@@ -259,7 +269,8 @@ export default {
       mensaje: '',
       mensajeTipo: '', // success | warning | error
       filtroEstado: '',
-      ordenesFiltradas: []
+      ordenesFiltradas: [],
+      ordenSeleccionada: null, // Número de orden activa seleccionada
     }
   },
 
@@ -309,6 +320,36 @@ export default {
         this.cliente = { identificacion: '', nombres: '' }
         this.clienteEncontrado = false
         this.ordenEstado = 'ABIERTA'  // o '' si quieres deshabilitar todo
+    },
+
+    cargarItemsOrdenSeleccionada() {
+      const orden = this.ordenesFiltradas.find(o => o.numeroOrden === this.ordenSeleccionada)
+      if (orden) {
+        // Cargar items de la orden
+        this.items = orden.detalles.map(d => ({
+          codigo: d.codigo,
+          producto: d.producto,
+          descripcion: d.descripcion,
+          cantidad: d.cantidad,
+          precio: d.precio,
+          fechaCreacion: d.fechaCreacion,
+          fechaActualizacion: d.fechaActualizacion,
+          removeQty: null
+        }))
+
+        // Cargar datos del cliente
+        this.cliente.identificacion = orden.identificacionCliente || ''
+        this.cliente.nombres = orden.nombreCliente || ''
+        this.clienteEncontrado = true
+
+        // Guardar ordenId para operaciones futuras
+        this.ordenId = orden.numeroOrden
+        this.ordenEstado = 'ABIERTA'
+      } else {
+        this.items = []
+        this.ordenId = null
+        this.clienteEncontrado = false
+      }
     },
 
     async cargarOrdenesFiltradas() {
