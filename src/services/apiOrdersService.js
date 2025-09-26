@@ -56,3 +56,11 @@ export const restarCantidadProducto = (numeroOrden, codigoProducto, cantidad) =>
 // Cerrar orden por cliente
 export const cerrarOrdenPorCliente = (identificacionCliente) =>
   apiOrders.patch(`/ordenes-ventas/cliente/orden/cerrar/${identificacionCliente}`)
+
+// Listar todas las órdenes por estado
+export const listarOrdenesPorEstado = (estado) =>
+  apiOrders.get('/ordenes-ventas/list/estado', { params: { estado } })
+
+// Listar órdenes por cliente y estado
+export const listarOrdenesPorClienteYEstado = (identificacionCliente, estado) =>
+  apiOrders.get('/ordenes-ventas/list/cliente', { params: { cliente: identificacionCliente, estado } })

@@ -67,9 +67,19 @@
                   ➕ Nueva Venta
           </button>
         </div>
+
+        <!-- 🔹 Filtro de órdenes por estado -->
+        <div class="form-row">
+          <label>Filtrar Órdenes</label>
+          <select v-model="filtroEstado" @change="cargarOrdenesFiltradas">
+            <option disabled value="">Seleccione un estado</option>
+            <option value="ABIERTA">ABIERTA</option>
+            <option value="CERRADA">CERRADA</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Tabla de productos -->
+      <!-- Tabla de productos y órdenes filtradas combinada -->
       <table class="productos-table">
         <thead>
           <tr>
@@ -84,7 +94,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, idx) in items" :key="idx">
+          <!-- 🔹 Productos agregados -->
+          <tr v-for="(item, idx) in items" :key="'item-' + idx">
             <td>{{ item.codigo }}</td>
             <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
@@ -112,12 +123,48 @@
             </td>
           </tr>
 
-          <!-- Mensaje cuando no hay items -->
-          <tr v-if="items.length === 0">
-            <td colspan="9" class="empty-row">No hay productos agregados.</td>
+          <!-- 🔹 Órdenes filtradas -->
+          <tr v-for="(orden, idx) in ordenesFiltradas" :key="'orden-' + idx" class="orden-filtrada-row">
+            <td>{{ orden.detalles[0]?.codigo || '' }}</td>
+            <td>{{ orden.detalles[0]?.producto || '' }}</td>
+            <td>{{ orden.detalles[0]?.descripcion || '' }}</td>
+            <td>{{ orden.detalles.reduce((sum, d) => sum + d.cantidad, 0) }}</td>
+            <td>{{ orden.detalles[0]?.precio || '' }}</td>
+            <td>{{ orden.fechaCreacion }}</td>
+            <td class="no-print">{{ orden.fechaActualizacion || '' }}</td>
+            <td>{{ orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0) }}</td>
+          </tr>
+
+          <tr v-if="items.length === 0 && ordenesFiltradas.length === 0">
+            <td colspan="8" class="empty-row">No hay productos agregados ni órdenes filtradas.</td>
           </tr>
         </tbody>
       </table>
+
+      <!-- 🔹 Tabla de órdenes filtradas -->
+      <div class="ordenes-filtradas-section no-print" v-if="ordenesFiltradas.length > 0">
+        <h3>Órdenes Filtradas</h3>
+        <table class="ordenes-filtradas-table">
+          <thead>
+            <tr>
+              <th>Número Orden</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+              <th>Fecha Creación</th>
+              <th>Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="orden in ordenesFiltradas" :key="orden.numeroOrden">
+              <td>{{ orden.numeroOrden }}</td>
+              <td>{{ orden.nombreCliente }}</td>
+              <td>{{ orden.estado }}</td>
+              <td>{{ orden.fechaCreacion }}</td>
+              <td>{{ orden.detalles.length }} productos</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- === Sección final (datos cliente + acciones) === -->
       <div class="footer-venta">
@@ -184,7 +231,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
-import { agregarProducto, restarCantidadProducto, cerrarOrdenPorCliente } from '@/services/apiOrdersService.js'
+import { agregarProducto, restarCantidadProducto, cerrarOrdenPorCliente, listarOrdenesPorEstado, listarOrdenesPorClienteYEstado } from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 
 export default {
@@ -215,7 +262,9 @@ export default {
       ordenEstado: 'ABIERTA', // 🔹 Estado de la orden (ABIERTA o CERRADA)
       // 🔔 mensajes en pantalla
       mensaje: '',
-      mensajeTipo: '' // success | warning | error
+      mensajeTipo: '', // success | warning | error
+      filtroEstado: 'ABIERTA',
+      ordenesFiltradas: []
     }
   },
 
@@ -226,7 +275,7 @@ export default {
     // ✅ Validación para habilitar botón "Agregar"
     formValido() {
       return (
-        this.venta.codigo?.toString().trim() !== '' &&
+        this.venta.codigo?.trim() !== '' &&
         this.venta.producto?.trim() !== '' &&
         this.venta.descripcion?.trim() !== '' &&
         this.venta.cantidad >= 1 &&
@@ -256,6 +305,23 @@ export default {
       setTimeout(() => {
         this.mensaje = ''
       }, 3000)
+    },
+
+    async cargarOrdenesFiltradas() {
+      try {
+        let response
+        if (this.cliente.identificacion) {
+          response = await listarOrdenesPorClienteYEstado(this.cliente.identificacion, this.filtroEstado)
+        } else {
+          response = await listarOrdenesPorEstado(this.filtroEstado)
+        }
+        this.ordenesFiltradas = response.data || []
+        this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
+      } catch (error) {
+        console.error('❌ Error al cargar órdenes filtradas:', error)
+        this.mostrarMensaje('Error al obtener órdenes filtradas.', 'error')
+        this.ordenesFiltradas = []
+      }
     },
 
     // 🔹 Buscar cliente por identificación
