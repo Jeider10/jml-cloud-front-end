@@ -55,13 +55,14 @@
       <table class="productos-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th class="no-print">ID</th>
             <th>CÓDIGO</th>
             <th>PRODUCTO</th>
             <th>DESCRIPCIÓN</th>
             <th>CANTIDAD</th>
             <th>PRECIO U.</th>
-            <th>FECHA</th>
+            <th>FECHA CREACIÓN</th>
+            <th class="no-print">FECHA ACTUALIZACIÓN</th>
             <th>PRECIO TOTAL</th>
           </tr>
         </thead>
@@ -73,7 +74,8 @@
             <td>{{ item.descripcion }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ item.precio }}</td>
-            <td>{{ item.fecha }}</td>
+            <td>{{ item.fechaCreacion }}</td>
+            <td class="no-print">{{ item.fechaActualizacion }}</td>
             <td class="precio-total-cell">
               <div class="total-value">{{ item.cantidad * item.precio }}</div>
 
@@ -97,7 +99,7 @@
 
           <!-- Mensaje cuando no hay items -->
           <tr v-if="items.length === 0">
-            <td colspan="8" class="empty-row">No hay productos agregados.</td>
+            <td colspan="9" class="empty-row">No hay productos agregados.</td>
           </tr>
         </tbody>
       </table>
@@ -150,12 +152,10 @@ export default {
         codigo: '',
         producto: '',
         descripcion: '',
-        cantidad: null, // inicia vacío para que el botón quede deshabilitado
-        precio: null,   // inicia vacío para que el botón quede deshabilitado
-        stock: 0,
-        fecha: new Date().toISOString().substr(0, 10)
+        cantidad: null,
+        precio: null,
+        stock: 0
       },
-      // items: cada item tendrá { codigo, producto, descripcion, cantidad, precio, removeQty }
       items: [],
       cliente: {
         identificacion: '',
@@ -166,6 +166,7 @@ export default {
       mensajeTipo: '' // success | warning | error
     }
   },
+
   computed: {
     calcularTotal() {
       return this.items.reduce((acc, i) => acc + (Number(i.precio) * Number(i.cantidad)), 0)
@@ -189,11 +190,13 @@ export default {
       )
     }
   },
+
   methods: {
     handleMenuToggle(state) {
       this.menuOpen = state
     },
 
+    // 🔹 Método de mostrar mensaje
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -202,6 +205,7 @@ export default {
       }, 3000)
     },
 
+    // 🔹 Método de cargar productos
     async buscarProducto() {
       if (!this.venta.codigo || this.venta.codigo.toString().trim() === '') {
         this.mostrarMensaje('Ingrese un código de producto.', 'error')
@@ -232,6 +236,7 @@ export default {
       }
     },
 
+    // 🔹 Método agregar productos a la tabla
     agregarItem() {
       // Validaciones mínimas
       if (!this.formValido) {
@@ -280,7 +285,8 @@ export default {
             descripcion: productoActualizado.descripcion,
             cantidad: productoActualizado.cantidad,
             precio: productoActualizado.precio,
-            fecha: productoActualizado.fechaCreacion,
+            fechaCreacion: productoActualizado.fechaCreacion,
+            fechaActualizacion: productoActualizado.fechaActualizacion,
             removeQty: null
           })
           this.mostrarMensaje(`✅ Producto ${productoActualizado.producto} agregado correctamente.`, 'success')
@@ -547,6 +553,10 @@ button:disabled {
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  .print-only {
+    display: inline-block !important;
   }
 
   .venta-container {
