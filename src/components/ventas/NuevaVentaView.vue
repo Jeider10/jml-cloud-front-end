@@ -68,14 +68,30 @@
           </button>
         </div>
 
-        <!-- 🔹 Filtro de órdenes por estado -->
-        <div class="form-row">
-          <label>Filtrar Órdenes</label>
-          <select v-model="filtroEstado" @change="cargarOrdenesFiltradas">
+        <!-- 🔹 Filtro de órdenes por estado con botón al lado -->
+        <div class="form-row" style="display: flex; align-items: center; gap: 8px;">
+          <label for="filtroEstado">Filtrar Órdenes</label>
+
+          <!-- Select de estados -->
+          <select
+            v-model="filtroEstado"
+            id="filtroEstado"
+            @change="cargarOrdenesFiltradas"
+          >
             <option disabled value="">Seleccione un estado</option>
             <option value="ABIERTA">ABIERTA</option>
             <option value="CERRADA">CERRADA</option>
           </select>
+
+          <!-- 🔍 Botón de búsqueda, deshabilitado si no hay estado seleccionado -->
+          <button
+            type="button"
+            class="buscar-btn"
+            @click="filtrarProductos"
+            :disabled="!filtroEstado"
+          >
+            🔍 Buscar
+          </button>
         </div>
       </div>
 
@@ -140,31 +156,6 @@
           </tr>
         </tbody>
       </table>
-
-      <!-- 🔹 Tabla de órdenes filtradas -->
-      <div class="ordenes-filtradas-section no-print" v-if="ordenesFiltradas.length > 0">
-        <h3>Órdenes Filtradas</h3>
-        <table class="ordenes-filtradas-table">
-          <thead>
-            <tr>
-              <th>Número Orden</th>
-              <th>Cliente</th>
-              <th>Estado</th>
-              <th>Fecha Creación</th>
-              <th>Detalle</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="orden in ordenesFiltradas" :key="orden.numeroOrden">
-              <td>{{ orden.numeroOrden }}</td>
-              <td>{{ orden.nombreCliente }}</td>
-              <td>{{ orden.estado }}</td>
-              <td>{{ orden.fechaCreacion }}</td>
-              <td>{{ orden.detalles.length }} productos</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
       <!-- === Sección final (datos cliente + acciones) === -->
       <div class="footer-venta">
@@ -657,6 +648,26 @@ export default {
   font-weight: bold;
   margin-bottom: 20px;
   text-align: center;
+}
+
+.buscar-btn {
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 12px;        /* De aqui al final del boton era otro */
+  background: #06d6a0;
+  color: white;
+  margin-left: 4px;
+}
+
+.buscar-btn:hover {
+  background: #049670;
+}
+
+.buscar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .mensaje {
