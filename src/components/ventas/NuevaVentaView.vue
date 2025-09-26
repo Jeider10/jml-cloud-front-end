@@ -270,6 +270,7 @@ export default {
         if (cliente) {
           this.cliente.nombres = cliente.nombres || ''
           this.clienteEncontrado = true
+          this.ordenEstado = 'ABIERTA'   // 👈 Reiniciamos estado al abrir nueva orden
           this.mostrarMensaje(`✅ Cliente encontrado: ${cliente.nombres}`, 'success')
         } else {
           this.clienteEncontrado = false
@@ -296,6 +297,7 @@ export default {
           const cliente = clientes[0]
           this.cliente.identificacion = cliente.identificacion || ''
           this.clienteEncontrado = true
+          this.ordenEstado = 'ABIERTA'   // 👈 Reiniciamos estado al abrir nueva orden
           this.mostrarMensaje(`✅ Cliente encontrado: ${cliente.nombres}`, 'success')
         } else {
           this.clienteEncontrado = false
@@ -505,6 +507,7 @@ export default {
     // 🔹 Método para iniciar nueva venta
     agregarCliente() {
       this.limpiarCamposCliente();
+      this.ordenEstado = 'ABIERTA'   // 👈 Reiniciamos estado al abrir nueva orden
       this.mostrarMensaje('✅ Listo para registrar una nueva venta.', 'success');
     },
 

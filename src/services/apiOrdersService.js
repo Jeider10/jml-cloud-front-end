@@ -52,10 +52,6 @@ export const agregarProducto = (producto) => apiOrders.post('/ordenes-ventas/reg
 export const restarCantidadProducto = (codigo, cantidad) =>
   apiOrders.put(`/ordenes-ventas/restar/${codigo}`, null, { params: { cantidad } })
 
-// Cerrar orden (PATCH /ordenes/{id}/cerrar)
-export const cerrarOrden = (id) =>
-  apiOrders.patch(`/ordenes/${id}/cerrar`)
-
   // Cerrar orden por cliente
 export const cerrarOrdenPorCliente = (identificacionCliente) =>
-  apiOrders.patch(`/ordenes/cerrar/cliente/${identificacionCliente}`)
+  apiOrders.patch(`/ordenes-ventas/cliente/orden/cerrar/${identificacionCliente}`)
