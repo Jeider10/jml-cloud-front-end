@@ -313,15 +313,6 @@ export default {
       }, 3000)
     },
 
-    limpiarFiltro() {
-        this.filtroEstado = ''   // Reinicia select
-        this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
-        // Reset cliente si quieres deshabilitar botones nuevamente
-        this.cliente = { identificacion: '', nombres: '' }
-        this.clienteEncontrado = false
-        this.ordenEstado = 'ABIERTA'  // o '' si quieres deshabilitar todo
-    },
-
     cargarItemsOrdenSeleccionada() {
       const orden = this.ordenesFiltradas.find(o => o.numeroOrden === this.ordenSeleccionada)
       if (orden) {
@@ -634,6 +625,17 @@ export default {
       }
     },
 
+    limpiarFiltro() {
+        this.filtroEstado = ''   // Reinicia select
+        this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
+        // Reset cliente si quieres deshabilitar botones nuevamente
+        this.cliente = { identificacion: '', nombres: '' }
+        this.clienteEncontrado = false
+        this.ordenEstado = 'ABIERTA'  // o '' si quieres deshabilitar todo
+        // 👇 limpiar tabla
+        this.items = [];
+    },
+
     // 🔹 Método para limpiar campos del formulario
     limpiarCamposCliente() {
       this.cliente = {
@@ -657,6 +659,8 @@ export default {
       // 👇 Deshabilitar de nuevo los campos de producto
       this.clienteEncontrado = false
       this.ordenId = null
+      this.filtroEstado = ''   // Reinicia select
+      this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
     },
 
     // 🔹 Método para iniciar nueva venta
