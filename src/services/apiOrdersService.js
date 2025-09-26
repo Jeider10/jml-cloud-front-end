@@ -55,3 +55,7 @@ export const restarCantidadProducto = (codigo, cantidad) =>
 // Cerrar orden (PATCH /ordenes/{id}/cerrar)
 export const cerrarOrden = (id) =>
   apiOrders.patch(`/ordenes/${id}/cerrar`)
+
+  // Cerrar orden por cliente
+export const cerrarOrdenPorCliente = (identificacionCliente) =>
+  apiOrders.patch(`/ordenes/cerrar/cliente/${identificacionCliente}`)

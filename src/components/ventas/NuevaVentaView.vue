@@ -184,7 +184,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
-import { agregarProducto, restarCantidadProducto, cerrarOrden } from '@/services/apiOrdersService.js'
+import { agregarProducto, restarCantidadProducto, cerrarOrdenPorCliente } from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 
 export default {
@@ -510,12 +510,12 @@ export default {
 
     // ✅ Nuevo método para cerrar la venta
     async cerrarVenta() {
-      if (!this.ordenId) {
-        this.mostrarMensaje('⚠️ No hay una orden activa para cerrar.', 'warning')
+      if (!this.cliente.identificacion) {
+        this.mostrarMensaje('⚠️ No hay cliente seleccionado para cerrar orden.', 'warning')
         return
       }
       try {
-        await cerrarOrden(this.ordenId)
+        await cerrarOrdenPorCliente(this.cliente.identificacion)
         this.ordenEstado = 'CERRADA'
         this.mostrarMensaje('✅ Venta cerrada correctamente.', 'success')
       } catch (error) {
