@@ -23,35 +23,29 @@
           <label>Código</label>
           <input v-model="venta.codigo" type="text" />
 
-          <!-- 🔹 Nuevo campo: Producto -->
           <label>Producto</label>
           <input v-model="venta.producto" type="text" />
 
           <label>Descripción</label>
           <input v-model="venta.descripcion" type="text" />
 
-          <label>Cant</label>
+          <label>Cantidad</label>
           <input v-model.number="venta.cantidad" type="number" min="1" />
 
           <label>Precio</label>
           <input v-model.number="venta.precio" type="number" min="1" step="0.01" />
 
-          <label>Fecha:</label>
-          <input v-model="venta.fecha" type="date" />
-
-          <!-- Botón para agregar producto desde el formulario -->
-          <button
-            type="button"
-            class="agregar-btn"
-            @click="agregarItem"
-            :disabled="!formValido"
-          >
-            ➕ Agregar
+          <!-- ➕ Botón para agregar producto -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="agregarItem"
+                  :disabled="!formValido">
+                  ➕ Agregar
           </button>
         </div>
 
         <div class="form-row">
-          <label class="stock">Stock Disponible</label>
+          <label class="stock">Existencias disponibles</label>
           <input v-model="venta.stock" type="number" disabled />
         </div>
       </div>
@@ -62,11 +56,11 @@
           <tr>
             <th>ID</th>
             <th>CÓDIGO</th>
-            <!-- 🔹 Nueva columna: Producto -->
             <th>PRODUCTO</th>
             <th>DESCRIPCIÓN</th>
             <th>CANTIDAD</th>
             <th>PRECIO U.</th>
+            <th>FECHA</th>
             <th>PRECIO TOTAL</th>
           </tr>
         </thead>
@@ -74,13 +68,12 @@
           <tr v-for="(item, idx) in items" :key="idx">
             <td>{{ idx + 1 }}</td>
             <td>{{ item.codigo }}</td>
-            <!-- 🔹 Mostrar Producto -->
             <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
             <td>{{ item.cantidad }}</td>
-            <td>{{ formatNumber(item.precio) }}</td>
+            <td>{{ item.precio }}</td>
             <td class="precio-total-cell">
-              <div class="total-value">{{ formatNumber(item.cantidad * item.precio) }}</div>
+              <div class="total-value">{{ item.cantidad * item.precio }}</div>
 
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
               <div class="mini-controls no-print">
@@ -89,10 +82,12 @@
                   type="number"
                   min="0"
                   class="mini-input"
-                  placeholder="Cant"
-                />
-                <button class="delete-btn" @click="eliminarItem(idx)" title="Eliminar / Restar">
-                  🗑️
+                  placeholder="Cant" />
+                <!-- ❌️ Botón de no -->
+                <button class="delete-btn"
+                        @click="eliminarItem(idx)"
+                        title="Eliminar / Restar">
+                        🗑️
                 </button>
               </div>
             </td>
@@ -100,7 +95,7 @@
 
           <!-- Mensaje cuando no hay items -->
           <tr v-if="items.length === 0">
-            <td colspan="7" class="empty-row">No hay productos agregados.</td>
+            <td colspan="8" class="empty-row">No hay productos agregados.</td>
           </tr>
         </tbody>
       </table>
@@ -119,7 +114,11 @@
         <!-- Acciones normales -->
         <div class="acciones-footer no-print">
           <!-- ✅ Ahora el botón también valida identificación y nombre -->
-          <button @click="imprimirFactura" :disabled="!puedeImprimir">🖨️ Imprimir</button>
+          <!-- 🖨️ Botón de imprimir -->
+          <button @click="imprimirFactura"
+                  :disabled="!puedeImprimir">
+                  🖨️ Imprimir
+          </button>
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
 
@@ -145,7 +144,7 @@ export default {
       menuOpen: false,
       venta: {
         codigo: '',
-        producto: '', // 🔹 Nuevo campo
+        producto: '',
         descripcion: '',
         cantidad: null, // inicia vacío para que el botón quede deshabilitado
         precio: null,   // inicia vacío para que el botón quede deshabilitado
@@ -282,7 +281,6 @@ export default {
   display: flex;
 }
 
-/* Contenido principal al estilo Dashboard */
 .venta-container {
   position: absolute;
   top: 0;
@@ -298,7 +296,6 @@ export default {
   justify-content: flex-start;
 }
 
-/* Si menú expandido, deja más espacio */
 .venta-container.expanded {
   left: 220px; /* menú desplegable */
 }
@@ -310,7 +307,6 @@ export default {
   text-align: center;
 }
 
-/* 🔔 Estilo para mensajes */
 .mensaje {
   padding: 12px 18px;
   border-radius: 6px;
@@ -319,18 +315,26 @@ export default {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error   { background: #e74c3c; color: white; }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
 }
 
-.form-container { margin-bottom: 20px; }
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
+
+.form-container {
+  margin-bottom: 20px;
+}
+
 .form-row {
   display: flex;
   align-items: center;
@@ -339,7 +343,9 @@ export default {
   flex-wrap: wrap;
 }
 
-label { font-weight: bold; }
+label {
+  font-weight: bold;
+}
 
 input {
   padding: 6px;
@@ -347,7 +353,6 @@ input {
   border-radius: 4px;
 }
 
-/* botón agregar (en la fila del formulario) */
 .agregar-btn {
   padding: 8px 12px;
   border-radius: 6px;
@@ -357,20 +362,29 @@ input {
   cursor: pointer;
   font-weight: 600;
 }
-.agregar-btn:hover { background: #005f8a; }
+
+.agregar-btn:hover {
+  background: #005f8a;
+}
+
 .agregar-btn:disabled {
   background: #a0c4d6;
   cursor: not-allowed;
 }
 
-/* Tabla de productos */
 .productos-table {
   width: 100%;
   border-collapse: collapse;
   margin: 20px 0;
 }
 
-.productos-table th,
+.productos-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+  background: white;
+}
+
 .productos-table td {
   border: 1px solid #ddd;
   padding: 8px;
@@ -378,16 +392,24 @@ input {
   background: white;
 }
 
-/* Celda con precio total + mini controles */
 .precio-total-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 }
-.total-value { font-weight: 700; color: #0b3954; }
 
-.mini-controls { display: flex; gap: 6px; align-items: center; }
+.total-value {
+  font-weight: 700;
+  color: #0b3954;
+}
+
+.mini-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 .mini-input {
   width: 70px;
   padding: 4px 6px;
@@ -397,7 +419,6 @@ input {
   text-align: center;
 }
 
-/* boton eliminar pequeño */
 .delete-btn {
   padding: 6px 8px;
   border-radius: 6px;
@@ -407,17 +428,25 @@ input {
   cursor: pointer;
   font-size: 0.9rem;
 }
-.delete-btn:hover { background: #b52a33; }
 
-.empty-row { text-align: center; padding: 18px; color: #666; }
+.delete-btn:hover {
+  background: #b52a33;
+}
 
-/* Footer final */
+.empty-row {
+  text-align: center;
+  padding: 18px;
+  color: #666;
+}
+
 .footer-venta {
   margin-top: auto;
   padding-top: 20px;
 }
 
-.cliente-datos { margin-bottom: 15px; }
+.cliente-datos {
+  margin-bottom: 15px;
+}
 
 .acciones-footer {
   display: flex;
@@ -435,17 +464,27 @@ button {
   cursor: pointer;
   font-weight: bold;
 }
-button:hover { background: #004466; }
+
+button:hover {
+  background: #004466;
+}
+
 button:disabled {
   background: #a0c4d6;
   cursor: not-allowed;
 }
 
-.total { font-size: 1.2rem; font-weight: bold; }
+.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
 
 /* 🔹 Estilos para impresión */
 @media print {
-  .no-print { display: none !important; }
+  .no-print {
+    display: none !important;
+  }
+
   .venta-container {
     position: relative !important;
     left: 0 !important;
@@ -455,10 +494,12 @@ button:disabled {
     padding: 0 !important;
     background: white !important;
   }
+
   .footer-venta {
     margin-top: auto !important;
     page-break-inside: avoid;
   }
+
   /* ✅ Una sola línea fija al pie de la hoja */
   .print-only.datos-linea {
     display: flex !important;
@@ -473,5 +514,8 @@ button:disabled {
     right: 0;
   }
 }
-.print-only { display: none; }
+
+.print-only {
+  display: none;
+}
 </style>
