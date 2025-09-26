@@ -41,7 +41,7 @@
                   class="agregar-btn"
                   @click="agregarItem"
                   :disabled="!formValido">
-                  ➕ Agregar
+                  ➕ Agregar Producto
           </button>
 
           <!-- 🧹 Botón de limpiar campos -->
@@ -56,6 +56,13 @@
         <div class="form-row">
           <label class="stock">Existencias disponibles</label>
           <input v-model="venta.stock" type="number" disabled />
+
+          <!-- ➕ Botón de nueva venta -->
+          <button type="button"
+                  class="agregar-btn"
+                  @click="agregarCliente">
+                  ➕ Nueva Venta
+          </button>
         </div>
       </div>
 
