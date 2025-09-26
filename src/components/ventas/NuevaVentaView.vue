@@ -21,7 +21,8 @@
       <div class="form-container no-print">
         <div class="form-row">
           <label>Código</label>
-          <input v-model="venta.codigo" type="text" />
+          <!-- <input v-model="venta.codigo" type="text" /> -->
+          <input v-model="venta.codigo" type="text" @keyup.enter="buscarProducto" />
 
           <label>Producto</label>
           <input v-model="venta.producto" type="text" />
@@ -72,6 +73,7 @@
             <td>{{ item.descripcion }}</td>
             <td>{{ item.cantidad }}</td>
             <td>{{ item.precio }}</td>
+            <td>{{ item.fecha }}</td>
             <td class="precio-total-cell">
               <div class="total-value">{{ item.cantidad * item.precio }}</div>
 
@@ -135,6 +137,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { buscarProductoPorCodigo } from '@/services/apiProductsService.js'
 
 export default {
   name: 'NuevaVentaView',
@@ -198,7 +201,36 @@ export default {
       }, 3000)
     },
 
-    // Agrega el producto que está en el form a la tabla
+    async buscarProducto() {
+      if (!this.venta.codigo || this.venta.codigo.toString().trim() === '') {
+        this.mostrarMensaje('Ingrese un código de producto.', 'error')
+        return
+      }
+
+      try {
+        const response = await buscarProductoPorCodigo(Number(this.venta.codigo))
+        const producto = response.data
+
+        if (!producto) {
+          this.mostrarMensaje('Producto no encontrado.', 'error')
+          return
+        }
+
+        // Rellenar campos con lo que venga del backend
+        this.venta.producto = producto.nombre || ''
+        this.venta.descripcion = producto.descripcion || ''
+        // inicializar cantidad propuesta en 1 para agregar
+        this.venta.cantidad = 1
+        this.venta.precio = Number(producto.precio) || 0
+        // stock del producto en BD
+        this.venta.stock = Number(producto.cantidad) || 0
+
+      } catch (error) {
+        console.error('❌ Error al buscar producto:', error)
+        this.mostrarMensaje('Error al buscar producto en el servidor.', 'error')
+      }
+    },
+
     agregarItem() {
       // Validaciones mínimas
       if (!this.formValido) {
@@ -206,15 +238,17 @@ export default {
         return
       }
 
-      // ✅ Verificar si ya existe un producto con ese código
+      // validar stock
+      if (this.venta.cantidad > this.venta.stock) {
+        this.mostrarMensaje('No hay suficiente stock disponible.', 'error')
+        return
+      }
+
       const existingIndex = this.items.findIndex(i => i.codigo === this.venta.codigo)
       if (existingIndex !== -1) {
         // Si existe → sumar cantidad al mismo producto
         this.items[existingIndex].cantidad += Number(this.venta.cantidad)
-        this.mostrarMensaje(
-          `⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad en el registro existente.`,
-          'warning'
-        )
+        this.mostrarMensaje(`⚠️ El producto con código ${this.venta.codigo} ya existe. Se actualizó la cantidad.`, 'warning')
       } else {
         // Si no existe → crear uno nuevo
         const newItem = {
@@ -229,12 +263,13 @@ export default {
         this.mostrarMensaje(`✅ Producto ${this.venta.producto} agregado correctamente.`, 'success')
       }
 
-      // limpiar campos → el botón "Agregar" queda deshabilitado automáticamente
+      // limpiar campos
       this.venta.codigo = ''
       this.venta.producto = ''
       this.venta.descripcion = ''
       this.venta.cantidad = null
       this.venta.precio = null
+      this.venta.stock = 0
     },
 
     // Eliminar/restar cantidad
