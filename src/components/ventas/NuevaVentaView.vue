@@ -21,26 +21,28 @@
       <div class="form-container no-print">
         <div class="form-row">
           <label>Código</label>
-          <!-- <input v-model="venta.codigo" type="text" /> -->
-          <input v-model="venta.codigo" type="text" @keyup.enter="buscarProducto" />
+          <input v-model="venta.codigo"
+                 type="text"
+                 @keyup.enter="buscarProducto"
+                 :disabled="!clienteEncontrado" />
 
           <label>Producto</label>
-          <input v-model="venta.producto" type="text" />
+          <input v-model="venta.producto" type="text" :disabled="!clienteEncontrado" />
 
           <label>Descripción</label>
-          <input v-model="venta.descripcion" type="text" />
+          <input v-model="venta.descripcion" type="text" :disabled="!clienteEncontrado" />
 
           <label>Cantidad</label>
-          <input v-model.number="venta.cantidad" type="number" min="1" />
+          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!clienteEncontrado" />
 
           <label>Precio</label>
-          <input v-model.number="venta.precio" type="number" min="1" step="0.01" />
+          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!clienteEncontrado" />
 
           <!-- ➕ Botón para agregar producto -->
           <button type="button"
                   class="agregar-btn"
                   @click="agregarItem"
-                  :disabled="!formValido">
+                  :disabled="!formValido || !clienteEncontrado">
                   ➕ Agregar Producto
           </button>
 
@@ -60,7 +62,8 @@
           <!-- ➕ Botón de nueva venta -->
           <button type="button"
                   class="agregar-btn"
-                  @click="agregarCliente">
+                  @click="agregarCliente"
+                  :disabled="!clienteEncontrado">
                   ➕ Nueva Venta
           </button>
         </div>
@@ -94,12 +97,11 @@
 
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
               <div class="mini-controls no-print">
-                <input
-                  v-model.number="item.removeQty"
-                  type="number"
-                  min="0"
-                  class="mini-input"
-                  placeholder="Cant" />
+                <input v-model.number="item.removeQty"
+                       type="number"
+                       min="0"
+                       class="mini-input"
+                       placeholder="Cant" />
                 <!-- ❌️ Botón de no -->
                 <button class="delete-btn"
                         @click="eliminarItem(idx)"
@@ -121,11 +123,21 @@
       <div class="footer-venta">
         <!-- Datos de cliente -->
         <div class="form-row cliente-datos no-print">
-          <label>Identificación</label>
-          <input v-model="cliente.identificacion" type="text" />
+          <label>Identificación Cliente</label>
+          <input v-model="cliente.identificacion"
+                 type="text"
+                 @keyup.enter="buscarClientePorIdentificacionHandler" />
 
-          <label>Nombre</label>
-          <input v-model="cliente.nombre" type="text" />
+          <label>Nombre Cliente</label>
+          <input v-model="cliente.nombres"
+                 type="text"
+                 @keyup.enter="buscarClientePorNombreHandler" />
+
+          <label>Identificación Empleado</label>
+          <input v-model="empleado.identificacion" type="text" />
+
+          <label>Nombre Empleado</label>
+          <input v-model="empleado.nombre" type="text" />
         </div>
 
         <!-- Acciones normales -->
@@ -136,13 +148,23 @@
                   :disabled="!puedeImprimir">
                   🖨️ Imprimir
           </button>
+
+          <!-- 🧹 Botón de limpiar campos -->
+          <button type="button"
+                  class="limpiar-campos-btn"
+                  :disabled="!hayDatosCliente()"
+                  @click="limpiarCamposCliente">
+                  🧹 Limpiar campos
+          </button>
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
 
         <!-- ✅ Datos cliente y total SOLO impresión en una sola línea -->
         <div class="print-only datos-linea">
-          <span><strong>Identificación:</strong> {{ cliente.identificacion }}</span>
-          <span><strong>Nombre:</strong> {{ cliente.nombre }}</span>
+          <span><strong>Identificación Cliente:</strong> {{ cliente.identificacion }}</span>
+          <span><strong>Nombre Cliente:</strong> {{ cliente.nombres }}</span>
+          <span><strong>Identificación Empleado:</strong> {{ empleado.identificacion }}</span>
+          <span><strong>Nombre Empleado:</strong> {{ empleado.nombre }}</span>
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
       </div>
@@ -154,6 +176,7 @@
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
 import { agregarProducto, restarCantidadProducto } from '@/services/apiOrdersService.js'
+import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'NuevaVentaView',
@@ -174,6 +197,11 @@ export default {
         identificacion: '',
         nombre: ''
       },
+      empleado: {
+        identificacion: '',
+        nombre: ''
+      },
+      clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
       // 🔔 mensajes en pantalla
       mensaje: '',
       mensajeTipo: '' // success | warning | error
@@ -198,8 +226,9 @@ export default {
     puedeImprimir() {
       return (
         this.items.length > 0 &&
-        this.cliente.identificacion.trim() !== '' &&
-        this.cliente.nombre.trim() !== ''
+        this.clienteEncontrado,
+        this.empleado.identificacion.trim() !== '' &&
+        this.empleado.nombre.trim() !== ''
       )
     }
   },
@@ -216,6 +245,56 @@ export default {
       setTimeout(() => {
         this.mensaje = ''
       }, 3000)
+    },
+
+    // 🔹 Buscar cliente por identificación
+    async buscarClientePorIdentificacionHandler() {
+      if (!this.cliente.identificacion || this.cliente.identificacion.trim() === '') {
+        this.mostrarMensaje('Ingrese una identificación.', 'error')
+        return
+      }
+      try {
+        const response = await buscarClientePorIdentificacion(Number(this.cliente.identificacion))
+        const cliente = response.data
+        if (cliente) {
+          this.cliente.nombres = cliente.nombres || ''
+          this.clienteEncontrado = true
+          this.mostrarMensaje(`✅ Cliente encontrado: ${cliente.nombres}`, 'success')
+        } else {
+          this.clienteEncontrado = false
+          this.mostrarMensaje('❌ Cliente no encontrado.', 'error')
+        }
+      } catch (error) {
+        console.error('❌ Error al buscar cliente por identificación:', error)
+        this.mostrarMensaje('Error en búsqueda de cliente por identificación.', 'error')
+        this.clienteEncontrado = false
+      }
+    },
+
+    // 🔹 Buscar cliente por nombre
+    async buscarClientePorNombreHandler() {
+      if (!this.cliente.nombres || this.cliente.nombres.trim() === '') {
+        this.mostrarMensaje('Ingrese un nombre de cliente.', 'error')
+        return
+      }
+      try {
+        const response = await buscarClientePorNombres(this.cliente.nombres)
+        const clientes = response.data
+        if (clientes && clientes.length > 0) {
+          // Tomamos el primero por simplicidad
+          const cliente = clientes[0]
+          this.cliente.identificacion = cliente.identificacion || ''
+          this.clienteEncontrado = true
+          this.mostrarMensaje(`✅ Cliente encontrado: ${cliente.nombres}`, 'success')
+        } else {
+          this.clienteEncontrado = false
+          this.mostrarMensaje('❌ No se encontraron clientes con ese nombre.', 'error')
+        }
+      } catch (error) {
+        console.error('❌ Error al buscar cliente por nombre:', error)
+        this.mostrarMensaje('Error en búsqueda de cliente por nombre.', 'error')
+        this.clienteEncontrado = false
+      }
     },
 
     // 🔹 Método de cargar productos
@@ -328,11 +407,8 @@ export default {
         const qtyToRemove = Number(item.removeQty)
 
         // si no se pone nada o qty >= cantidad actual → eliminar todo
-        const cantidadARestar =
-          !qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad
-            ? item.cantidad
-            : qtyToRemove
-
+        const cantidadARestar = !qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad
+          ? item.cantidad : qtyToRemove
         try {
           // 1️⃣ Actualizar en órdenes
           const response = await restarCantidadProducto(item.codigo, cantidadARestar)
@@ -348,10 +424,7 @@ export default {
           } else {
             // actualizar cantidad en tabla
             this.items[idx].cantidad = ordenActualizada.cantidad
-            this.mostrarMensaje(
-              `➖ Se restaron ${cantidadARestar} unidades del producto ${item.codigo}.`,
-              'warning'
-            )
+            this.mostrarMensaje(`➖ Se restaron ${cantidadARestar} unidades del producto ${item.codigo}.`, 'warning')
           }
         } catch (error) {
           console.error('❌ Error al restar producto:', error)
@@ -367,7 +440,15 @@ export default {
              this.venta.descripcion ||
              this.venta.cantidad ||
              this.venta.precio ||
-             this.venta.stock;
+             this.venta.stock
+    },
+
+    // 🔹 Método para saber si hay datos en el formulario
+    hayDatosCliente() {
+      return this.cliente.identificacion ||
+             this.cliente.nombres ||
+             this.empleado.identificacion ||
+             this.empleado.nombre
     },
 
     // 🔹 Método para limpiar campos del formulario
@@ -380,6 +461,18 @@ export default {
         precio: null,
         stock: 0
       }
+    },
+
+    // 🔹 Método para limpiar campos del formulario
+    limpiarCamposCliente() {
+      this.cliente = {
+        identificacion: '',
+        nombres: ''
+      };
+      this.empleado = {
+        identificacion: '',
+        nombre: ''
+      };
     },
 
     // ✅ Logica para imprimir
