@@ -92,3 +92,7 @@ export const actualizarProducto = (producto) => {
 export const eliminarProductoPorCodigo = (codigo) =>
   apiProducts.delete('/productos/eliminar-codigo', { params: { codigo } })
 
+// Restar stock de un producto por código
+export const restarStockProducto = (codigo, cantidad) =>
+  apiProducts.put(`/productos/${codigo}/restar-stock`, null, { params: { cantidad } })
+

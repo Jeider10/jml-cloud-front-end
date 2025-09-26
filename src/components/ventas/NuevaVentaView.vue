@@ -55,7 +55,6 @@
       <table class="productos-table">
         <thead>
           <tr>
-            <th class="no-print">ID</th>
             <th>CÓDIGO</th>
             <th>PRODUCTO</th>
             <th>DESCRIPCIÓN</th>
@@ -68,7 +67,6 @@
         </thead>
         <tbody>
           <tr v-for="(item, idx) in items" :key="idx">
-            <td>{{ idx + 1 }}</td>
             <td>{{ item.codigo }}</td>
             <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
@@ -139,7 +137,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { buscarProductoPorCodigo } from '@/services/apiProductsService.js'
+import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
 import { agregarProducto } from '@/services/apiOrdersService.js'
 
 export default {
@@ -174,7 +172,7 @@ export default {
     // ✅ Validación para habilitar botón "Agregar"
     formValido() {
       return (
-        this.venta.codigo?.trim() !== '' &&
+        this.venta.codigo?.toString().trim() !== '' &&
         this.venta.producto?.trim() !== '' &&
         this.venta.descripcion?.trim() !== '' &&
         this.venta.cantidad >= 1 &&
@@ -237,7 +235,7 @@ export default {
     },
 
     // 🔹 Método agregar productos a la tabla
-    agregarItem() {
+    async agregarItem() {
       // Validaciones mínimas
       if (!this.formValido) {
         this.mostrarMensaje('⚠️ Complete todos los campos antes de agregar.', 'error')
@@ -257,14 +255,17 @@ export default {
         descripcion: this.venta.descripcion,
         cantidad: Number(this.venta.cantidad),
         precio: Number(this.venta.precio)
-    };
+      }
 
-    // 🔹 Llamar API backend
-    agregarProducto(payload)
-      .then(response => {
+      try {
+        // 1️⃣ Registrar en órdenes
+        const response = await agregarProducto(payload)
         const productoActualizado = response.data
 
-        // 🔹 Verificar si ya existe en la tabla local
+        // 2️⃣ Restar stock en productos
+        await restarStockProducto(this.venta.codigo, this.venta.cantidad)
+
+        // 3️⃣ Manejar tabla local
         const existingIndex = this.items.findIndex(i => i.codigo === productoActualizado.codigo)
 
         if (existingIndex !== -1) {
@@ -292,18 +293,17 @@ export default {
           this.mostrarMensaje(`✅ Producto ${productoActualizado.producto} agregado correctamente.`, 'success')
         }
 
-        // limpiar campos
+        // 4️⃣ Limpiar campos
         this.venta.codigo = ''
         this.venta.producto = ''
         this.venta.descripcion = ''
         this.venta.cantidad = null
         this.venta.precio = null
         this.venta.stock = 0
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('❌ Error al agregar producto:', error)
-        this.mostrarMensaje('Error al agregar producto en el servidor.', 'error')
-      })
+        this.mostrarMensaje(error.message || 'Error al agregar producto en el servidor.', 'error')
+      }
     },
 
     // Eliminar/restar cantidad
