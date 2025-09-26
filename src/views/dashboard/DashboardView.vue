@@ -22,7 +22,7 @@ export default {
   },
   data() {
     return {
-      menuOpen: false
+      menuOpen: true, // Siempre arranca expandido y false arranca oculto
     }
   }
 }

@@ -87,7 +87,7 @@ export default {
   name: 'DashboardSideMenu',
   data() {
     return {
-      menuOpen: false,
+      menuOpen: true, // Siempre arranca expandido y false arranca oculto
       menuItems: [
         'Nueva Venta',
         'Clientes',
@@ -106,7 +106,7 @@ export default {
     },
     onMenuClick() {
       // alterna el estado expandido/colapsado
-      this.menuOpen = !this.menuOpen
+      // this.menuOpen = !this.menuOpen // Comentada siempre expandido, descomentada se oculta
       this.$emit('menu-toggle', this.menuOpen)
     },
     onNuevaVentaClick() {

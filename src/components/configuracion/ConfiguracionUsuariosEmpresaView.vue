@@ -75,7 +75,7 @@ export default {
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: false,
+      menuOpen: true, // Siempre arranca expandido y false arranca oculto
       mostrarConfirmacion: false,
       usuario: {
         nombre: '',

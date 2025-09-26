@@ -74,7 +74,7 @@ export default {
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: false,
+      menuOpen: true, // Siempre arranca expandido y false arranca oculto
       ventas: [],
       ventasFiltradas: [],
       mensaje: '',
@@ -96,9 +96,9 @@ export default {
     }
   },
   methods: {
-    handleMenuToggle(state) {
-      this.menuOpen = state
-    },
+    // handleMenuToggle(state) {
+      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // },
 
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
