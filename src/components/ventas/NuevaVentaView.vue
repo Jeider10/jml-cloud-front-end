@@ -103,10 +103,18 @@
               Orden {{ orden.numeroOrden }} - Estado: {{ orden.estadoOrden }} - Total: {{ formatNumber(orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0)) }}
             </option>
           </select>
+
+          <!-- Check de órdenes por cliente o general -->
+          <div class="filtro-opciones">
+            <label>
+              <input type="checkbox" v-model="filtrarPorCliente" />
+              Ver solo órdenes del cliente actual
+            </label>
+          </div>
         </div>
       </div>
 
-      <!-- tabla de productos solo de la orden seleccionada <table class="productos-table" v-if="ordenCargada"> -->
+      <!-- tabla de productos solo de la orden seleccionada -->
       <table class="productos-table">
         <thead>
           <tr>
@@ -251,16 +259,17 @@ export default {
         identificacion: '',
         nombre: ''
       },
-      clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
       ordenId: null, // 🔹 numeroOrden (UUID) de la orden actual
       ordenEstado: 'ABIERTA', // 🔹 Estado de la orden (ABIERTA o CERRADA)
       // 🔔 mensajes en pantalla
       mensaje: '',
       mensajeTipo: '', // success | warning | error
       filtroEstado: '',
+      filtrarPorCliente: false,
       ordenesFiltradas: [],
       ordenSeleccionada: null, // Número de orden activa seleccionada
       ordenCargada: false, // Indica si se seleccionó una orden para mostrar detalles
+      clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
     }
   },
 
@@ -343,10 +352,18 @@ export default {
 
     async cargarOrdenesFiltradas() {
       try {
+        // Limpieza inicial
+        this.ordenesFiltradas = []
+        this.ordenSeleccionada = null
+        this.items = []
+        this.ordenCargada = false
+
         let response
-        if (this.cliente.identificacion) {
+        if (this.filtrarPorCliente && this.cliente.identificacion) {
+          // 🔹 Escenario por cliente
           response = await listarOrdenesPorClienteYEstado(this.cliente.identificacion, this.filtroEstado)
         } else {
+          // 🔹 Escenario global
           response = await listarOrdenesPorEstado(this.filtroEstado)
         }
 
