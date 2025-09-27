@@ -425,8 +425,8 @@ export default {
 
         if (this.venta.codigo) {
           response = await buscarProductoPorCodigo(Number(this.venta.codigo))
-        } else if (this.venta.nombre) {
-          response = await buscarProductoPorNombre(this.venta.nombre)
+        } else if (this.venta.producto) {
+          response = await buscarProductoPorNombre(this.venta.producto)
         } else if (this.venta.descripcion) {
           response = await buscarProductoPorDescripcion(this.venta.descripcion)
         } else if (this.venta.cantidad) {
