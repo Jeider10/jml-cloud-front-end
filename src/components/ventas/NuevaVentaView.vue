@@ -59,8 +59,7 @@
           <!-- ➕ Botón de nueva venta -->
           <button type="button"
                   class="agregar-btn"
-                  @click="agregarCliente"
-                  :disabled="!clienteEncontrado">
+                  @click="agregarCliente">
                   ➕ Nueva Venta
           </button>
         </div>
@@ -163,16 +162,16 @@
         <!-- Datos de cliente -->
         <div class="form-row cliente-datos no-print">
           <label>Identificación Cliente</label>
-          <input v-model="cliente.identificacion" type="text" />
+          <input v-model="cliente.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" />
 
           <label>Nombre Cliente</label>
-          <input v-model="cliente.nombres" type="text" />
+          <input v-model="cliente.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" />
 
           <label>Identificación Empleado</label>
-          <input v-model="empleado.identificacion" type="text" />
+          <input v-model="empleado.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" />
 
           <label>Nombre Empleado</label>
-          <input v-model="empleado.nombre" type="text" />
+          <input v-model="empleado.nombre" type="text" :disabled="ordenEstado === 'CERRADA'" />
         </div>
 
         <!-- Acciones normales -->
@@ -187,7 +186,7 @@
           <!-- 🧹 Botón de limpiar -->
           <button type="button"
                   class="limpiar-campos-btn"
-                  :disabled="!hayDatosCliente()"
+                  :disabled="!hayDatosCliente() || ordenEstado === 'CERRADA'"
                   @click="limpiarCamposCliente">
                   🧹 Limpiar
           </button>
