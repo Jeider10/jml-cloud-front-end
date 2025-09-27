@@ -39,7 +39,7 @@
           <button type="button"
                   class="agregar-btn"
                   @click="agregarItem"
-                  :disabled="!formValido || !ordenCargada">
+                  :disabled="!formValido || ordenCerrada">
                   ➕ Agregar Producto
           </button>
 
@@ -186,7 +186,7 @@
           <!-- 🧹 Botón de limpiar -->
           <button type="button"
                   class="limpiar-campos-btn"
-                  :disabled="!hayDatosCliente() || ordenEstado === 'CERRADA'"
+                  :disabled="!hayDatosCliente() || ordenCerrada"
                   @click="limpiarCamposCliente">
                   🧹 Limpiar
           </button>
@@ -195,7 +195,7 @@
           <button type="button"
                   class="cerrar-venta-btn"
                   @click="cerrarVenta"
-                  :disabled="ordenEstado !== 'ABIERTA' || items.length === 0">
+                  :disabled="ordenCerrada || items.length === 0">
                   ✅ Cerrar Venta
           </button>
 
@@ -258,6 +258,10 @@ export default {
   },
 
   computed: {
+    ordenCerrada() {
+      return this.ordenEstado === 'CERRADA'
+    },
+
     calcularTotal() {
       return this.items.reduce((acc, i) => acc + (Number(i.precio) * Number(i.cantidad)), 0)
     },
