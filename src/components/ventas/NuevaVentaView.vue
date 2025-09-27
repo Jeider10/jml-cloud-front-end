@@ -21,19 +21,19 @@
       <div class="form-container no-print">
         <div class="form-row">
           <label>Código</label>
-          <input v-model="venta.codigo" type="text" @keyup.enter="buscarProducto" :disabled="!ordenCargada" />
+          <input v-model="venta.codigo" type="text" @keyup.enter="buscarProducto" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Producto</label>
-          <input v-model="venta.producto" type="text" :disabled="!ordenCargada" />
+          <input v-model="venta.producto" type="text" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Descripción</label>
-          <input v-model="venta.descripcion" type="text" :disabled="!ordenCargada" />
+          <input v-model="venta.descripcion" type="text" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Cantidad</label>
-          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!ordenCargada" />
+          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Precio</label>
-          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!ordenCargada" />
+          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <!-- ➕ Botón para agregar producto -->
           <button type="button"
