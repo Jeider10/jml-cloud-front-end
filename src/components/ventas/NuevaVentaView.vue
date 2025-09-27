@@ -162,10 +162,10 @@
         <!-- Datos de cliente -->
         <div class="form-row cliente-datos no-print">
           <label>Identificación Cliente</label>
-          <input v-model="cliente.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" />
+          <input v-model="cliente.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarClientePorIdentificacionHandler" />
 
           <label>Nombre Cliente</label>
-          <input v-model="cliente.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" />
+          <input v-model="cliente.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarClientePorNombreHandler" />
 
           <label>Identificación Empleado</label>
           <input v-model="empleado.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" />
