@@ -372,6 +372,30 @@ export default {
       }
     },
 
+    // async cargarOrdenesFiltradas() {
+      // try {
+        // const response = await listarOrdenesPorEstado(this.filtroEstado)
+
+        // this.ordenesFiltradas = response.data || []
+        // this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
+
+        // if (this.ordenesFiltradas.length === 1) {
+          // this.ordenSeleccionada = this.ordenesFiltradas[0].numeroOrden
+          // this.cargarItemsOrdenSeleccionada()
+        // } else {
+          // this.ordenSeleccionada = null
+          // this.items = []
+          // this.ordenCargada = false
+        // }
+
+      // } catch (error) {
+        // console.error('❌ Error al cargar órdenes filtradas:', error)
+        // this.mostrarMensaje('Error al obtener órdenes filtradas.', 'error')
+        // this.ordenesFiltradas = []
+        // this.ordenCargada = false
+      // }
+    // },
+
     // 🔹 Buscar cliente por identificación
     async buscarClientePorIdentificacionHandler() {
       if (!this.cliente.identificacion || this.cliente.identificacion.trim() === '') {
