@@ -122,7 +122,7 @@
           </tr>
         </thead>
 
-        <tbody v-if="ordenCargada">
+        <tbody>
           <!-- 🔹 Productos agregados -->
           <tr v-for="(item, idx) in items" :key="'item-' + idx">
             <td>{{ item.codigo }}</td>
