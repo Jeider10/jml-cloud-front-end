@@ -21,28 +21,25 @@
       <div class="form-container no-print">
         <div class="form-row">
           <label>Código</label>
-          <input v-model="venta.codigo"
-                 type="text"
-                 @keyup.enter="buscarProducto"
-                 :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
+          <input v-model="venta.codigo" type="text" @keyup.enter="buscarProducto" :disabled="!ordenCargada" />
 
           <label>Producto</label>
-          <input v-model="venta.producto" type="text" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
+          <input v-model="venta.producto" type="text" :disabled="!ordenCargada" />
 
           <label>Descripción</label>
-          <input v-model="venta.descripcion" type="text" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
+          <input v-model="venta.descripcion" type="text" :disabled="!ordenCargada" />
 
           <label>Cantidad</label>
-          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
+          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!ordenCargada" />
 
           <label>Precio</label>
-          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!clienteEncontrado || ordenEstado !== 'ABIERTA'" />
+          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!ordenCargada" />
 
           <!-- ➕ Botón para agregar producto -->
           <button type="button"
                   class="agregar-btn"
                   @click="agregarItem"
-                  :disabled="!formValido || !clienteEncontrado || ordenEstado !== 'ABIERTA'">
+                  :disabled="!formValido || !ordenCargada">
                   ➕ Agregar Producto
           </button>
 
@@ -123,7 +120,8 @@
             <th>PRECIO TOTAL</th>
           </tr>
         </thead>
-        <tbody>
+
+        <tbody v-if="ordenCargada">
           <!-- 🔹 Productos agregados -->
           <tr v-for="(item, idx) in items" :key="'item-' + idx">
             <td>{{ item.codigo }}</td>
@@ -174,16 +172,12 @@
       <!-- === Sección final (datos cliente + acciones) === -->
       <div class="footer-venta">
         <!-- Datos de cliente -->
-        <div class="form-row cliente-datos no-print">
+        <div class="form-row cliente-datos no-print" v-if="ordenCargada">
           <label>Identificación Cliente</label>
-          <input v-model="cliente.identificacion"
-                 type="text"
-                 @keyup.enter="buscarClientePorIdentificacionHandler" />
+          <input v-model="cliente.identificacion" type="text" disabled />
 
           <label>Nombre Cliente</label>
-          <input v-model="cliente.nombres"
-                 type="text"
-                 @keyup.enter="buscarClientePorNombreHandler" />
+          <input v-model="cliente.nombres" type="text" disabled />
 
           <label>Identificación Empleado</label>
           <input v-model="empleado.identificacion" type="text" />
@@ -193,7 +187,7 @@
         </div>
 
         <!-- Acciones normales -->
-        <div class="acciones-footer no-print">
+        <div class="acciones-footer no-print" v-if="ordenCargada">
           <!-- ✅ Ahora el botón también valida identificación y nombre -->
           <!-- 🖨️ Botón de imprimir -->
           <button @click="imprimirFactura"
@@ -271,6 +265,7 @@ export default {
       filtroEstado: '',
       ordenesFiltradas: [],
       ordenSeleccionada: null, // Número de orden activa seleccionada
+      ordenCargada: false, // Indica si se seleccionó una orden para mostrar detalles
     }
   },
 
@@ -328,7 +323,7 @@ export default {
           removeQty: null
         }))
 
-        // Cargar datos del cliente
+        // Llenar datos del cliente
         this.cliente.identificacion = orden.identificacionCliente || ''
         this.cliente.nombres = orden.nombreCliente || ''
         this.clienteEncontrado = true
@@ -336,10 +331,14 @@ export default {
         // Guardar ordenId para operaciones futuras
         this.ordenId = orden.numeroOrden
         this.ordenEstado = 'ABIERTA'
+
+        // Activar campos y tabla
+        this.ordenCargada = true
       } else {
         this.items = []
         this.ordenId = null
         this.clienteEncontrado = false
+        this.ordenCargada = false
       }
     },
 
@@ -351,42 +350,20 @@ export default {
         } else {
           response = await listarOrdenesPorEstado(this.filtroEstado)
         }
+
         this.ordenesFiltradas = response.data || []
         this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
 
-        // ✅ Si se filtró por ABIERTA y hay órdenes, completar datos del cliente y cargar items
-        if (this.filtroEstado === 'ABIERTA' && this.ordenesFiltradas.length > 0) {
-          const primeraOrden = this.ordenesFiltradas[0]
+        // No cargar items ni habilitar campos todavía
+        this.ordenCargada = false
+        this.ordenId = null
+        this.items = []
 
-          // Llenar datos del cliente
-          this.cliente.identificacion = primeraOrden.identificacionCliente || ''
-          this.cliente.nombres = primeraOrden.nombreCliente || ''
-          this.clienteEncontrado = true
-
-          // Guardar ordenId para operaciones futuras
-          this.ordenId = primeraOrden.numeroOrden || null
-          this.ordenEstado = 'ABIERTA'
-
-          // Cargar items para que puedan modificarse
-          if (primeraOrden.detalles && primeraOrden.detalles.length > 0) {
-            this.items = primeraOrden.detalles.map(d => ({
-              codigo: d.codigo,
-              producto: d.producto,
-              descripcion: d.descripcion,
-              cantidad: d.cantidad,
-              precio: d.precio,
-              fechaCreacion: d.fechaCreacion,
-              fechaActualizacion: d.fechaActualizacion,
-              removeQty: null
-            }))
-          } else {
-            this.items = []
-          }
-        }
       } catch (error) {
         console.error('❌ Error al cargar órdenes filtradas:', error)
         this.mostrarMensaje('Error al obtener órdenes filtradas.', 'error')
         this.ordenesFiltradas = []
+        this.ordenCargada = false
       }
     },
 
