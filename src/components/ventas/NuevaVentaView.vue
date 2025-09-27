@@ -95,7 +95,8 @@
           </button>
         </div>
 
-        <div v-if="ordenesFiltradas.length > 0 && filtroEstado === 'ABIERTA'" class="form-row" style="margin-top: 8px;">
+        <!-- select de órdenes abiertas -->
+        <div v-if="ordenesFiltradas.length > 0 && filtroEstado === 'ABIERTA'" class="form-row">
           <label for="ordenSeleccionada">Seleccione Orden ABIERTA</label>
           <select v-model="ordenSeleccionada" id="ordenSeleccionada" @change="cargarItemsOrdenSeleccionada">
             <option disabled value="">Seleccione una orden</option>
@@ -106,7 +107,7 @@
         </div>
       </div>
 
-      <!-- Tabla de productos y órdenes filtradas combinada -->
+      <!-- tabla de productos solo de la orden seleccionada <table class="productos-table" v-if="ordenCargada"> -->
       <table class="productos-table">
         <thead>
           <tr>
@@ -151,19 +152,7 @@
             </td>
           </tr>
 
-          <!-- 🔹 Órdenes filtradas -->
-          <tr v-for="(orden, idx) in ordenesFiltradas" :key="'orden-' + idx" class="orden-filtrada-row">
-            <td>{{ orden.detalles[0]?.codigo || '' }}</td>
-            <td>{{ orden.detalles[0]?.producto || '' }}</td>
-            <td>{{ orden.detalles[0]?.descripcion || '' }}</td>
-            <td>{{ orden.detalles.reduce((sum, d) => sum + d.cantidad, 0) }}</td>
-            <td>{{ orden.detalles[0]?.precio || '' }}</td>
-            <td>{{ orden.fechaCreacion }}</td>
-            <td class="no-print">{{ orden.fechaActualizacion || '' }}</td>
-            <td>{{ orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0) }}</td>
-          </tr>
-
-          <tr v-if="items.length === 0 && ordenesFiltradas.length === 0">
+          <tr v-if="items.length === 0">
             <td colspan="8" class="empty-row">No hay productos agregados ni órdenes filtradas.</td>
           </tr>
         </tbody>
@@ -330,8 +319,7 @@ export default {
 
         // Guardar ordenId para operaciones futuras
         this.ordenId = orden.numeroOrden
-        this.ordenEstado = 'ABIERTA'
-
+        this.ordenEstado = orden.estadoOrden || 'ABIERTA'
         // Activar campos y tabla
         this.ordenCargada = true
       } else {
