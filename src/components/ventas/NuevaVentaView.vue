@@ -96,12 +96,12 @@
         </div>
 
         <!-- select de órdenes abiertas -->
-        <div v-if="ordenesFiltradas.length > 0 && filtroEstado === 'ABIERTA'" class="form-row">
-          <label for="ordenSeleccionada">Seleccione Orden ABIERTA</label>
+        <div v-if="ordenesFiltradas.length > 0" class="form-row">
+          <label for="ordenSeleccionada">Seleccione Orden</label>
           <select v-model="ordenSeleccionada" id="ordenSeleccionada" @change="cargarItemsOrdenSeleccionada">
             <option disabled value="">Seleccione una orden</option>
             <option v-for="orden in ordenesFiltradas" :key="orden.numeroOrden" :value="orden.numeroOrden">
-              Orden {{ orden.numeroOrden }} - Total: {{ formatNumber(orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0)) }}
+              Orden {{ orden.numeroOrden }} - Estado: {{ orden.estadoOrden }} - Total: {{ formatNumber(orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0)) }}
             </option>
           </select>
         </div>
