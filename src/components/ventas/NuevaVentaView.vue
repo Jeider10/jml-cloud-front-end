@@ -632,6 +632,15 @@ export default {
         this.items = [];
     },
 
+    // limpiarFiltro() {
+      // this.filtroEstado = ''       // Reinicia select de estado
+      // this.ordenesFiltradas = []   // Limpia lista de órdenes
+      // this.ordenSeleccionada = null
+      // this.items = []
+      // this.ordenCargada = false
+      // this.mostrarMensaje('✅ Filtro limpiado. Seleccione un estado para buscar.', 'success')
+    // },
+
     // 🔹 Método para limpiar campos del formulario
     limpiarCamposCliente() {
       this.cliente = {
