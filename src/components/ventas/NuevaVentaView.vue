@@ -724,14 +724,43 @@ export default {
       }
       try {
         await cerrarOrdenPorCliente(this.cliente.identificacion)
+
+        // Marcar la orden como cerrada
         this.ordenEstado = 'CERRADA'
         // opcional: limpiar ordenId si ya cerraste
         this.ordenId = null
+
         this.mostrarMensaje('✅ Venta cerrada correctamente.', 'success')
+
+        // 🔹 Limpiar todo para nueva venta
+        this.resetVenta()
+
       } catch (error) {
         console.error('❌ Error al cerrar venta:', error)
         this.mostrarMensaje(error.message || 'Error al cerrar la venta en el servidor.', 'error')
       }
+    },
+
+    // 🔹 Método auxiliar para reiniciar todo
+    resetVenta() {
+      this.cliente = {
+        identificacion: '',
+        nombre: ''
+      }
+      this.venta = {
+        codigo: '',
+        producto: '',
+        descripcion: '',
+        cantidad: 0,
+        precio: 0,
+        stock: 0
+      }
+      this.items = []
+      this.ordenSeleccionada = null
+      this.ordenCargada = false
+      this.ordenesFiltradas = []
+      this.filtroEstado = 'ABIERTA'
+      this.filtrarPorCliente = false
     },
 
     // ✅ Logica para imprimir
