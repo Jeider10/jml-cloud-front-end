@@ -24,16 +24,16 @@
           <input v-model="venta.codigo" type="text" @keyup.enter="buscarProducto" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Producto</label>
-          <input v-model="venta.producto" type="text" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
+          <input v-model="venta.producto" type="text" @keyup.enter="buscarProducto" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Descripción</label>
-          <input v-model="venta.descripcion" type="text" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
+          <input v-model="venta.descripcion" type="text" @keyup.enter="buscarProducto" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Cantidad</label>
-          <input v-model.number="venta.cantidad" type="number" min="1" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
+          <input v-model.number="venta.cantidad" type="number" min="1" @keyup.enter="buscarProducto" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <label>Precio</label>
-          <input v-model.number="venta.precio" type="number" min="1" step="0.01" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
+          <input v-model.number="venta.precio" type="number" min="1" step="0.01" @keyup.enter="buscarProducto" :disabled="!clienteEncontrado || ordenEstado === 'CERRADA'" />
 
           <!-- ➕ Botón para agregar producto -->
           <button type="button"
@@ -217,7 +217,14 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { buscarProductoPorCodigo, restarStockProducto } from '@/services/apiProductsService.js'
+import {
+  buscarProductoPorCodigo,
+  buscarProductoPorNombre,
+  buscarProductoPorDescripcion,
+  buscarProductoPorCantidad,
+  buscarProductoPorPrecio,
+  restarStockProducto
+} from '@/services/apiProductsService.js'
 import { agregarProducto, restarCantidadProducto, cerrarOrdenPorCliente, listarOrdenesPorEstado, listarOrdenesPorClienteYEstado } from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 
@@ -268,7 +275,8 @@ export default {
     // ✅ Validación para habilitar botón "Agregar"
     formValido() {
       return (
-        this.venta.codigo?.trim() !== '' &&
+        // this.venta.codigo?.trim() !== '' &&
+        this.venta.codigo >= 1 &&
         this.venta.producto?.trim() !== '' &&
         this.venta.descripcion?.trim() !== '' &&
         this.venta.cantidad >= 1 &&
@@ -412,21 +420,35 @@ export default {
 
     // 🔹 Método de cargar productos
     async buscarProducto() {
-      if (!this.venta.codigo || this.venta.codigo.toString().trim() === '') {
-        this.mostrarMensaje('Ingrese un código de producto.', 'error')
-        return
-      }
-
       try {
-        const response = await buscarProductoPorCodigo(Number(this.venta.codigo))
-        const producto = response.data
+        let response
+
+        if (this.venta.codigo) {
+          response = await buscarProductoPorCodigo(Number(this.venta.codigo))
+        } else if (this.venta.nombre) {
+          response = await buscarProductoPorNombre(this.venta.nombre)
+        } else if (this.venta.descripcion) {
+          response = await buscarProductoPorDescripcion(this.venta.descripcion)
+        } else if (this.venta.cantidad) {
+          response = await buscarProductoPorCantidad(this.venta.cantidad)
+        } else if (this.venta.precio) {
+          response = await buscarProductoPorPrecio(this.venta.precio)
+        } else {
+          this.mostrarMensaje('Ingrese un criterio de búsqueda válido.', 'error')
+          return
+        }
+
+        const data = response.data
+        const producto = Array.isArray(data) ? data[0] : data
 
         if (!producto) {
           this.mostrarMensaje('Producto no encontrado.', 'error')
           return
         }
 
-        // Rellenar campos con lo que venga del backend
+        // ✅ Rellenar campos con lo que venga del backend
+        // this.venta.codigo = String(producto.codigo || '')
+        this.venta.codigo = Number(producto.codigo)
         this.venta.producto = producto.nombre || ''
         this.venta.descripcion = producto.descripcion || ''
         // inicializar cantidad propuesta en 1 para agregar
