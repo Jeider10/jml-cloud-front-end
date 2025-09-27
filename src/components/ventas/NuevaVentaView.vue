@@ -161,12 +161,12 @@
       <!-- === Sección final (datos cliente + acciones) === -->
       <div class="footer-venta">
         <!-- Datos de cliente -->
-        <div class="form-row cliente-datos no-print" v-if="ordenCargada">
+        <div class="form-row cliente-datos no-print">
           <label>Identificación Cliente</label>
-          <input v-model="cliente.identificacion" type="text" disabled />
+          <input v-model="cliente.identificacion" type="text" />
 
           <label>Nombre Cliente</label>
-          <input v-model="cliente.nombres" type="text" disabled />
+          <input v-model="cliente.nombres" type="text" />
 
           <label>Identificación Empleado</label>
           <input v-model="empleado.identificacion" type="text" />
@@ -176,7 +176,7 @@
         </div>
 
         <!-- Acciones normales -->
-        <div class="acciones-footer no-print" v-if="ordenCargada">
+        <div class="acciones-footer no-print">
           <!-- ✅ Ahora el botón también valida identificación y nombre -->
           <!-- 🖨️ Botón de imprimir -->
           <button @click="imprimirFactura"
