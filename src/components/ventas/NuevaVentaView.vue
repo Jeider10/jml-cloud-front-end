@@ -353,10 +353,16 @@ export default {
         this.ordenesFiltradas = response.data || []
         this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
 
-        // No cargar items ni habilitar campos todavía
-        this.ordenCargada = false
-        this.ordenId = null
-        this.items = []
+        if (this.ordenesFiltradas.length === 1) {
+          // 👌 Si hay solo una orden, la cargamos directo
+          this.ordenSeleccionada = this.ordenesFiltradas[0].numeroOrden
+          this.cargarItemsOrdenSeleccionada()
+        } else {
+          // 👌 Si hay más de una, obligamos al usuario a elegir
+          this.ordenSeleccionada = null
+          this.items = []
+          this.ordenCargada = false
+        }
 
       } catch (error) {
         console.error('❌ Error al cargar órdenes filtradas:', error)
