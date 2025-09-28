@@ -250,15 +250,19 @@ export default {
         precio: null,
         stock: 0
       },
-      items: [],
       cliente: {
         identificacion: '',
         nombres: ''
       },
       empleado: {
         identificacion: '',
-        nombre: ''
+        nombres: ''
       },
+      producto: {
+        proveedorId: null,
+        proveedorName: ''
+      },
+      items: [],
       ordenId: null, // 🔹 numeroOrden (UUID) de la orden actual
       ordenEstado: 'ABIERTA', // 🔹 Estado de la orden (ABIERTA o CERRADA)
       // 🔔 mensajes en pantalla
@@ -504,6 +508,10 @@ export default {
         // stock del producto en BD
         this.venta.stock = Number(producto.cantidad) || 0
 
+        // ✅ Guardar proveedor
+        this.producto.proveedorId = producto.proveedorId || null
+        this.producto.proveedorName = producto.proveedorName || ''
+
       } catch (error) {
         console.error('❌ Error al buscar producto:', error)
         this.mostrarMensaje('Error al buscar producto en el servidor.', 'error')
@@ -529,9 +537,9 @@ export default {
         identificacionCliente: Number(this.cliente.identificacion),
         nombreCliente: this.cliente.nombres,
         identificacionEmpleado: Number(this.empleado.identificacion),
-        nombreEmpleado: this.empleado.nombre,
-        identificacionProveedor: null,
-        nombreProveedor: null,
+        nombreEmpleado: this.empleado.nombres,
+        identificacionProveedor: this.producto.proveedorId,
+        nombreProveedor: this.producto.proveedorName,
         detalles: [
           {
             codigo: Number(this.venta.codigo), // código del producto
@@ -578,6 +586,12 @@ export default {
         this.venta.cantidad = null
         this.venta.precio = null
         this.venta.stock = 0
+
+        this.producto = {
+          proveedorId: null,
+          proveedorName: ''
+        }
+
       } catch (error) {
         console.error('❌ Error al agregar producto:', error)
         this.mostrarMensaje(error.message || 'Error al agregar producto en el servidor.', 'error')
