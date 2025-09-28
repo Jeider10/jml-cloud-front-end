@@ -35,6 +35,7 @@
             <th>CLIENTE</th>
             <th>IDENTIFICACIÓN</th>
             <th>PRODUCTOS</th>
+            <th>PRECIO UNITARIO</th>
             <th>VENDEDOR</th>
             <th>TOTAL</th>
             <th>NRO FACTURA</th>
@@ -53,13 +54,20 @@
                 </li>
               </ul>
             </td>
+            <td>
+              <ul>
+                <li v-for="(prod, i) in venta.productos" :key="i">
+                  {{ prod.precio }}
+                </li>
+              </ul>
+            </td>
             <td>{{ venta.vendedor }}</td>
             <td>{{ venta.total }}</td>
             <td>{{ venta.numeroFactura }}</td>
             <td>{{ venta.fecha }}</td>
           </tr>
           <tr v-if="ventasFiltradas.length === 0">
-            <td colspan="8" class="empty-row">No hay ventas registradas.</td>
+            <td colspan="9" class="empty-row">No hay ventas registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -108,7 +116,8 @@ export default {
           identificacionCliente: o.identificacionCliente,
           productos: o.detalles.map(d => ({
             producto: d.producto,
-            cantidad: d.cantidad
+            cantidad: d.cantidad,
+            precio: d.precio
           })),
           vendedor: o.nombreEmpleado,
           total: o.totalCompra,
