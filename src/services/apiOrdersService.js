@@ -64,3 +64,7 @@ export const listarOrdenesPorEstado = (estado) =>
 // Listar órdenes por cliente y estado
 export const listarOrdenesPorClienteYEstado = (identificacionCliente, estado) =>
   apiOrders.get('/ordenes-ventas/list/cliente', { params: { cliente: identificacionCliente, estado } })
+
+// Listar todas las órdenes (sin filtros)
+export const listarTodasLasOrdenes = () =>
+  apiOrders.get('/ordenes-ventas/list/all')

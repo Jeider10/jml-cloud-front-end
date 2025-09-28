@@ -18,7 +18,6 @@
 
       <!-- Filtro de búsqueda -->
       <div class="form-filtro no-print">
-        <!-- <span style="font-weight: bold;">Buscar por Cliente, Producto o Vendedor:</span> -->
         <span class="buscar-label">Buscar por Cliente, Producto o Vendedor:</span>
         <div style="display: flex; gap: 4px;">
           <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
@@ -69,6 +68,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { listarTodasLasOrdenes } from '@/services/apiOrdersService'
 
 export default {
   name: 'HistorialVentasView',
@@ -83,23 +83,35 @@ export default {
       busqueda: ''
     }
   },
-  mounted() {
-    // Recuperar historial desde localStorage
-    this.ventas = JSON.parse(localStorage.getItem('ventas')) || []
-    this.ventasFiltradas = [...this.ventas]
+
+  async mounted() {
+    await this.buscarTodasLasOrdenes()
   },
-  computed: {
-    // 🔹 Calcula el total general de todas las ventas filtradas
-    totalGeneral() {
-      return this.ventasFiltradas
-        .reduce((acc, v) => acc + parseFloat(v.total || 0), 0)
-        .toFixed(2)
-    }
-  },
+
   methods: {
     // handleMenuToggle(state) {
       // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
+
+    // 🔹 Cargar todas las órdenes al iniciar
+    async buscarTodasLasOrdenes() {
+      try {
+        const response = await listarTodasLasOrdenes()
+        this.ventas = response.data.map(o => ({
+          cliente: o.clienteNombre,
+          productos: o.detalles.map(d => d.productoNombre),
+          vendedor: o.vendedor,
+          total: o.total,
+          fecha: o.fecha
+        }))
+        this.ventasFiltradas = [...this.ventas]
+      } catch (error) {
+        console.error('❌ Error al cargar historial de ventas:', error)
+        this.mostrarMensaje(error.message || 'Error al cargar historial de ventas', 'error')
+        this.ventas = []
+        this.ventasFiltradas = []
+      }
+    },
 
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
@@ -130,9 +142,19 @@ export default {
     imprimirHistorial() {
       window.print()
     }
+  },
+
+  // 🔹 Calcula el total general de todas las ventas filtradas
+  computed: {
+    totalGeneral() {
+      return this.ventasFiltradas
+        .reduce((acc, v) => acc + parseFloat(v.total || 0), 0)
+        .toFixed(2)
+    }
   }
 }
 </script>
+
 
 <style scoped>
 .historial-ventas-wrapper {
