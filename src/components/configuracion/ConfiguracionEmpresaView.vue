@@ -158,10 +158,10 @@ export default {
 
 .main-content {
   position: absolute;
+  min-height: 100vh;   /* ocupa al menos el alto de la ventana */
   top: 0;
   left: 60px;
   right: 0;
-  bottom: 0;
   padding: 20px;
   background-color: #6fffd4;
   transition: left 0.5s ease;
