@@ -64,6 +64,13 @@
                     @click="limpiar">
                     🧹 Limpiar
             </button>
+
+            <!-- 🔙 Botón de Volver -->
+            <button type="button"
+                    class="volver-btn"
+                    @click="cancelarEdicion">
+                    🔙 Volver
+            </button>
           </div>
         </div>
       </div>
@@ -156,6 +163,12 @@ export default {
       } catch (e) {
         console.warn('No se pudo disparar evento empresaUpdated', e)
       }
+    },
+
+    cancelarEdicion() {
+      const data = JSON.parse(localStorage.getItem('empresa'))
+      if (data) this.empresa = data
+      this.modoEdicion = false
     },
 
     onImageChange(event) {
@@ -376,5 +389,20 @@ export default {
 
 .no-btn:hover {
   background: #c0392b;
+}
+
+.volver-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #6c757d;
+  color: white;
+}
+
+.volver-btn:hover {
+  background: #5a6268;
 }
 </style>
