@@ -1,4 +1,4 @@
-<!-- src/components/clientes/ConfiguracionEmpresaView.vue -->
+<!-- src/components/configuracion/ConfiguracionEmpresaView.vue -->
 
 <template>
   <div class="configuracion-empresa-wrapper">
@@ -31,11 +31,15 @@
           <label>Mensaje:</label>
           <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
         </div>
+        <div class="dato-row" v-if="modoEdicion">
+          <label>Logo:</label>
+          <input type="file" accept="image/*" @change="onImageChange" />
+        </div>
       </div>
 
       <!-- Logo grande -->
       <div class="logo-container">
-        <img src="@/assets/img/Empresa.png" alt="Logo Empresa" class="logo-empresa" />
+        <img :src="empresa.logo || require('@/assets/img/Empresa.png')" alt="Logo Empresa" class="logo-empresa" />
       </div>
 
       <!-- Botones -->
@@ -85,13 +89,14 @@ export default {
         nombre: '',
         direccion: '',
         telefono: '',
-        mensaje: ''
+        mensaje: '',
+        logo: '' // 🔹 Nuevo campo para la imagen
       }
     }
   },
   computed: {
     tieneTexto() {
-      return Object.values(this.empresa).some(v => v && v.trim() !== '')
+      return Object.values(this.empresa).some(v => v && v.toString().trim() !== '')
     }
   },
   mounted() {
@@ -108,8 +113,18 @@ export default {
       this.modoEdicion = false
     },
     limpiar() {
-      this.empresa = { nic: '', nombre: '', direccion: '', telefono: '', mensaje: '' }
+      this.empresa = { nic: '', nombre: '', direccion: '', telefono: '', mensaje: '', logo: '' }
       this.modoEdicion = false
+    },
+    onImageChange(event) {
+      const file = event.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = e => {
+          this.empresa.logo = e.target.result // guarda en base64
+        }
+        reader.readAsDataURL(file)
+      }
     }
   }
 }

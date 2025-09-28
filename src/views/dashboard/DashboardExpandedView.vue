@@ -13,8 +13,8 @@
       {{ mensajeEmpresa }}
     </p>
 
-    <!-- Imagen de la institución -->
-    <img src="@/assets/img/Institucion.png" alt="Institución" class="instituto-image" />
+    <!-- Imagen dinámica de la institución -->
+    <img :src="logoEmpresa || require('@/assets/img/Institucion.png')" alt="Institución" class="instituto-image" />
 
     <!-- Footer -->
     <footer class="page-footer">
@@ -32,13 +32,19 @@ export default {
       mensajeEmpresa: `Somos una institución comprometida con la formación integral de nuestros estudiantes,
       brindando educación de calidad con valores y excelencia académica.
       Nuestro objetivo es inspirar, educar y transformar vidas.
-      ¡Bienvenido a una comunidad de aprendizaje, crecimiento y futuro!`
+      ¡Bienvenido a una comunidad de aprendizaje, crecimiento y futuro!`,
+      logoEmpresa: null // 🔹 Nuevo campo para la imagen
     }
   },
   mounted() {
     const data = JSON.parse(localStorage.getItem('empresa'))
-    if (data && data.mensaje) {
-      this.mensajeEmpresa = data.mensaje
+    if (data) {
+      if (data.mensaje) {
+        this.mensajeEmpresa = data.mensaje
+      }
+      if (data.logo) {
+        this.logoEmpresa = data.logo
+      }
     }
   }
 }
@@ -50,7 +56,7 @@ export default {
   height: 100vh;
   width: 100%;
   margin-left: 0px; /* Deja espacio fijo para el menú */
-  overflow: hidden;
+  overflow: auto; /* 🔹 Cambié de hidden a auto para permitir scroll e impresión */
   background: linear-gradient(135deg, #74ebd5, #9face6);
   animation: gradientShift 10s ease infinite;
   position: relative; /* IMPORTANTE para posicionar hijos con absolute */
@@ -130,5 +136,32 @@ export default {
 
 .animate-rainbow-text {
   animation: rainbow-text 4s infinite linear;
+}
+
+/* 🔹 Ajustes para impresión */
+@media print {
+  .dashboard-container {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  .welcome-text {
+    font-size: 2rem !important;
+    text-shadow: none !important;
+    margin-top: 20px !important;
+  }
+
+  .subtitle-text,
+  .description-text,
+  .instituto-image,
+  .page-footer {
+    position: static !important;
+    transform: none !important;
+    margin: 10px auto !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
 }
 </style>
