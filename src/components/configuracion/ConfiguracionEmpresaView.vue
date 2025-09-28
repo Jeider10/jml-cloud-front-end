@@ -179,16 +179,19 @@ export default {
 
 .main-content {
   position: absolute;
-  min-height: 100vh;   /* ocupa al menos el alto de la ventana */
+  min-height: 100vh;   /* ocupa siempre toda la altura de la ventana */
   top: 0;
   left: 60px;
   right: 0;
   padding: 20px;
   background-color: #6fffd4;
   transition: left 0.5s ease;
+
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center;  /* centra horizontalmente los hijos, pero sin recortar el fondo */
+  box-sizing: border-box; /* ✅ asegura que el padding no rompa el ancho */
+  overflow-y: auto;       /* scroll solo si el contenido lo necesita */
 }
 
 .main-content.expanded {
