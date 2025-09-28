@@ -9,31 +9,62 @@
     <div :class="['main-content', { expanded: menuOpen }]">
       <h1 class="titulo">Datos de la Empresa</h1>
 
-      <!-- Bloque con datos -->
-      <div class="datos-empresa">
-        <div class="dato-row">
-          <label>NIC:</label>
-          <input type="text" v-model="empresa.nic" :disabled="!modoEdicion" />
+      <!-- 🔹 Contenedor fila: cuadro datos + botones al lado -->
+      <div class="fila-contenedor">
+        <!-- Bloque con datos -->
+        <div class="datos-empresa">
+          <div class="dato-row">
+            <label>NIC:</label>
+            <input type="text" v-model="empresa.nic" :disabled="!modoEdicion" />
+          </div>
+          <div class="dato-row">
+            <label>Nombre:</label>
+            <input type="text" v-model="empresa.nombre" :disabled="!modoEdicion" />
+          </div>
+          <div class="dato-row">
+            <label>Dirección:</label>
+            <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
+          </div>
+          <div class="dato-row">
+            <label>Teléfono:</label>
+            <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
+          </div>
+          <div class="dato-row">
+            <label>Mensaje:</label>
+            <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
+          </div>
+          <div class="dato-row" v-if="modoEdicion">
+            <label>Logo:</label>
+            <input type="file" accept="image/*" @change="onImageChange" />
+          </div>
         </div>
-        <div class="dato-row">
-          <label>Nombre:</label>
-          <input type="text" v-model="empresa.nombre" :disabled="!modoEdicion" />
-        </div>
-        <div class="dato-row">
-          <label>Dirección:</label>
-          <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
-        </div>
-        <div class="dato-row">
-          <label>Teléfono:</label>
-          <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
-        </div>
-        <div class="dato-row">
-          <label>Mensaje:</label>
-          <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
-        </div>
-        <div class="dato-row" v-if="modoEdicion">
-          <label>Logo:</label>
-          <input type="file" accept="image/*" @change="onImageChange" />
+
+        <!-- 🔹 Botones afuera al lado derecho -->
+        <div class="acciones-lateral">
+          <!-- ✏️ Botón de Actualizar -->
+          <button v-if="!modoEdicion"
+                  type="button"
+                  class="actualizar-btn"
+                  @click="activarEdicion">
+                  ✏️ Actualizar
+          </button>
+
+          <div v-else class="btn-group">
+            <!-- 💾 Botón de Guardar -->
+            <button type="button"
+                    class="guardar-btn"
+                    :disabled="!tieneTexto"
+                    @click="mostrarConfirmacion = true">
+                    💾 Guardar
+            </button>
+
+            <!-- 🧹 Botón de Limpiar -->
+            <button type="button"
+                    class="limpiar-btn"
+                    @click="limpiar">
+                    🧹 Limpiar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -42,31 +73,15 @@
         <img :src="empresa.logo || require('@/assets/img/Empresa.png')" alt="Logo Empresa" class="logo-empresa" />
       </div>
 
-      <!-- Botones -->
-      <div class="acciones">
-        <button v-if="!modoEdicion" type="button" class="actualizar-btn" @click="activarEdicion">
-          ✏️ Actualizar
-        </button>
-
-        <div v-else class="btn-group">
-          <button type="button" class="guardar-btn" :disabled="!tieneTexto" @click="mostrarConfirmacion = true">
-            💾 Guardar
-          </button>
-          <button type="button" class="limpiar-btn" @click="limpiar">
-            🧹 Limpiar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de confirmación -->
-    <div v-if="mostrarConfirmacion" class="modal-overlay">
-      <div class="modal">
-        <h3>⚠️ Confirmación</h3>
-        <p>¿Estás seguro de que deseas actualizar los datos de la empresa?</p>
-        <div class="modal-buttons">
-          <button class="si-btn" @click="confirmarGuardar">Sí</button>
-          <button class="no-btn" @click="mostrarConfirmacion = false">No</button>
+      <!-- Modal de confirmación -->
+      <div v-if="mostrarConfirmacion" class="modal-overlay">
+        <div class="modal">
+          <h3>⚠️ Confirmación</h3>
+          <p>¿Estás seguro de que deseas actualizar los datos de la empresa?</p>
+          <div class="modal-buttons">
+            <button class="si-btn" @click="confirmarGuardar">Sí</button>
+            <button class="no-btn" @click="mostrarConfirmacion = false">No</button>
+          </div>
         </div>
       </div>
     </div>
@@ -90,32 +105,38 @@ export default {
         direccion: '',
         telefono: '',
         mensaje: '',
-        logo: '' // 🔹 Nuevo campo para la imagen
+        logo: ''
       }
     }
   },
+
   computed: {
     tieneTexto() {
       return Object.values(this.empresa).some(v => v && v.toString().trim() !== '')
     }
   },
+
   mounted() {
     const data = JSON.parse(localStorage.getItem('empresa'))
     if (data) this.empresa = data
   },
+
   methods: {
     activarEdicion() {
       this.modoEdicion = true
     },
+
     confirmarGuardar() {
       localStorage.setItem('empresa', JSON.stringify(this.empresa))
       this.mostrarConfirmacion = false
       this.modoEdicion = false
     },
+
     limpiar() {
       this.empresa = { nic: '', nombre: '', direccion: '', telefono: '', mensaje: '', logo: '' }
       this.modoEdicion = false
     },
+
     onImageChange(event) {
       const file = event.target.files[0]
       if (file) {
@@ -161,14 +182,23 @@ export default {
   margin-top: -10px;    /* espacio desde arriba */
 }
 
+/* 🔹 Contenedor fila: cuadro + botones */
+.fila-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 900px;
+}
+
 .datos-empresa {
   background: #fff;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
-  margin-bottom: 30px;
-  width: 100%;
-  max-width: 600px;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -179,11 +209,7 @@ export default {
   align-items: center;
   gap: 10px;
 }
-.dato-row label {
-  width: 100px;
-  font-weight: bold;
-  text-align: left;
-}
+
 .dato-row input {
   flex: 1;
   padding: 6px 8px;
@@ -192,9 +218,18 @@ export default {
   background-color: #f9f9f9;
   color: #333;
 }
+
 .dato-row input:disabled {
   background-color: #eee;
   color: #666;
+}
+
+/* 🔹 Botones afuera */
+.acciones-lateral {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
 }
 
 .logo-container {
@@ -202,24 +237,40 @@ export default {
   justify-content: center;
   margin-bottom: 30px;
 }
-.logo-empresa {
-  width: 600px;
-  height: auto;
-}
 
-.acciones {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
+.logo-empresa {
+  width: 400px;
+  height: auto;
 }
 
 .btn-group {
   display: flex;
+  flex-direction: column;
   gap: 15px;
 }
 
-.actualizar-btn,
-.guardar-btn,
+.actualizar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #0077b6;
+  color: white;
+}
+
+.guardar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #28a745;
+  color: white;
+}
+
 .limpiar-btn {
   padding: 12px 20px;
   border-radius: 6px;
@@ -227,29 +278,19 @@ export default {
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-}
-
-.actualizar-btn {
-  background: #0077b6;
+  background: #e74c3c;
   color: white;
 }
+
 .actualizar-btn:hover {
   background: #005f8a;
 }
 
-.guardar-btn {
-  background: #28a745;
-  color: white;
-}
 .guardar-btn:disabled {
   background: #94d3a2;
   cursor: not-allowed;
 }
 
-.limpiar-btn {
-  background: #e74c3c;
-  color: white;
-}
 .limpiar-btn:hover {
   background: #c0392b;
 }
@@ -267,6 +308,7 @@ export default {
   align-items: center;
   z-index: 1000;
 }
+
 .modal {
   background: white;
   padding: 20px;
@@ -275,14 +317,17 @@ export default {
   width: 400px;
   text-align: center;
 }
+
 .modal h3 {
   margin-bottom: 10px;
 }
+
 .modal-buttons {
   margin-top: 20px;
   display: flex;
   justify-content: space-around;
 }
+
 .si-btn {
   background: #28a745;
   color: white;
@@ -291,6 +336,7 @@ export default {
   border: none;
   cursor: pointer;
 }
+
 .no-btn {
   background: #e74c3c;
   color: white;
@@ -299,6 +345,12 @@ export default {
   border: none;
   cursor: pointer;
 }
-.si-btn:hover { background: #218838; }
-.no-btn:hover { background: #c0392b; }
+
+.si-btn:hover {
+  background: #218838;
+}
+
+.no-btn:hover {
+  background: #c0392b;
+}
 </style>
