@@ -36,6 +36,7 @@
             <th>PRODUCTOS</th>
             <th>VENDEDOR</th>
             <th>TOTAL</th>
+            <th>NRO FACTURA</th>
             <th>FECHA</th>
           </tr>
         </thead>
@@ -50,10 +51,11 @@
             </td>
             <td>{{ venta.vendedor }}</td>
             <td>{{ venta.total }}</td>
+            <td>{{ venta.numeroFactura }}</td>
             <td>{{ venta.fecha }}</td>
           </tr>
           <tr v-if="ventasFiltradas.length === 0">
-            <td colspan="6" class="empty-row">No hay ventas registradas.</td>
+            <td colspan="7" class="empty-row">No hay ventas registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -98,11 +100,12 @@ export default {
       try {
         const response = await listarTodasLasOrdenes()
         this.ventas = response.data.map(o => ({
-          cliente: o.clienteNombre,
+          cliente: o.nombreCliente,
           productos: o.detalles.map(d => d.productoNombre),
-          vendedor: o.vendedor,
-          total: o.total,
-          fecha: o.fecha
+          vendedor: o.nombreEmpleado,
+          total: o.totalCompra,
+          numeroFactura: o.numeroFactura,
+          fecha: o.fechaCreacion
         }))
         this.ventasFiltradas = [...this.ventas]
       } catch (error) {
@@ -130,7 +133,8 @@ export default {
       this.ventasFiltradas = this.ventas.filter(v =>
         v.cliente.toLowerCase().includes(texto) ||
         v.vendedor.toLowerCase().includes(texto) ||
-        v.productos.some(p => p.toLowerCase().includes(texto))
+        v.productos.some(p => p.toLowerCase().includes(texto)) ||
+        (v.numeroFactura && v.numeroFactura.toLowerCase().includes(texto))
       )
     },
 
