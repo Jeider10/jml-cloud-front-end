@@ -176,10 +176,10 @@
           <input v-model="cliente.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarClientePorNombreHandler" />
 
           <label>Identificación Empleado</label>
-          <input v-model="empleado.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" />
+          <input v-model="empleado.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarEmpleadoPorIdentificacionHandler" />
 
           <label>Nombre Empleado</label>
-          <input v-model="empleado.nombre" type="text" :disabled="ordenEstado === 'CERRADA'" />
+          <input v-model="empleado.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarEmpleadoPorNombreHandler"  />
         </div>
 
         <!-- Acciones normales -->
@@ -215,7 +215,7 @@
           <span><strong>Identificación Cliente:</strong> {{ cliente.identificacion }}</span>
           <span><strong>Nombre Cliente:</strong> {{ cliente.nombres }}</span>
           <span><strong>Identificación Empleado:</strong> {{ empleado.identificacion }}</span>
-          <span><strong>Nombre Empleado:</strong> {{ empleado.nombre }}</span>
+          <span><strong>Nombre Empleado:</strong> {{ empleado.nombres }}</span>
           <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
         </div>
       </div>
@@ -235,6 +235,7 @@ import {
 } from '@/services/apiProductsService.js'
 import { agregarProducto, restarCantidadProducto, cerrarOrdenPorCliente, listarOrdenesPorEstado, listarOrdenesPorClienteYEstado } from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
+import { buscarEmpleadoPorIdentificacion, buscarEmpleadoPorNombres } from '@/services/apiEmployeesService.js'
 
 export default {
   name: 'NuevaVentaView',
@@ -256,7 +257,7 @@ export default {
       },
       empleado: {
         identificacion: '',
-        nombres: ''
+        nombres: ''   // ✅ corregido: antes estaba mal en reset
       },
       producto: {
         proveedorId: null,
@@ -274,6 +275,7 @@ export default {
       ordenSeleccionada: null, // Número de orden activa seleccionada
       ordenCargada: false, // Indica si se seleccionó una orden para mostrar detalles
       clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
+      empleadoEncontrado: false  // ✅ agregado para consistencia
     }
   },
 
@@ -302,7 +304,7 @@ export default {
         this.items.length > 0 &&
         this.clienteEncontrado &&
         this.empleado.identificacion.trim() !== '' &&
-        this.empleado.nombre.trim() !== ''
+        this.empleado.nombres.trim() !== ''
       )
     }
   },
@@ -420,7 +422,7 @@ export default {
     // 🔹 Buscar cliente por identificación
     async buscarClientePorIdentificacionHandler() {
       if (!this.cliente.identificacion || this.cliente.identificacion.trim() === '') {
-        this.mostrarMensaje('Ingrese una identificación.', 'error')
+        this.mostrarMensaje('Ingrese una identificación del cliente.', 'error')
         return
       }
       try {
@@ -466,6 +468,56 @@ export default {
         console.error('❌ Error al buscar cliente por nombre:', error)
         this.mostrarMensaje('Error en búsqueda de cliente por nombre.', 'error')
         this.clienteEncontrado = false
+      }
+    },
+
+    // 🔹 Buscar Empleado por identificación
+    async buscarEmpleadoPorIdentificacionHandler() {
+      if (!this.empleado.identificacion || this.empleado.identificacion.trim() === '') {
+        this.mostrarMensaje('Ingrese una identificación del empleado.', 'error')
+        return
+      }
+      try {
+        const response = await buscarEmpleadoPorIdentificacion(Number(this.empleado.identificacion))
+        const empleado = response.data
+        if (empleado) {
+          this.empleado.nombres = empleado.nombres || ''
+          this.empleadoEncontrado = true   // ✅ corregido
+          this.mostrarMensaje(`✅ Empleado encontrado: ${empleado.nombres}`, 'success')
+        } else {
+          this.empleadoEncontrado = false
+          this.mostrarMensaje('❌ Empleado no encontrado.', 'error')
+        }
+      } catch (error) {
+        console.error('❌ Error al buscar Empleado por identificación:', error)
+        this.mostrarMensaje('Error en búsqueda de Empleado por identificación.', 'error')
+        this.empleadoEncontrado = false   // ✅ corregido
+      }
+    },
+
+    // 🔹 Buscar Empleado por nombre
+    async buscarEmpleadoPorNombreHandler() {
+      if (!this.empleado.nombres || this.empleado.nombres.trim() === '') {   // ✅ corregido (antes usaba cliente)
+        this.mostrarMensaje('Ingrese un nombre de Empleado.', 'error')
+        return
+      }
+      try {
+        const response = await buscarEmpleadoPorNombres(this.empleado.nombres)  // ✅ corregido (antes usaba cliente)
+        const empleados = response.data
+        if (empleados && empleados.length > 0) {
+          // Tomamos el primero por simplicidad
+          const empleado = empleados[0]
+          this.empleado.identificacion = empleado.identificacion || ''
+          this.empleadoEncontrado = true
+          this.mostrarMensaje(`✅ Empleado encontrado: ${empleado.nombres}`, 'success')
+        } else {
+          this.empleadoEncontrado = false
+          this.mostrarMensaje('❌ No se encontraron empleados con ese nombre.', 'error')
+        }
+      } catch (error) {
+        console.error('❌ Error al buscar empleado por nombre:', error)
+        this.mostrarMensaje('Error en búsqueda de empleado por nombre.', 'error')
+        this.empleadoEncontrado = false   // ✅ corregido
       }
     },
 
@@ -661,7 +713,7 @@ export default {
       return this.cliente.identificacion ||
              this.cliente.nombres ||
              this.empleado.identificacion ||
-             this.empleado.nombre
+             this.empleado.nombres
     },
 
     // 🔹 Método para limpiar campos del formulario
@@ -682,6 +734,7 @@ export default {
         // Reset cliente si quieres deshabilitar botones nuevamente
         this.cliente = { identificacion: '', nombres: '' }
         this.clienteEncontrado = false
+        this.empleadoEncontrado = false
         this.ordenEstado = 'ABIERTA'  // o '' si quieres deshabilitar todo
         // 👇 limpiar tabla
         this.items = [];
@@ -704,7 +757,7 @@ export default {
       };
       this.empleado = {
         identificacion: '',
-        nombre: ''
+        nombres: ''   // ✅ corregido
       };
       this.venta = {
         codigo: '',
@@ -718,6 +771,7 @@ export default {
       this.items = [];
       // 👇 Deshabilitar de nuevo los campos de producto
       this.clienteEncontrado = false
+      this.empleadoEncontrado = false
       this.ordenId = null
       this.filtroEstado = ''   // Reinicia select
       this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
@@ -759,7 +813,11 @@ export default {
     resetVenta() {
       this.cliente = {
         identificacion: '',
-        nombre: ''
+        nombres: ''   // ✅ corregido
+      }
+      this.empleado = {
+        identificacion: '',
+        nombres: ''   // ✅ agregado
       }
       this.venta = {
         codigo: '',
@@ -775,6 +833,8 @@ export default {
       this.ordenesFiltradas = []
       this.filtroEstado = 'ABIERTA'
       this.filtrarPorCliente = false
+      this.clienteEncontrado = false
+      this.empleadoEncontrado = false
     },
 
     // ✅ Logica para imprimir
