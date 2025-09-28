@@ -18,7 +18,8 @@
 
       <!-- Filtro de búsqueda -->
       <div class="form-filtro no-print">
-        <span style="font-weight: bold;">Buscar por Cliente, Producto o Vendedor:</span>
+        <!-- <span style="font-weight: bold;">Buscar por Cliente, Producto o Vendedor:</span> -->
+        <span class="buscar-label">Buscar por Cliente, Producto o Vendedor:</span>
         <div style="display: flex; gap: 4px;">
           <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
           <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro()" @click="filtrarVentas">Buscar</button>
@@ -158,8 +159,15 @@ export default {
 .titulo {
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   text-align: center;
+  margin-top: -10px;    /* espacio desde arriba */
+}
+
+.buscar-label {
+  display: block;       /* para que respete el margen como línea */
+  margin-top: -20px;    /* sube el texto hacia arriba */
+  font-weight: bold;
 }
 
 .mensaje {

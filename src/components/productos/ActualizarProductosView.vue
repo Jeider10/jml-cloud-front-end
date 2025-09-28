@@ -245,8 +245,9 @@ export default {
 .titulo {
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   text-align: center;
+  margin-top: 1px;    /* espacio desde arriba */
 }
 
 .mensaje {

@@ -35,7 +35,8 @@
       <!-- 🔍 Filtro de búsqueda -->
       <div class="form-filtro">
         <!-- Texto descriptivo -->
-        <span style="font-weight: bold;">Buscar por:</span>
+        <!-- <span style="font-weight: bold;">Buscar por:</span> -->
+        <span class="buscar-label">Buscar por:</span>
 
         <!-- Nuevo: selector + input + botones -->
         <div style="display: flex; gap: 4px;">
@@ -362,8 +363,15 @@ export default {
 .titulo {
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   text-align: center;
+  margin-top: -10px;    /* espacio desde arriba */
+}
+
+.buscar-label {
+  display: block;       /* para que respete el margen como línea */
+  margin-top: -20px;    /* sube el texto hacia arriba */
+  font-weight: bold;
 }
 
 .mensaje {
