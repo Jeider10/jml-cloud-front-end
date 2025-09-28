@@ -1,14 +1,16 @@
+<!-- src/views/dashboard/DashboardExpandedView.vue -->
+
 <template>
   <div class="dashboard-container">
     <h1 class="welcome-text animate-rainbow-text">
-      ¡Bienvenido a la institución!
+      ¡Bienvenido!
     </h1>
+
     <h2 class="subtitle-text">Por favor, selecciona una opción del menú a la izquierda.</h2>
+
+    <!-- Mensaje dinámico desde configuración -->
     <p class="description-text">
-      Somos una institución comprometida con la formación integral de nuestros estudiantes,<br />
-      brindando educación de calidad con valores y excelencia académica.<br />
-      Nuestro objetivo es inspirar, educar y transformar vidas.<br />
-      ¡Bienvenido a una comunidad de aprendizaje, crecimiento y futuro!
+      {{ mensajeEmpresa }}
     </p>
 
     <!-- Imagen de la institución -->
@@ -24,9 +26,24 @@
 
 <script>
 export default {
-  name: "dashboard-page"
-};
+  name: "dashboard-page",
+  data() {
+    return {
+      mensajeEmpresa: `Somos una institución comprometida con la formación integral de nuestros estudiantes,
+      brindando educación de calidad con valores y excelencia académica.
+      Nuestro objetivo es inspirar, educar y transformar vidas.
+      ¡Bienvenido a una comunidad de aprendizaje, crecimiento y futuro!`
+    }
+  },
+  mounted() {
+    const data = JSON.parse(localStorage.getItem('empresa'))
+    if (data && data.mensaje) {
+      this.mensajeEmpresa = data.mensaje
+    }
+  }
+}
 </script>
+
 
 <style scoped>
 .dashboard-container {
