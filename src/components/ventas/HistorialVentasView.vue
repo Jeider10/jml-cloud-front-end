@@ -348,7 +348,7 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
     background: white !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important; /* centra todo horizontalmente */
+    align-items: center !important;
   }
 
   .titulo {
@@ -356,28 +356,24 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
     margin-bottom: 20px !important;
   }
 
-  .form-filtro {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important; /* centra el formulario */
-    margin-bottom: 20px !important;
+  .form-filtro.no-print {
+    display: none !important;
   }
 
   .ventas-table {
-    width: auto !important; /* que la tabla se ajuste al contenido */
-    min-width: 600px; /* opcional, para que no quede muy estrecha */
+    width: 100% !important;          /* ocupa todo el ancho de la hoja */
+    table-layout: fixed !important;  /* fija proporciones de columnas */
+    font-size: 12px !important;      /* reduce tamaño de letra para caber */
     border-collapse: collapse !important;
+    word-break: break-word !important;
   }
 
   .ventas-table th, .ventas-table td {
-    border: 1px solid #ddd !important;
-    padding: 8px !important;
+    border: 1px solid #000 !important;
+    padding: 4px !important;         /* reduce padding para impresión */
     text-align: center !important;
     background: white !important;
-  }
-
-  .form-filtro.no-print {
-    display: none !important;
+    white-space: normal !important;  /* permite salto de línea dentro de celdas */
   }
 
   .footer-ventas {
@@ -386,6 +382,8 @@ input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
     bottom: 20px !important;
     width: 100% !important;
     padding: 0 20px !important;
+    font-size: 12px !important;      /* más pequeño para impresión */
   }
 }
+
 </style>
