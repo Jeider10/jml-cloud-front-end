@@ -127,14 +127,35 @@ export default {
     },
 
     confirmarGuardar() {
+      // Guardar en localStorage y notificar a otros componentes en la misma ventana
       localStorage.setItem('empresa', JSON.stringify(this.empresa))
+
+      // Disparar evento para actualizaciones en la misma pestaña (storage no lo hace en la misma pestaña)
+      try {
+        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
+      } catch (e) {
+        // fallback muy raro, pero nos aseguramos de que no rompa
+        console.warn('No se pudo disparar evento empresaUpdated', e)
+      }
+
       this.mostrarConfirmacion = false
       this.modoEdicion = false
     },
 
     limpiar() {
+      // Limpiar los datos en UI
       this.empresa = { nic: '', nombre: '', direccion: '', telefono: '', mensaje: '', logo: '' }
       this.modoEdicion = false
+
+      // Actualizar localStorage para que el cambio se refleje también en el Dashboard
+      localStorage.setItem('empresa', JSON.stringify(this.empresa))
+
+      // Disparar evento para que el Dashboard y otros componentes actualicen de inmediato
+      try {
+        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
+      } catch (e) {
+        console.warn('No se pudo disparar evento empresaUpdated', e)
+      }
     },
 
     onImageChange(event) {

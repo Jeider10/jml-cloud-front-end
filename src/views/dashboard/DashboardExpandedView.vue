@@ -13,8 +13,8 @@
       {{ mensajeEmpresa }}
     </p>
 
-    <!-- Imagen de la institución -->
-    <img src="@/assets/img/Institucion.png" alt="Institución" class="instituto-image" />
+    <!-- Imagen dinámica -->
+    <img :src="logoEmpresa || require('@/assets/img/Empresa.png')" alt="Logo Empresa" class="logo-empresa" />
 
     <!-- Footer -->
     <footer class="page-footer">
@@ -29,27 +29,50 @@ export default {
   name: "dashboard-page",
   data() {
     return {
-      mensajeEmpresa: `Somos una institución comprometida con la formación integral de nuestros estudiantes,
-      brindando educación de calidad con valores y excelencia académica.
-      Nuestro objetivo es inspirar, educar y transformar vidas.
-      ¡Bienvenido a una comunidad de aprendizaje, crecimiento y futuro!`
+      mensajeEmpresa: `Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.`,
+      logoEmpresa: null // 🔹 Nuevo campo para la imagen
     }
   },
   mounted() {
+    // Cargar desde localStorage al inicio (si existe)
     const data = JSON.parse(localStorage.getItem('empresa'))
-    if (data && data.mensaje) {
-      this.mensajeEmpresa = data.mensaje
+    if (data) {
+      if (data.mensaje) {
+        this.mensajeEmpresa = data.mensaje
+      }
+      if (data.logo) {
+        this.logoEmpresa = data.logo
+      }
     }
+
+    // Escuchar eventos enviados por la página de configuración
+    this._empresaUpdatedHandler = (e) => {
+      const payload = e?.detail ?? JSON.parse(localStorage.getItem('empresa')) ?? {}
+      // actualizar mensaje (si viene) o dejar el default si vacio
+      if (payload.mensaje !== undefined) {
+        this.mensajeEmpresa = payload.mensaje || `Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.`
+      }
+      // actualizar logo (si viene)
+      if (payload.logo !== undefined) {
+        this.logoEmpresa = payload.logo || null
+      }
+    }
+    window.addEventListener('empresaUpdated', this._empresaUpdatedHandler)
+  },
+  beforeUnmount() {
+    // Limpiar listener al desmontar para evitar fugas de memoria
+    window.removeEventListener('empresaUpdated', this._empresaUpdatedHandler)
   }
 }
 </script>
+
 
 <style scoped>
 .dashboard-container {
   min-height: 100vh; /* que ocupe mínimo el alto de la ventana */
   width: 100%;
   margin-left: 0px; /* Deja espacio fijo para el menú */
-  overflow: hidden;
+  overflow: auto; /* 🔹 Cambié de hidden a auto para permitir scroll e impresión */
   background: linear-gradient(135deg, #74ebd5, #9face6);
   animation: gradientShift 10s ease infinite;
   position: relative; /* IMPORTANTE para posicionar hijos con absolute */
@@ -92,7 +115,7 @@ export default {
   box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
 }
 
-.instituto-image {
+.logo-empresa {
   display: block;
   margin: 20px auto 20px auto; /* ahora el espacio depende del contenido de arriba */
   max-width: 400px;
@@ -122,5 +145,32 @@ export default {
 
 .animate-rainbow-text {
   animation: rainbow-text 4s infinite linear;
+}
+
+/* 🔹 Ajustes para impresión */
+@media print {
+  .dashboard-container {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  .welcome-text {
+    font-size: 2rem !important;
+    text-shadow: none !important;
+    margin-top: 20px !important;
+  }
+
+  .subtitle-text,
+  .description-text,
+  .logo-empresa,
+  .page-footer {
+    position: static !important;
+    transform: none !important;
+    margin: 10px auto !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
 }
 </style>
