@@ -59,7 +59,8 @@
           <!-- ➕ Botón de nueva venta -->
           <button type="button"
                   class="agregar-btn"
-                  @click="agregarCliente">
+                  @click="agregarCliente"
+                  :disabled="!tieneDatos">
                   ➕ Nueva Venta
           </button>
         </div>
@@ -280,6 +281,18 @@ export default {
   },
 
   computed: {
+    tieneDatos() {
+      return (
+        (this.cliente.identificacion && this.cliente.identificacion !== null) ||
+        (this.cliente.nombres && this.cliente.nombres.trim() !== "") ||
+        (this.filtroBusqueda && this.filtroBusqueda.trim() !== "") ||
+        (this.empleado.identificacion && this.empleado.identificacion.trim() !== "") ||
+        (this.empleado.nombres && this.empleado.nombres.trim() !== "") ||
+        (this.producto.codigo && this.producto.codigo.trim() !== "") ||
+        (this.producto.nombre && this.producto.nombre.trim() !== "")
+      )
+    },
+
     ordenCerrada() {
       return this.ordenEstado === 'CERRADA'
     },
@@ -421,7 +434,7 @@ export default {
 
     // 🔹 Buscar cliente por identificación
     async buscarClientePorIdentificacionHandler() {
-      if (!this.cliente.identificacion || this.cliente.identificacion.trim() === '') {
+      if (!this.cliente.identificacion || this.cliente.identificacion === null) {
         this.mostrarMensaje('Ingrese una identificación del cliente.', 'error')
         return
       }
