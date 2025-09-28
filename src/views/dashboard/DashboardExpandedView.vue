@@ -72,7 +72,7 @@ export default {
 /* Subtítulo */
 .subtitle-text {
   position: absolute;
-  top: 180px;
+  top: 60px; /* antes estaba en 180px → ahora más arriba */
   left: 0;
   right: 0;
   margin-left: auto;
@@ -87,7 +87,7 @@ export default {
 /* Descripción */
 .description-text {
   position: absolute;
-  top: 240px;
+  top: 110px; /* antes estaba en 240px → ahora más arriba */
   left: 50%;
   transform: translateX(-50%);
   width: 60%;
@@ -103,7 +103,7 @@ export default {
 
 .instituto-image {
   display: block;
-  margin: 288px auto 20px auto;
+  margin: 250px auto 20px auto; /* antes estaba en 288px → ahora más arriba */
   max-width: 400px;
   width: 80%;
   border-radius: 12px;
