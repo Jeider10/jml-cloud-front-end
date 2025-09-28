@@ -176,10 +176,10 @@
           <input v-model="cliente.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarClientePorNombreHandler" />
 
           <label>Identificación Empleado</label>
-          <input v-model="empleado.identificacion" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarEmpleadoPorIdentificacionHandler" />
+          <input v-model="empleado.identificacion" type="text" :disabled="!clienteEncontrado || ordenCerrada" @keyup.enter="buscarEmpleadoPorIdentificacionHandler" />
 
           <label>Nombre Empleado</label>
-          <input v-model="empleado.nombres" type="text" :disabled="ordenEstado === 'CERRADA'" @keyup.enter="buscarEmpleadoPorNombreHandler"  />
+          <input v-model="empleado.nombres" type="text" :disabled="!clienteEncontrado || ordenCerrada" @keyup.enter="buscarEmpleadoPorNombreHandler"  />
         </div>
 
         <!-- Acciones normales -->
