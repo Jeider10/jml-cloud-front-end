@@ -36,8 +36,9 @@
             <th>IDENTIFICACIÓN</th>
             <th>PRODUCTOS</th>
             <th>PRECIO UNITARIO</th>
-            <th>VENDEDOR</th>
+            <th>SUBTOTAL</th>
             <th>TOTAL</th>
+            <th>VENDEDOR</th>
             <th>NRO FACTURA</th>
             <th>FECHA</th>
           </tr>
@@ -61,13 +62,20 @@
                 </li>
               </ul>
             </td>
-            <td>{{ venta.vendedor }}</td>
+            <td>
+              <ul>
+                <li v-for="(prod, i) in venta.productos" :key="i">
+                  {{ (prod.precio * prod.cantidad).toFixed(2) }}
+                </li>
+              </ul>
+            </td>
             <td>{{ venta.total }}</td>
+            <td>{{ venta.vendedor }}</td>
             <td>{{ venta.numeroFactura }}</td>
             <td>{{ venta.fecha }}</td>
           </tr>
           <tr v-if="ventasFiltradas.length === 0">
-            <td colspan="9" class="empty-row">No hay ventas registradas.</td>
+            <td colspan="10" class="empty-row">No hay ventas registradas.</td>
           </tr>
         </tbody>
       </table>
