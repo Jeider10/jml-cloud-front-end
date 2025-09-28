@@ -48,7 +48,9 @@
             <td>{{ venta.identificacionCliente }}</td>
             <td>
               <ul>
-                <li v-for="(prod, i) in venta.productos" :key="i">{{ prod }}</li>
+                <li v-for="(prod, i) in venta.productos" :key="i">
+                  {{ prod.producto }} (x{{ prod.cantidad }})
+                </li>
               </ul>
             </td>
             <td>{{ venta.vendedor }}</td>
@@ -104,7 +106,10 @@ export default {
         this.ventas = response.data.map(o => ({
           cliente: o.nombreCliente,
           identificacionCliente: o.identificacionCliente,
-          productos: o.detalles.map(d => d.productoNombre),
+          productos: o.detalles.map(d => ({
+            producto: d.producto,
+            cantidad: d.cantidad
+          })),
           vendedor: o.nombreEmpleado,
           total: o.totalCompra,
           numeroFactura: o.numeroFactura,
@@ -137,7 +142,7 @@ export default {
         v.cliente.toLowerCase().includes(texto) ||
         (v.identificacionCliente && v.identificacionCliente.toString().toLowerCase().includes(texto)) ||
         v.vendedor.toLowerCase().includes(texto) ||
-        v.productos.some(p => p.toLowerCase().includes(texto))
+        v.productos.some(p => p.producto.toLowerCase().includes(texto))
       )
     },
 
