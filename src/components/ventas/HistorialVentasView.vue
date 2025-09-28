@@ -18,7 +18,7 @@
 
       <!-- Filtro de búsqueda -->
       <div class="form-filtro no-print">
-        <span class="buscar-label">Buscar por Cliente, Producto o Vendedor:</span>
+        <span class="buscar-label">Buscar por Cliente, Identificación, Producto o Vendedor:</span>
         <div style="display: flex; gap: 4px;">
           <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
           <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro()" @click="filtrarVentas">Buscar</button>
@@ -31,8 +31,9 @@
       <table class="ventas-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>CLIENTE</th>
+            <th>IDENTIFICACIÓN</th>
             <th>PRODUCTOS</th>
             <th>VENDEDOR</th>
             <th>TOTAL</th>
@@ -44,6 +45,7 @@
           <tr v-for="(venta, idx) in ventasFiltradas" :key="idx">
             <td>{{ idx + 1 }}</td>
             <td>{{ venta.cliente }}</td>
+            <td>{{ venta.identificacionCliente }}</td>
             <td>
               <ul>
                 <li v-for="(prod, i) in venta.productos" :key="i">{{ prod }}</li>
@@ -55,7 +57,7 @@
             <td>{{ venta.fecha }}</td>
           </tr>
           <tr v-if="ventasFiltradas.length === 0">
-            <td colspan="7" class="empty-row">No hay ventas registradas.</td>
+            <td colspan="8" class="empty-row">No hay ventas registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -101,6 +103,7 @@ export default {
         const response = await listarTodasLasOrdenes()
         this.ventas = response.data.map(o => ({
           cliente: o.nombreCliente,
+          identificacionCliente: o.identificacionCliente,
           productos: o.detalles.map(d => d.productoNombre),
           vendedor: o.nombreEmpleado,
           total: o.totalCompra,
@@ -132,9 +135,9 @@ export default {
       const texto = this.busqueda.toLowerCase()
       this.ventasFiltradas = this.ventas.filter(v =>
         v.cliente.toLowerCase().includes(texto) ||
+        (v.identificacionCliente && v.identificacionCliente.toString().toLowerCase().includes(texto)) ||
         v.vendedor.toLowerCase().includes(texto) ||
-        v.productos.some(p => p.toLowerCase().includes(texto)) ||
-        (v.numeroFactura && v.numeroFactura.toLowerCase().includes(texto))
+        v.productos.some(p => p.toLowerCase().includes(texto))
       )
     },
 
