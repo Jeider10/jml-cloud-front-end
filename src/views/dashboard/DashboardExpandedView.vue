@@ -44,7 +44,6 @@ export default {
 }
 </script>
 
-
 <style scoped>
 .dashboard-container {
   min-height: 100vh; /* que ocupe mínimo el alto de la ventana */
@@ -59,6 +58,7 @@ export default {
   /* Nuevo: flexbox para empujar footer */
   display: flex;
   flex-direction: column;
+  align-items: center; /* centra horizontalmente todo */
 }
 
 .welcome-text {
@@ -71,13 +71,7 @@ export default {
 
 /* Subtítulo */
 .subtitle-text {
-  position: absolute;
-  top: 60px; /* antes estaba en 180px → ahora más arriba */
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  width: max-content;
+  margin-top: -30px; /* espacio dinámico debajo del título */
   font-size: 1.5rem;
   font-weight: 500;
   color: #333;
@@ -86,10 +80,7 @@ export default {
 
 /* Descripción */
 .description-text {
-  position: absolute;
-  top: 110px; /* antes estaba en 240px → ahora más arriba */
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: -5px; /* espacio debajo del subtítulo */
   width: 60%;
   font-size: 1.2rem;
   color: #222;
@@ -103,7 +94,7 @@ export default {
 
 .instituto-image {
   display: block;
-  margin: 250px auto 20px auto; /* antes estaba en 288px → ahora más arriba */
+  margin: 20px auto 20px auto; /* ahora el espacio depende del contenido de arriba */
   max-width: 400px;
   width: 80%;
   border-radius: 12px;
@@ -111,7 +102,7 @@ export default {
 }
 
 .page-footer {
-  margin-top: auto; /* nuevo: empuja el footer hacia abajo */
+  margin-top: auto; /* empuja el footer hacia abajo */
   text-align: center;
   font-size: 0.9rem;
   color: #333;
