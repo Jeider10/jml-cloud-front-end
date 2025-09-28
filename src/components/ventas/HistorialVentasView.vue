@@ -39,6 +39,7 @@
             <th>SUBTOTAL</th>
             <th>TOTAL</th>
             <th>VENDEDOR</th>
+            <th>IDENTIFICACIÓN VENDEDOR</th>
             <th>NRO FACTURA</th>
             <th>FECHA</th>
           </tr>
@@ -71,11 +72,12 @@
             </td>
             <td>{{ venta.total }}</td>
             <td>{{ venta.vendedor }}</td>
+            <td>{{ venta.identificacionVendedor }}</td>
             <td>{{ venta.numeroFactura }}</td>
             <td>{{ venta.fecha }}</td>
           </tr>
           <tr v-if="ventasFiltradas.length === 0">
-            <td colspan="10" class="empty-row">No hay ventas registradas.</td>
+            <td colspan="11" class="empty-row">No hay ventas registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -128,6 +130,7 @@ export default {
             precio: d.precio
           })),
           vendedor: o.nombreEmpleado,
+          identificacionVendedor: o.identificacionEmpleado,
           total: o.totalCompra,
           numeroFactura: o.numeroFactura,
           fecha: o.fechaCreacion
