@@ -16,14 +16,44 @@
         </div>
       </transition>
 
-      <!-- Filtro de búsqueda -->
+      <!-- 🔍 Filtro de búsqueda -->
       <div class="form-filtro no-print">
-        <span class="buscar-label">Buscar por Cliente, Identificación, Producto o Vendedor:</span>
+        <span class="buscar-label">Buscar por:</span>
         <div style="display: flex; gap: 4px;">
-          <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" />
-          <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro()" @click="filtrarVentas">Buscar</button>
-          <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro()" @click="limpiarBusqueda">Limpiar</button>
-          <button type="button" class="imprimir-btn" @click="imprimirHistorial">🖨️ Imprimir</button>
+          <select v-model="tipoBusqueda">
+            <option disabled value="">Seleccione una opción</option>
+            <option value="cliente">Cliente</option>
+            <option value="idCliente">ID. Cliente</option>
+            <option value="producto">Productos</option>
+            <option value="vendedor">Vendedor</option>
+            <option value="idVendedor">ID. Vendedor</option>
+            <option value="factura">Nro. Factura</option>
+          </select>
+
+          <input v-model="busqueda"
+                 type="text"
+                 placeholder="Ingrese término de búsqueda"
+                 :disabled="!tipoBusqueda" />
+
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="filtrarVentas">
+                  🔍 Buscar
+          </button>
+
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  @click="limpiarBusqueda">
+                  🧹 Limpiar
+          </button>
+
+          <button type="button"
+                  class="imprimir-btn"
+                  @click="imprimirHistorial">
+                  🖨️ Imprimir
+          </button>
         </div>
       </div>
 
@@ -104,7 +134,8 @@ export default {
       ventasFiltradas: [],
       mensaje: '',
       mensajeTipo: '',
-      busqueda: ''
+      busqueda: '',
+      tipoBusqueda: ''
     }
   },
 
@@ -158,16 +189,45 @@ export default {
 
     filtrarVentas() {
       const texto = this.busqueda.toLowerCase()
-      this.ventasFiltradas = this.ventas.filter(v =>
-        v.cliente.toLowerCase().includes(texto) ||
-        (v.identificacionCliente && v.identificacionCliente.toString().toLowerCase().includes(texto)) ||
-        v.vendedor.toLowerCase().includes(texto) ||
-        v.productos.some(p => p.producto.toLowerCase().includes(texto))
-      )
+      switch (this.tipoBusqueda) {
+        case 'cliente':
+          this.ventasFiltradas = this.ventas.filter(v =>
+            v.cliente.toLowerCase().includes(texto)
+          )
+          break
+        case 'idCliente':
+          this.ventasFiltradas = this.ventas.filter(v =>
+            v.identificacionCliente && v.identificacionCliente.toString().toLowerCase().includes(texto)
+          )
+          break
+        case 'producto':
+          this.ventasFiltradas = this.ventas.filter(v =>
+            v.productos.some(p => p.producto.toLowerCase().includes(texto))
+          )
+          break
+        case 'vendedor':
+          this.ventasFiltradas = this.ventas.filter(v =>
+            v.vendedor.toLowerCase().includes(texto)
+          )
+          break
+        case 'idVendedor':
+          this.ventasFiltradas = this.ventas.filter(v =>
+            v.identificacionVendedor && v.identificacionVendedor.toString().toLowerCase().includes(texto)
+          )
+          break
+        case 'factura':
+          this.ventasFiltradas = this.ventas.filter(v =>
+            v.numeroFactura && v.numeroFactura.toString().toLowerCase().includes(texto)
+          )
+          break
+        default:
+          this.ventasFiltradas = [...this.ventas]
+      }
     },
 
     limpiarBusqueda() {
       this.busqueda = ''
+      this.tipoBusqueda = ''
       this.ventasFiltradas = [...this.ventas]
     },
 
