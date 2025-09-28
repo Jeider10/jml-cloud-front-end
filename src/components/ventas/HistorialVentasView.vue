@@ -33,14 +33,14 @@
           <tr>
             <th>#</th>
             <th>CLIENTE</th>
-            <th>IDENTIFICACIÓN</th>
+            <th>ID. CLIENTE</th>
             <th>PRODUCTOS</th>
-            <th>PRECIO UNITARIO</th>
+            <th>P. UNITARIO</th>
             <th>SUBTOTAL</th>
             <th>TOTAL</th>
             <th>VENDEDOR</th>
-            <th>IDENTIFICACIÓN VENDEDOR</th>
-            <th>NRO FACTURA</th>
+            <th>ID. VENDEDOR</th>
+            <th>NRO. FACTURA</th>
             <th>FECHA</th>
           </tr>
         </thead>
@@ -84,7 +84,7 @@
 
       <!-- Footer final con Total a Pagar -->
       <div class="footer-ventas">
-        <span class="total">💰 Total a Ventas: {{ totalGeneral }}</span>
+        <span class="total">💰 Total de Ventas: {{ totalGeneral }}</span>
       </div>
     </div>
   </div>
