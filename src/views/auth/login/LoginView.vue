@@ -7,8 +7,8 @@
 
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="username">Usuario:</label>
-          <input type="text" id="username" v-model="username" required />
+          <label for="usuario">Usuario:</label>
+          <input type="text" id="usuario" v-model="usuario" required />
         </div>
         <div class="form-group">
           <label for="password">Contraseña:</label>
@@ -42,7 +42,7 @@ export default {
   name: 'LoginView',
   data() {
     return {
-      username: '',
+      usuario: '',
       password: '',
       errorMessage: ''
     }
@@ -51,12 +51,12 @@ export default {
     async handleLogin() {
       this.errorMessage = ''
       try {
-        const response = await login(this.username, this.password)
+        const response = await login(this.usuario, this.password)
         const { authorization } = response.data
 
         // Guarda datos temporalmente (o usa Vuex)
         localStorage.setItem('sessionToken', authorization)
-        localStorage.setItem('authUsername', this.username)
+        localStorage.setItem('authUsername', this.usuario)
 
         // Redirige directo al dashboard
         this.$router.push('/dashboard')
