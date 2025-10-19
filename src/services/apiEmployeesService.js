@@ -46,29 +46,23 @@ apiClient.interceptors.response.use(
 // =======================
 
 // Listar todos los Empleados
-export const listarEmpleados = () => apiClient.get('/empleados/listar-todos')
+export const listarEmpleados = () => apiClient.get('/empleados/list/all')
 
 // Crear Empleado
 export const crearEmpleado = (cliente) => apiClient.post('/empleados/register', cliente)
 
 // Búsqueda por identificación
-export const buscarEmpleadoPorIdentificacion = (identificacion) =>
-  apiClient.get('/empleados/identificacion', { params: { identificacion } })
+export const buscarEmpleadoPorIdentificacion = (identificacion) => apiClient.get('/empleados/identificacion', { params: { identificacion } })
 
 // Búsqueda por nombres
-export const buscarEmpleadoPorNombres = (nombres) =>
-  apiClient.get('/empleados/nombres', { params: { nombres } })
+export const buscarEmpleadoPorNombres = (nombres) => apiClient.get('/empleados/nombres', { params: { nombres } })
 
 // Búsqueda por apellidos
-export const buscarEmpleadoPorApellidos = (apellidos) =>
-  apiClient.get('/empleados/apellidos', { params: { apellidos } })
+export const buscarEmpleadoPorApellidos = (apellidos) => apiClient.get('/empleados/apellidos', { params: { apellidos } })
 
 // Actualizar Empleado
-export const actualizarEmpleado = (cliente) => {
-  return apiClient.put('/empleados/actualizar', cliente)
-}
+export const actualizarEmpleado = (cliente) => apiClient.put('/empleados/update', cliente)
 
 // Eliminar Empleado
-export const eliminarEmpleadoPorIdentificacion = (identificacion) =>
-  apiClient.delete('/empleados/eliminar-identificacion', { params: { identificacion } })
+export const eliminarEmpleadoPorIdentificacion = (identificacion) => apiClient.delete('/empleados/delete', { params: { identificacion } })
 

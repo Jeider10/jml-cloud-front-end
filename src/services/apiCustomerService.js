@@ -46,29 +46,23 @@ apiClient.interceptors.response.use(
 // =======================
 
 // Listar todos los clientes
-export const listarClientes = () => apiClient.get('/clientes/listar-todos')
+export const listarClientes = () => apiClient.get('/clientes/list/all')
 
 // Crear cliente
 export const crearCliente = (cliente) => apiClient.post('/clientes/register', cliente)
 
 // Búsqueda por identificación
-export const buscarClientePorIdentificacion = (identificacion) =>
-  apiClient.get('/clientes/identificacion', { params: { identificacion } })
+export const buscarClientePorIdentificacion = (identificacion) => apiClient.get('/clientes/identificacion', { params: { identificacion } })
 
 // Búsqueda por nombres
-export const buscarClientePorNombres = (nombres) =>
-  apiClient.get('/clientes/nombres', { params: { nombres } })
+export const buscarClientePorNombres = (nombres) => apiClient.get('/clientes/nombres', { params: { nombres } })
 
 // Búsqueda por apellidos
-export const buscarClientePorApellidos = (apellidos) =>
-  apiClient.get('/clientes/apellidos', { params: { apellidos } })
+export const buscarClientePorApellidos = (apellidos) => apiClient.get('/clientes/apellidos', { params: { apellidos } })
 
 // Actualizar cliente
-export const actualizarCliente = (cliente) => {
-  return apiClient.put('/clientes/actualizar', cliente)
-}
+export const actualizarCliente = (cliente) => apiClient.put('/clientes/update', cliente)
 
 // Eliminar cliente
-export const eliminarClientePorIdentificacion = (identificacion) =>
-  apiClient.delete('/clientes/eliminar-identificacion', { params: { identificacion } })
+export const eliminarClientePorIdentificacion = (identificacion) => apiClient.delete('/clientes/delete', { params: { identificacion } })
 

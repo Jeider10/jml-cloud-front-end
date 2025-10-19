@@ -42,7 +42,7 @@ apiOrders.interceptors.response.use(
 )
 
 // =======================
-// 🔹 Endpoints del microservicio de producto
+// 🔹 Endpoints del microservicio de ordenes
 // =======================
 
 // Agregar producto a tabla (crea o actualiza orden ABIERTA del cliente)

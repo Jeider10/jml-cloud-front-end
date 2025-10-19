@@ -46,53 +46,40 @@ apiProducts.interceptors.response.use(
 // =======================
 
 // Listar todos los productos
-export const listarProductos = () => apiProducts.get('/productos/listar-productos')
+export const listarProductos = () => apiProducts.get('/productos/list/all')
 
 // Crear producto
 export const crearProducto = (producto) => apiProducts.post('/productos/register', producto)
 
 // Búsqueda por codigo
-export const buscarProductoPorCodigo = (codigo) =>
-  apiProducts.get('/productos/codigo', { params: { codigo } })
+export const buscarProductoPorCodigo = (codigo) => apiProducts.get('/productos/codigo', { params: { codigo } })
 
 // Búsqueda por nombre
-export const buscarProductoPorNombre = (nombre) =>
-  apiProducts.get('/productos/nombre', { params: { nombre } })
+export const buscarProductoPorNombre = (nombre) => apiProducts.get('/productos/nombre', { params: { nombre } })
 
 // Búsqueda por descripcion
-export const buscarProductoPorDescripcion = (descripcion) =>
-  apiProducts.get('/productos/descripcion', { params: { descripcion } })
+export const buscarProductoPorDescripcion = (descripcion) => apiProducts.get('/productos/descripcion', { params: { descripcion } })
 
 // Búsqueda por cantidad
-export const buscarProductoPorCantidad = (cantidad) =>
-  apiProducts.get('/productos/cantidad', { params: { cantidad } })
+export const buscarProductoPorCantidad = (cantidad) => apiProducts.get('/productos/cantidad', { params: { cantidad } })
 
 // Búsqueda por precio
-export const buscarProductoPorPrecio = (precio) =>
-  apiProducts.get('/productos/precio', { params: { precio } })
+export const buscarProductoPorPrecio = (precio) => apiProducts.get('/productos/precio', { params: { precio } })
 
 // Búsqueda por proveedor por id
-export const buscarProductoPorProveedorId = (proveedorId) =>
-  apiProducts.get('/productos/proveedorId', { params: { 'proveedorId': proveedorId } })
+export const buscarProductoPorProveedorId = (proveedorId) => apiProducts.get('/productos/proveedorId', { params: { 'proveedorId': proveedorId } })
 
 // Búsqueda por proveedor por nombre
-export const buscarProductoPorProveedorName = (proveedorName) =>
-  apiProducts.get('/productos/proveedorName', { params: { 'proveedorName': proveedorName } })
-
-// Búsqueda por fechaCreacion
-export const buscarProductoPorFechaCreacion = (fechaCreacion) =>
-  apiProducts.get('/productos/fechaCreacion', { params: { fechaCreacion } })
+export const buscarProductoPorProveedorName = (proveedorName) => apiProducts.get('/productos/proveedorName', { params: { 'proveedorName': proveedorName } })
 
 // Actualizar producto
-export const actualizarProducto = (producto) => {
-  return apiProducts.put('/productos/actualizar', producto)
-}
+export const actualizarProducto = (producto) => apiProducts.put('/productos/update', producto)
 
 // Eliminar producto por codigo
-export const eliminarProductoPorCodigo = (codigo) =>
-  apiProducts.delete('/productos/eliminar-codigo', { params: { codigo } })
+export const eliminarProductoPorCodigo = (codigo) => apiProducts.delete('/productos/delete', { params: { codigo } })
 
 // Restar stock de un producto por código
-export const restarStockProducto = (codigo, cantidad) =>
-  apiProducts.put(`/productos/${codigo}/restar-stock`, null, { params: { cantidad } })
+export const restarStockProducto = (codigo, cantidad) => apiProducts.put(`/productos/restar-stock/${codigo}`, null, { params: { cantidad } })
 
+// Búsqueda por fechaCreacion
+export const buscarProductoPorFechaCreacion = (fechaCreacion) => apiProducts.get('/productos/fechaCreacion', { params: { fechaCreacion } })

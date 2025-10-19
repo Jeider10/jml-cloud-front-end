@@ -258,7 +258,7 @@ export default {
       },
       empleado: {
         identificacion: '',
-        nombres: ''   // ✅ corregido: antes estaba mal en reset
+        nombres: ''
       },
       producto: {
         proveedorId: null,
@@ -320,6 +320,11 @@ export default {
         this.empleado.nombres.trim() !== ''
       )
     }
+  },
+
+  mounted() {
+    // 🔹 Cargar todas las ordenes abiertas desde backend al iniciar
+    // this.cargarOrdenesFiltradas()
   },
 
   methods: {
