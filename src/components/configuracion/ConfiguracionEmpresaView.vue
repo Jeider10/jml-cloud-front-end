@@ -15,11 +15,11 @@
         <div class="datos-empresa">
           <div class="dato-row">
             <label>NIC:</label>
-            <input type="text" v-model="empresa.nic" :disabled="!modoEdicion" />
+            <input type="text" v-model="empresa.nic" :disabled="modoActualizar || !modoEdicion" />
           </div>
           <div class="dato-row">
             <label>Nombre:</label>
-            <input type="text" v-model="empresa.nombre" :disabled="!modoEdicion" />
+            <input type="text" v-model="empresa.nombreEmpresa" :disabled="!modoEdicion" />
           </div>
           <div class="dato-row">
             <label>Dirección:</label>
@@ -39,18 +39,29 @@
           </div>
         </div>
 
-        <!-- 🔹 Botones afuera al lado derecho -->
+        <!-- 🔹 Acciones -->
         <div class="acciones-lateral">
+          <!-- Si no hay empresa, mostrar botón Registrar -->
+          <!-- ✏️ Botón de Registrar -->
+          <button v-if="modoRegistrar && !modoEdicion"
+                  type="button"
+                  class="registrar-btn"
+                  @click="activarEdicion">
+                  🆕 Registrar
+          </button>
+
+          <!-- Si hay empresa, mostrar botón Actualizar -->
           <!-- ✏️ Botón de Actualizar -->
-          <button v-if="!modoEdicion"
+          <button v-if="modoActualizar && !modoEdicion"
                   type="button"
                   class="actualizar-btn"
                   @click="activarEdicion">
                   ✏️ Actualizar
           </button>
 
-          <div v-else class="btn-group">
+          <!-- Modo edición: mostrar guardar/limpiar/volver -->
             <!-- 💾 Botón de Guardar -->
+          <div v-if="modoEdicion" class="btn-group">
             <button type="button"
                     class="guardar-btn"
                     :disabled="!tieneTexto"
@@ -84,7 +95,7 @@
       <div v-if="mostrarConfirmacion" class="modal-overlay">
         <div class="modal">
           <h3>⚠️ Confirmación</h3>
-          <p>¿Estás seguro de que deseas actualizar los datos de la empresa?</p>
+          <p>¿Deseas guardar los datos de la empresa?</p>
           <div class="modal-buttons">
             <button class="si-btn" @click="confirmarGuardar">Sí</button>
             <button class="no-btn" @click="mostrarConfirmacion = false">No</button>
@@ -97,18 +108,22 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import { obtenerEmpresa, registrarEmpresa, actualizarEmpresa } from '@/services/apiConfigEmpresaService'
 
 export default {
-  name: 'ActualizarConfiguracionEmpresaView',
+  name: 'ConfiguracionEmpresaView',
   components: { DashboardSideMenu },
+
   data() {
     return {
       menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      modoRegistrar: false,
+      modoActualizar: false,
       modoEdicion: false,
       mostrarConfirmacion: false,
       empresa: {
         nic: '',
-        nombre: '',
+        nombreEmpresa: '',
         direccion: '',
         telefono: '',
         mensaje: '',
@@ -123,52 +138,63 @@ export default {
     }
   },
 
-  mounted() {
-    const data = JSON.parse(localStorage.getItem('empresa'))
-    if (data) this.empresa = data
+  async mounted() {
+    await this.cargarEmpresa()
   },
 
   methods: {
+    async cargarEmpresa() {
+      try {
+        const nicPredeterminado = 1 // puedes cambiarlo según tu lógica
+        const response = await obtenerEmpresa(nicPredeterminado)
+
+        if (response.status === 204 || !response.data) {
+          // No existe empresa → modo registrar
+          this.modoRegistrar = true
+          this.modoActualizar = false
+          console.log('⚠️ No hay empresa registrada.')
+        } else {
+          this.empresa = response.data
+          this.modoRegistrar = false
+          this.modoActualizar = true
+          console.log('✅ Empresa cargada:', this.empresa)
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar empresa:', error.message)
+        this.modoRegistrar = true
+        this.modoActualizar = false
+      }
+    },
+
     activarEdicion() {
       this.modoEdicion = true
     },
 
-    confirmarGuardar() {
-      // Guardar en localStorage y notificar a otros componentes en la misma ventana
-      localStorage.setItem('empresa', JSON.stringify(this.empresa))
-
-      // Disparar evento para actualizaciones en la misma pestaña (storage no lo hace en la misma pestaña)
+    async confirmarGuardar() {
       try {
-        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
-      } catch (e) {
-        // fallback muy raro, pero nos aseguramos de que no rompa
-        console.warn('No se pudo disparar evento empresaUpdated', e)
-      }
+        if (this.modoRegistrar) {
+          await registrarEmpresa(this.empresa)
+          alert('✅ Empresa registrada correctamente.')
+        } else {
+          await actualizarEmpresa(this.empresa)
+          alert('✅ Empresa actualizada correctamente.')
+        }
 
-      this.mostrarConfirmacion = false
-      this.modoEdicion = false
+        this.mostrarConfirmacion = false
+        this.modoEdicion = false
+        await this.cargarEmpresa()
+      } catch (error) {
+        alert(`❌ Error al guardar: ${error.message}`)
+      }
     },
 
     limpiar() {
-      // Limpiar los datos en UI
-      this.empresa = { nic: '', nombre: '', direccion: '', telefono: '', mensaje: '', logo: '' }
-      this.modoEdicion = false
-
-      // Actualizar localStorage para que el cambio se refleje también en el Dashboard
-      localStorage.setItem('empresa', JSON.stringify(this.empresa))
-
-      // Disparar evento para que el Dashboard y otros componentes actualicen de inmediato
-      try {
-        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
-      } catch (e) {
-        console.warn('No se pudo disparar evento empresaUpdated', e)
-      }
+      this.empresa = { nic: '', nombreEmpresa: '', direccion: '', telefono: '', mensaje: '', logo: '' }
     },
 
     cancelarEdicion() {
-      const data = JSON.parse(localStorage.getItem('empresa'))
-      if (data) this.empresa = data
       this.modoEdicion = false
+      this.cargarEmpresa()
     },
 
     onImageChange(event) {
@@ -184,6 +210,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .configuracion-empresa-wrapper {
@@ -286,6 +313,26 @@ export default {
   gap: 15px;
 }
 
+.registrar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #28a745;
+  color: white;
+}
+
+.registrar-btn:disabled {
+  background: #94d3a2;
+  cursor: not-allowed;
+}
+
+.registrar-btn:hover {
+  background: #51b568;
+}
+
 .actualizar-btn {
   padding: 12px 20px;
   border-radius: 6px;
@@ -295,6 +342,10 @@ export default {
   font-size: 1rem;
   background: #0077b6;
   color: white;
+}
+
+.actualizar-btn:hover {
+  background: #005f8a;
 }
 
 .guardar-btn {
@@ -308,6 +359,15 @@ export default {
   color: white;
 }
 
+.guardar-btn:disabled {
+  background: #94d3a2;
+  cursor: not-allowed;
+}
+
+.guardar-btn:not(:disabled):hover {
+  background: #218838;
+}
+
 .limpiar-btn {
   padding: 12px 20px;
   border-radius: 6px;
@@ -317,15 +377,6 @@ export default {
   font-size: 1rem;
   background: #e74c3c;
   color: white;
-}
-
-.actualizar-btn:hover {
-  background: #005f8a;
-}
-
-.guardar-btn:disabled {
-  background: #94d3a2;
-  cursor: not-allowed;
 }
 
 .limpiar-btn:hover {
