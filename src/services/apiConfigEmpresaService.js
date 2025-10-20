@@ -38,6 +38,9 @@ apiClient.interceptors.response.use(
 // 🔹 Endpoints del microservicio Empresa
 // ==============================
 
+// Obtener la primera empresa (si existe)
+export const obtenerPrimeraEmpresa = () => apiClient.get('/empresa')
+
 // Obtener empresa por nic
 export const obtenerEmpresa = (nic) => apiClient.get(`/empresa/${nic}`)
 

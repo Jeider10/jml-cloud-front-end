@@ -108,7 +108,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { obtenerEmpresa, registrarEmpresa, actualizarEmpresa } from '@/services/apiConfigEmpresaService'
+import { obtenerPrimeraEmpresa, registrarEmpresa, actualizarEmpresa } from '@/services/apiConfigEmpresaService'
 
 export default {
   name: 'ConfiguracionEmpresaView',
@@ -145,22 +145,43 @@ export default {
   methods: {
     async cargarEmpresa() {
       try {
-        const nicPredeterminado = 1 // puedes cambiarlo según tu lógica
-        const response = await obtenerEmpresa(nicPredeterminado)
+        console.log('🔍 Solicitando empresa registrada (si existe)...')
+        const response = await obtenerPrimeraEmpresa()
 
-        if (response.status === 204 || !response.data) {
-          // No existe empresa → modo registrar
+        // Validar que la respuesta sea válida y tenga datos
+        if (!response || !response.data || Object.keys(response.data).length === 0) {
+          console.warn('⚠️ No hay empresa registrada.')
           this.modoRegistrar = true
           this.modoActualizar = false
-          console.log('⚠️ No hay empresa registrada.')
-        } else {
-          this.empresa = response.data
-          this.modoRegistrar = false
-          this.modoActualizar = true
-          console.log('✅ Empresa cargada:', this.empresa)
+          this.empresa = {
+            nic: '',
+            nombreEmpresa: '',
+            direccion: '',
+            telefono: '',
+            mensaje: '',
+            logo: ''
+          }
+          return
         }
+
+        // ✅ Asignar datos directamente
+        this.empresa = {
+          nic: response.data.nic ?? '',
+          nombreEmpresa: response.data.nombreEmpresa ?? '',
+          direccion: response.data.direccion ?? '',
+          telefono: response.data.telefono ?? '',
+          mensaje: response.data.mensaje ?? '',
+          logo: response.data.logo ?? ''
+        }
+
+        console.log('✅ Empresa cargada correctamente:', this.empresa)
+
+        // Ajustar modos
+        this.modoRegistrar = false
+        this.modoActualizar = true
+
       } catch (error) {
-        console.error('❌ Error al cargar empresa:', error.message)
+        console.error('❌ Error al cargar empresa:', error)
         this.modoRegistrar = true
         this.modoActualizar = false
       }
@@ -173,16 +194,23 @@ export default {
     async confirmarGuardar() {
       try {
         if (this.modoRegistrar) {
+          console.log('🆕 Registrando empresa:', this.empresa)
           await registrarEmpresa(this.empresa)
           alert('✅ Empresa registrada correctamente.')
         } else {
+          console.log('✏️ Actualizando empresa:', this.empresa)
           await actualizarEmpresa(this.empresa)
           alert('✅ Empresa actualizada correctamente.')
         }
 
         this.mostrarConfirmacion = false
         this.modoEdicion = false
+
+        // 🔹 Recargar empresa actualizada desde la base y ajustar estados
         await this.cargarEmpresa()
+        this.modoRegistrar = false
+        this.modoActualizar = true
+
       } catch (error) {
         alert(`❌ Error al guardar: ${error.message}`)
       }
