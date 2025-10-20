@@ -33,6 +33,10 @@
             <label>Mensaje:</label>
             <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
           </div>
+          <div class="dato-row">
+            <label>Ruta Logo:</label>
+            <input type="text" v-model="empresa.logo" disabled />
+          </div>
           <div class="dato-row" v-if="modoEdicion">
             <label>Logo:</label>
             <input type="file" accept="image/*" @change="onImageChange" />
@@ -148,8 +152,8 @@ export default {
         console.log('🔍 Solicitando empresa registrada (si existe)...')
         const response = await obtenerPrimeraEmpresa()
 
-        // Validar que la respuesta sea válida y tenga datos
-        if (!response || !response.data || Object.keys(response.data).length === 0) {
+        // Validar si la respuesta viene vacía o no contiene elementos
+        if (!response || !response.data || response.data.length === 0) {
           console.warn('⚠️ No hay empresa registrada.')
           this.modoRegistrar = true
           this.modoActualizar = false
@@ -164,14 +168,18 @@ export default {
           return
         }
 
-        // ✅ Asignar datos directamente
+        // ✅ Tomar el primer elemento de la lista
+        const empresaData = response.data[0]
+        console.log('✅ Empresa cargada correctamente:', empresaData)
+
+        // Asignar datos al modelo de Vue
         this.empresa = {
-          nic: response.data.nic ?? '',
-          nombreEmpresa: response.data.nombreEmpresa ?? '',
-          direccion: response.data.direccion ?? '',
-          telefono: response.data.telefono ?? '',
-          mensaje: response.data.mensaje ?? '',
-          logo: response.data.logo ?? ''
+          nic: empresaData.nic ?? '',
+          nombreEmpresa: empresaData.nombreEmpresa ?? '',
+          direccion: empresaData.direccion ?? '',
+          telefono: empresaData.telefono ?? '',
+          mensaje: empresaData.mensaje ?? '',
+          logo: empresaData.logo ?? ''
         }
 
         console.log('✅ Empresa cargada correctamente:', this.empresa)
