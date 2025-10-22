@@ -90,9 +90,19 @@
         </div>
       </div>
 
-      <!-- Logo grande -->
+      <!-- Logo grande
       <div class="logo-container">
         <img :src="empresa.logo || require('@/assets/img/Empresa.png')" alt="Logo Empresa" class="logo-empresa" />
+      </div> -->
+
+      <!-- Logo grande -->
+      <div class="logo-container">
+        <img
+          :src="getLogoUrl(empresa.logo)"
+          alt="Logo Empresa"
+          class="logo-empresa"
+          @error="onLogoError"
+        />
       </div>
 
       <!-- Modal de confirmación -->
@@ -132,7 +142,8 @@ export default {
         telefono: '',
         mensaje: '',
         logo: ''
-      }
+      },
+      archivoLogo: null
     }
   },
 
@@ -203,18 +214,19 @@ export default {
       try {
         if (this.modoRegistrar) {
           console.log('🆕 Registrando empresa:', this.empresa)
-          await registrarEmpresa(this.empresa)
+          await registrarEmpresa(this.empresa, this.archivoLogo)
           alert('✅ Empresa registrada correctamente.')
         } else {
           console.log('✏️ Actualizando empresa:', this.empresa)
-          await actualizarEmpresa(this.empresa)
+          await actualizarEmpresa(this.empresa, this.archivoLogo)
           alert('✅ Empresa actualizada correctamente.')
         }
 
         this.mostrarConfirmacion = false
         this.modoEdicion = false
+        this.archivoLogo = null
 
-        // 🔹 Recargar empresa actualizada desde la base y ajustar estados
+        // 🔄 Recargar datos actualizados de empresa desde la base y ajustar estados
         await this.cargarEmpresa()
         this.modoRegistrar = false
         this.modoActualizar = true
@@ -225,7 +237,15 @@ export default {
     },
 
     limpiar() {
-      this.empresa = { nic: '', nombreEmpresa: '', direccion: '', telefono: '', mensaje: '', logo: '' }
+      this.empresa = {
+        nic: '',
+        nombreEmpresa: '',
+        direccion: '',
+        telefono: '',
+        mensaje: '',
+        logo: ''
+      }
+      this.archivoLogo = null
     },
 
     cancelarEdicion() {
@@ -236,12 +256,33 @@ export default {
     onImageChange(event) {
       const file = event.target.files[0]
       if (file) {
+        this.archivoLogo = file
         const reader = new FileReader()
         reader.onload = e => {
-          this.empresa.logo = e.target.result // guarda en base64
+          this.empresa.logo = e.target.result
         }
         reader.readAsDataURL(file)
       }
+    },
+
+    getLogoUrl(path) {
+      if (!path) {
+        // Si no hay logo, muestra imagen por defecto
+        return require('@/assets/img/Empresa.png')
+      }
+
+      // Si ya es base64 o una URL completa, la usamos directamente
+      if (path.startsWith('http') || path.startsWith('data:')) {
+        return path
+      }
+
+      // Si es una ruta relativa (por ejemplo /uploads/logos/...), la completamos con el backend
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${path}`
+    },
+
+    onLogoError(event) {
+      // Si falla la carga, mostrar imagen por defecto
+      event.target.src = require('@/assets/img/Empresa.png')
     }
   }
 }
