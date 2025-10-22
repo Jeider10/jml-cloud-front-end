@@ -14,7 +14,11 @@
     </p>
 
     <!-- Imagen dinámica -->
-    <img :src="logoEmpresa || require('@/assets/img/Empresa.png')" alt="Logo Empresa" class="logo-empresa" />
+    <img
+      :src="logoEmpresa || require('@/assets/img/Empresa.png')"
+      alt="Logo Empresa"
+      class="logo-empresa"
+    />
 
     <!-- Footer -->
     <footer class="page-footer">
@@ -25,43 +29,61 @@
 </template>
 
 <script>
+import { obtenerPrimeraEmpresa } from '@/services/apiConfigEmpresaService'
+
 export default {
   name: "dashboard-page",
   data() {
     return {
-      mensajeEmpresa: `Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.`,
-      logoEmpresa: null // 🔹 Nuevo campo para la imagen
+      mensajeEmpresa: 'Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.',
+      logoEmpresa: null
     }
   },
-  mounted() {
-    // Cargar desde localStorage al inicio (si existe)
-    const data = JSON.parse(localStorage.getItem('empresa'))
-    if (data) {
-      if (data.mensaje) {
-        this.mensajeEmpresa = data.mensaje
-      }
-      if (data.logo) {
-        this.logoEmpresa = data.logo
-      }
-    }
+  async mounted() {
+    // 🔹 Cargar datos reales del backend al iniciar
+    await this.cargarDatosEmpresa()
 
-    // Escuchar eventos enviados por la página de configuración
+    // 🔹 Escuchar evento global emitido desde ConfiguracionEmpresaView
     this._empresaUpdatedHandler = (e) => {
-      const payload = e?.detail ?? JSON.parse(localStorage.getItem('empresa')) ?? {}
-      // actualizar mensaje (si viene) o dejar el default si vacio
+      const payload = e?.detail ?? {}
+      console.log('📢 Empresa actualizada recibida en Dashboard:', payload)
+
       if (payload.mensaje !== undefined) {
-        this.mensajeEmpresa = payload.mensaje || `Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.`
+        this.mensajeEmpresa = payload.mensaje || this.mensajeEmpresa
       }
       // actualizar logo (si viene)
       if (payload.logo !== undefined) {
-        this.logoEmpresa = payload.logo || null
+        this.logoEmpresa = this.getLogoUrl(payload.logo)
       }
     }
+
     window.addEventListener('empresaUpdated', this._empresaUpdatedHandler)
   },
+
   beforeUnmount() {
     // Limpiar listener al desmontar para evitar fugas de memoria
     window.removeEventListener('empresaUpdated', this._empresaUpdatedHandler)
+  },
+
+  methods: {
+    async cargarDatosEmpresa() {
+      try {
+        const response = await obtenerPrimeraEmpresa()
+        if (response && response.data && response.data.length > 0) {
+          const empresa = response.data[0]
+          this.mensajeEmpresa = empresa.mensaje || this.mensajeEmpresa
+          this.logoEmpresa = this.getLogoUrl(empresa.logo)
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar datos de empresa:', error)
+      }
+    },
+
+    getLogoUrl(path) {
+      if (!path) return require('@/assets/img/Empresa.png')
+      if (path.startsWith('http') || path.startsWith('data:')) return path
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${path}`
+    }
   }
 }
 </script>

@@ -226,8 +226,12 @@ export default {
         this.modoEdicion = false
         this.archivoLogo = null
 
-        // 🔄 Recargar datos actualizados de empresa desde la base y ajustar estados
+        // 🔄 Recargar datos actualizados desde backend
         await this.cargarEmpresa()
+
+        // 📢 Nuevo: emitir evento global con la empresa actualizada
+        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
+
         this.modoRegistrar = false
         this.modoActualizar = true
 
