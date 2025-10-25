@@ -9,6 +9,11 @@
     <div :class="['main-content', { expanded: menuOpen }]">
       <h1 class="titulo">Datos de la Empresa</h1>
 
+      <!-- 🟢 mensaje de confirmación visual -->
+      <div v-if="mensaje" :class="['alerta', mensajeTipo]">
+        {{ mensaje }}
+      </div>
+
       <!-- 🔹 Contenedor fila: cuadro datos + botones al lado -->
       <div class="fila-contenedor">
         <!-- Bloque con datos -->
@@ -98,11 +103,6 @@
           class="logo-empresa"
           @error="onLogoError"
         />
-      </div>
-
-      <!-- 🟢 mensaje de confirmación visual -->
-      <div v-if="mensaje" :class="['alerta', mensajeTipo]">
-        {{ mensaje }}
       </div>
 
       <!-- Modal de confirmación -->
@@ -553,23 +553,27 @@ export default {
 }
 
 .alerta {
-  margin-top: 20px;
-  padding: 12px;
-  border-radius: 6px;
-  font-weight: bold;
+  position: sticky;
+  top: 10px;
+  z-index: 1000;
+  margin: 0 auto 15px;
+  width: 90%;
+  max-width: 600px;
   text-align: center;
-  transition: opacity 0.3s ease;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.success {
+/* Colores según tipo */
+.alerta.success {
   background-color: #d4edda;
   color: #155724;
-  border: 1px solid #c3e6cb;
 }
 
-.error {
+.alerta.error {
   background-color: #f8d7da;
   color: #721c24;
-  border: 1px solid #f5c6cb;
 }
 </style>
