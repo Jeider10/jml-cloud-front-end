@@ -19,8 +19,8 @@
         <!-- Bloque con datos -->
         <div class="datos-empresa">
           <div class="dato-row">
-            <label>NIC:</label>
-            <input type="text" v-model="empresa.nic" :disabled="modoActualizar || !modoEdicion" />
+            <label>NIT:</label>
+            <input type="text" v-model="empresa.nit" :disabled="modoActualizar || !modoEdicion" />
           </div>
           <div class="dato-row">
             <label>Nombre:</label>
@@ -94,6 +94,7 @@
 
             <!-- 🗑️ Botón de Eliminar -->
             <button type="button"
+                    v-if="modoActualizar"
                     class="eliminar-btn"
                     @click="mostrarConfirmacionEliminar = true">
                     🗑️ Eliminar
@@ -156,7 +157,7 @@ export default {
       mostrarConfirmacion: false,
       mostrarConfirmacionEliminar: false,
       empresa: {
-        nic: '',
+        nit: '',
         nombreEmpresa: '',
         direccion: '',
         telefono: '',
@@ -200,7 +201,7 @@ export default {
           this.modoRegistrar = true
           this.modoActualizar = false
           this.empresa = {
-            nic: '',
+            nit: '',
             nombreEmpresa: '',
             direccion: '',
             telefono: '',
@@ -216,7 +217,7 @@ export default {
 
         // Asignar datos al modelo de Vue
         this.empresa = {
-          nic: empresaData.nic ?? '',
+          nit: empresaData.nit ?? '',
           nombreEmpresa: empresaData.nombreEmpresa ?? '',
           direccion: empresaData.direccion ?? '',
           telefono: empresaData.telefono ?? '',
@@ -272,8 +273,8 @@ export default {
 
     async confirmarEliminar() {
       try {
-        console.log('🗑️ Eliminando empresa con NIC:', this.empresa.nic)
-        await eliminarEmpresa(this.empresa.nic)
+        console.log('🗑️ Eliminando empresa con NIT:', this.empresa.nit)
+        await eliminarEmpresa(this.empresa.nit)
         this.mostrarMensaje('✅ Empresa eliminada correctamente.', 'success')
 
         // Reset de datos y estados
@@ -297,7 +298,7 @@ export default {
 
     limpiar() {
       this.empresa = {
-        nic: '',
+        nit: '',
         nombreEmpresa: '',
         direccion: '',
         telefono: '',

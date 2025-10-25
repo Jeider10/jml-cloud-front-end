@@ -41,8 +41,8 @@ apiClient.interceptors.response.use(
 // Obtener la primera empresa (si existe)
 export const obtenerPrimeraEmpresa = () => apiClient.get('/empresa')
 
-// Obtener empresa por nic
-export const obtenerEmpresa = (nic) => apiClient.get(`/empresa/${nic}`)
+// Obtener empresa por nit
+export const obtenerEmpresa = (nit) => apiClient.get(`/empresa/${nit}`)
 
 // Registrar nueva empresa (usa multipart/form-data)
 export const registrarEmpresa = (empresa, file) => {
@@ -71,5 +71,5 @@ export const actualizarEmpresa = (empresa, file) => {
 }
 
 // Eliminar empresa por NIC
-export const eliminarEmpresa = (nic) =>
-  apiClient.delete('/empresa/delete', { params: { nic } })
+export const eliminarEmpresa = (nit) =>
+  apiClient.delete('/empresa/delete', { params: { nit } })
