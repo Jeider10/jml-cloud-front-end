@@ -44,17 +44,18 @@ export const obtenerPrimeraEmpresa = () => apiClient.get('/empresa')
 // Obtener empresa por nic
 export const obtenerEmpresa = (nic) => apiClient.get(`/empresa/${nic}`)
 
-// Registrar nueva empresa
-export const registrarEmpresa = (empresa) =>
-  apiClient.post('/empresa/register', empresa)
+// Registrar nueva empresa (usa multipart/form-data)
+export const registrarEmpresa = (empresa, file) => {
+  const formData = new FormData()
+  formData.append('empresa', new Blob([JSON.stringify(empresa)], { type: 'application/json' }))
+  if (file) {
+    formData.append('file', file)
+  }
 
-//// Actualizar datos de la empresa
-//export const actualizarEmpresa = (empresa) =>
-//  apiClient.put('/empresa/update', empresa)
-
-// Eliminar empresa por NIC
-export const eliminarEmpresa = (nic) =>
-  apiClient.delete('/empresa/delete', { params: { nic } })
+  return apiClient.post('/empresa/register', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
 
 // Actualizar datos de la empresa (usa multipart/form-data)
 export const actualizarEmpresa = (empresa, file) => {
@@ -68,3 +69,7 @@ export const actualizarEmpresa = (empresa, file) => {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
+
+// Eliminar empresa por NIC
+export const eliminarEmpresa = (nic) =>
+  apiClient.delete('/empresa/delete', { params: { nic } })

@@ -90,11 +90,6 @@
         </div>
       </div>
 
-      <!-- Logo grande
-      <div class="logo-container">
-        <img :src="empresa.logo || require('@/assets/img/Empresa.png')" alt="Logo Empresa" class="logo-empresa" />
-      </div> -->
-
       <!-- Logo grande -->
       <div class="logo-container">
         <img
@@ -103,6 +98,11 @@
           class="logo-empresa"
           @error="onLogoError"
         />
+      </div>
+
+      <!-- 🟢 mensaje de confirmación visual -->
+      <div v-if="mensaje" :class="['alerta', mensajeTipo]">
+        {{ mensaje }}
       </div>
 
       <!-- Modal de confirmación -->
@@ -143,7 +143,9 @@ export default {
         mensaje: '',
         logo: ''
       },
-      archivoLogo: null
+      archivoLogo: null,
+      mensaje: '',
+      mensajeTipo: ''
     }
   },
 
@@ -158,6 +160,15 @@ export default {
   },
 
   methods: {
+    // 🔹 Método de mostrar mensaje
+    mostrarMensaje(texto, tipo = 'success') {
+      this.mensaje = texto
+      this.mensajeTipo = tipo
+      setTimeout(() => {
+        this.mensaje = ''
+      }, 3000)
+    },
+
     async cargarEmpresa() {
       try {
         console.log('🔍 Solicitando empresa registrada (si existe)...')
@@ -215,11 +226,13 @@ export default {
         if (this.modoRegistrar) {
           console.log('🆕 Registrando empresa:', this.empresa)
           await registrarEmpresa(this.empresa, this.archivoLogo)
-          alert('✅ Empresa registrada correctamente.')
+          // alert('✅ Empresa registrada correctamente.')
+          this.mostrarMensaje(`✅ Empresa registrada correctamente.`, 'success')
         } else {
           console.log('✏️ Actualizando empresa:', this.empresa)
           await actualizarEmpresa(this.empresa, this.archivoLogo)
-          alert('✅ Empresa actualizada correctamente.')
+          // alert('✅ Empresa actualizada correctamente.')
+          this.mostrarMensaje(`✅ Empresa actualizada correctamente.`, 'success')
         }
 
         this.mostrarConfirmacion = false
@@ -236,7 +249,8 @@ export default {
         this.modoActualizar = true
 
       } catch (error) {
-        alert(`❌ Error al guardar: ${error.message}`)
+        // alert(`❌ Error al guardar: ${error.message}`)
+        this.mostrarMensaje(`❌ Error al guardar: ${error.message}`, 'error')
       }
     },
 
@@ -536,5 +550,26 @@ export default {
 
 .volver-btn:hover {
   background: #5a6268;
+}
+
+.alerta {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  transition: opacity 0.3s ease;
+}
+
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 </style>
