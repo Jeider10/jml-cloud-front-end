@@ -2,29 +2,40 @@
 
 <template>
   <div class="dashboard-container">
-    <h1 class="welcome-text animate-rainbow-text">
-      ¡Bienvenido!
-    </h1>
+    <!-- 🔹 Loader mientras carga -->
+    <div v-if="loading" class="loading-state">
+      <p>Cargando información de la empresa...</p>
+      <div class="spinner"></div>
+    </div>
 
-    <h2 class="subtitle-text">Por favor, selecciona una opción del menú a la izquierda.</h2>
+    <!-- 🔹 Contenido principal -->
+    <div v-else class="dashboard-content fade-in">
+      <h1 class="welcome-text animate-rainbow-text">¡Bienvenido!</h1>
 
-    <!-- Mensaje dinámico desde configuración -->
-    <p class="description-text">
-      {{ mensajeEmpresa }}
-    </p>
+      <h2 class="subtitle-text">
+        Por favor, selecciona una opción del menú a la izquierda.
+      </h2>
 
-    <!-- Imagen dinámica -->
-    <img
-      :src="logoEmpresa || require('@/assets/img/Empresa.png')"
-      alt="Logo Empresa"
-      class="logo-empresa"
-    />
+      <!-- Mensaje dinámico -->
+      <p class="description-text">
+        {{ mensajeEmpresa }}
+      </p>
 
-    <!-- Footer -->
-    <footer class="page-footer">
-      <p>Copyright © 2025 Creative Tim</p>
-      <p>Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok</p>
-    </footer>
+      <!-- Imagen dinámica -->
+      <img
+        :src="logoEmpresa"
+        alt="Logo Empresa"
+        class="logo-empresa"
+      />
+
+      <!-- Footer -->
+      <footer class="page-footer">
+        <p>Copyright © 2025 Creative Tim</p>
+        <p>
+          Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok
+        </p>
+      </footer>
+    </div>
   </div>
 </template>
 
@@ -35,13 +46,15 @@ export default {
   name: "dashboard-page",
   data() {
     return {
-      mensajeEmpresa: 'Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.',
-      logoEmpresa: null
+      mensajeEmpresa: '',
+      logoEmpresa: null,
+      loading: true
     }
   },
   async mounted() {
     // 🔹 Cargar datos reales del backend al iniciar
     await this.cargarDatosEmpresa()
+    this.loading = false
 
     // 🔹 Escuchar evento global emitido desde ConfiguracionEmpresaView
     this._empresaUpdatedHandler = (e) => {
@@ -69,14 +82,22 @@ export default {
     async cargarDatosEmpresa() {
       try {
         const response = await obtenerPrimeraEmpresa()
-        if (response && response.data && response.data.length > 0) {
+        if (response?.data?.length > 0) {
           const empresa = response.data[0]
-          this.mensajeEmpresa = empresa.mensaje || this.mensajeEmpresa
+          this.mensajeEmpresa = empresa.mensaje || 'Bienvenido a nuestro sistema.'
           this.logoEmpresa = this.getLogoUrl(empresa.logo)
+        } else {
+          this.setDefaultValues()
         }
       } catch (error) {
         console.error('❌ Error al cargar datos de empresa:', error)
+        this.setDefaultValues('Error al cargar los datos de la empresa.')
       }
+    },
+
+    setDefaultValues(mensaje = 'Bienvenido a nuestro sistema...') {
+      this.mensajeEmpresa = mensaje
+      this.logoEmpresa = require('@/assets/img/Empresa.png')
     },
 
     getLogoUrl(path) {
@@ -106,6 +127,37 @@ export default {
   align-items: center; /* centra horizontalmente todo */
 }
 
+/* Loader */
+.loading-state {
+  text-align: center;
+  padding-top: 100px;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.spinner {
+  margin: 20px auto;
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Contenido con fade */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra horizontalmente todo el contenido */
+  width: 100%;
+}
+
+/* Texto */
 .welcome-text {
   text-align: center;
   font-size: 4rem;
@@ -137,6 +189,7 @@ export default {
   box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
 }
 
+/* Logo */
 .logo-empresa {
   display: block;
   margin: 20px auto 20px auto; /* ahora el espacio depende del contenido de arriba */
@@ -146,6 +199,7 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Footer */
 .page-footer {
   margin-top: auto; /* empuja el footer hacia abajo */
   text-align: center;
@@ -167,6 +221,16 @@ export default {
 
 .animate-rainbow-text {
   animation: rainbow-text 4s infinite linear;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 🔹 Ajustes para impresión */
