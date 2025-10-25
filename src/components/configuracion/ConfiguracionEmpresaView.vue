@@ -91,6 +91,13 @@
                     @click="cancelarEdicion">
                     🔙 Volver
             </button>
+
+            <!-- 🗑️ Botón de Eliminar -->
+            <button type="button"
+                    class="eliminar-btn"
+                    @click="mostrarConfirmacionEliminar = true">
+                    🗑️ Eliminar
+            </button>
           </div>
         </div>
       </div>
@@ -116,13 +123,25 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de confirmación para eliminar -->
+      <div v-if="mostrarConfirmacionEliminar" class="modal-overlay">
+        <div class="modal">
+          <h3>⚠️ Confirmación</h3>
+          <p>¿Seguro que deseas eliminar esta empresa?</p>
+          <div class="modal-buttons">
+            <button class="si-btn" @click="confirmarEliminar">Sí</button>
+            <button class="no-btn" @click="mostrarConfirmacionEliminar = false">No</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { obtenerPrimeraEmpresa, registrarEmpresa, actualizarEmpresa } from '@/services/apiConfigEmpresaService'
+import { obtenerPrimeraEmpresa, registrarEmpresa, actualizarEmpresa, eliminarEmpresa } from '@/services/apiConfigEmpresaService'
 
 export default {
   name: 'ConfiguracionEmpresaView',
@@ -135,6 +154,7 @@ export default {
       modoActualizar: false,
       modoEdicion: false,
       mostrarConfirmacion: false,
+      mostrarConfirmacionEliminar: false,
       empresa: {
         nic: '',
         nombreEmpresa: '',
@@ -217,10 +237,6 @@ export default {
       }
     },
 
-    activarEdicion() {
-      this.modoEdicion = true
-    },
-
     async confirmarGuardar() {
       try {
         if (this.modoRegistrar) {
@@ -252,6 +268,31 @@ export default {
         // alert(`❌ Error al guardar: ${error.message}`)
         this.mostrarMensaje(`❌ Error al guardar: ${error.message}`, 'error')
       }
+    },
+
+    async confirmarEliminar() {
+      try {
+        console.log('🗑️ Eliminando empresa con NIC:', this.empresa.nic)
+        await eliminarEmpresa(this.empresa.nic)
+        this.mostrarMensaje('✅ Empresa eliminada correctamente.', 'success')
+
+        // Reset de datos y estados
+        this.mostrarConfirmacionEliminar = false
+        this.modoActualizar = false
+        this.modoRegistrar = true
+        this.modoEdicion = false
+        this.limpiar()
+
+        // Actualizar vista y emitir evento global
+        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: null }))
+      } catch (error) {
+        console.error('❌ Error al eliminar empresa:', error)
+        this.mostrarMensaje(`❌ Error al eliminar: ${error.message}`, 'error')
+      }
+    },
+
+    activarEdicion() {
+      this.modoEdicion = true
     },
 
     limpiar() {
@@ -550,6 +591,21 @@ export default {
 
 .volver-btn:hover {
   background: #5a6268;
+}
+
+.eliminar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #e63946;
+  color: white;
+}
+
+.eliminar-btn:hover {
+  background-color: #c1121f;
 }
 
 .alerta {
