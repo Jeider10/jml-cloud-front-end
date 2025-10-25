@@ -27,17 +27,18 @@
         alt="Logo Empresa"
         class="logo-empresa"
       />
-
-      <!-- Footer -->
-      <footer class="page-footer">
-        <p>Copyright © 2025 Creative Tim</p>
-        <p>
-          Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok
-        </p>
-      </footer>
     </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>Copyright © 2025 Creative Tim</p>
+      <p>
+        Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok
+      </p>
+    </footer>
   </div>
 </template>
+
 
 <script>
 import { obtenerPrimeraEmpresa } from '@/services/apiConfigEmpresaService'
@@ -95,7 +96,7 @@ export default {
       }
     },
 
-    setDefaultValues(mensaje = 'Bienvenido a nuestro sistema...') {
+    setDefaultValues(mensaje = 'Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.') {
       this.mensajeEmpresa = mensaje
       this.logoEmpresa = require('@/assets/img/Empresa.png')
     },
