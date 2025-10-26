@@ -137,6 +137,9 @@
             <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
 
+            <!-- <td class="cantidad-cell">
+              <span>{{ item.cantidad }}</span> -->
+
             <td>{{ item.cantidad }}
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
               <div class="mini-controls no-print" v-if="ordenEstado === 'ABIERTA'">
@@ -1049,6 +1052,12 @@ input {
   border-radius: 4px;
   border: 1px solid #bbb;
   text-align: center;
+}
+
+.cantidad-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .delete-btn {
