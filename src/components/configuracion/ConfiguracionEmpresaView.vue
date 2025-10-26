@@ -259,6 +259,11 @@ export default {
         // 🔄 Recargar datos actualizados desde backend
         await this.cargarEmpresa()
 
+        // 🔁 Forzar refresco del logo (evitar caché del navegador)
+        if (this.empresa.logo && this.empresa.logo.startsWith('http')) {
+          this.empresa.logo = `${this.empresa.logo}?t=${new Date().getTime()}`
+        }
+
         // 📢 Nuevo: emitir evento global con la empresa actualizada
         window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
 
@@ -319,25 +324,30 @@ export default {
         this.archivoLogo = file
         const reader = new FileReader()
         reader.onload = e => {
-          this.empresa.logo = e.target.result
+          // Mostrar vista previa del logo nuevo (base64)
+          this.empresa.logo = e.target.result + '?t=' + new Date().getTime()
         }
         reader.readAsDataURL(file)
       }
     },
 
+    // 🔧 Ajuste importante: limpieza de espacios/comillas + soporte total S3
     getLogoUrl(path) {
       if (!path) {
         // Si no hay logo, muestra imagen por defecto
         return require('@/assets/img/Empresa.png')
       }
 
-      // Si ya es base64 o una URL completa, la usamos directamente
-      if (path.startsWith('http') || path.startsWith('data:')) {
-        return path
+      // 🔹 Limpiar comillas o espacios
+      const cleanPath = path.toString().trim().replace(/^"|"$/g, '')
+
+      // 🔹 Si es una URL completa (S3, etc.), la usamos directamente
+      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://') || cleanPath.startsWith('data:')) {
+        return cleanPath
       }
 
-      // Si es una ruta relativa (por ejemplo /uploads/logos/...), la completamos con el backend
-      return `${process.env.VUE_APP_AUTH_BASE_URL}${path}`
+      // 🔹 Si es una ruta relativa, la completamos con el backend (solo para antiguos logos)
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`
     },
 
     onLogoError(event) {
