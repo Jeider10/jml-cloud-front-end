@@ -137,10 +137,8 @@
             <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
 
-            <!-- <td class="cantidad-cell">
-              <span>{{ item.cantidad }}</span> -->
-
-            <td>{{ item.cantidad }}
+            <td class="cantidad-cell">
+              <span>{{ item.cantidad }}</span>
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
               <div class="mini-controls no-print" v-if="ordenEstado === 'ABIERTA'">
                 <input v-model.number="item.removeQty"
@@ -1039,9 +1037,16 @@ input {
   padding: 4px 0;
 }
 
+.cantidad-cell {
+  display: flex;
+  flex-direction: column; /* apila verticalmente */
+  align-items: center; /* alinea todo al inicio de la celda */
+  gap: 4px; /* espacio entre cantidad y controles */
+}
+
 .mini-controls {
   display: flex;
-  gap: 6px;
+  gap: 4px; /* espacio entre input y botón */
   align-items: center;
 }
 
@@ -1052,12 +1057,6 @@ input {
   border-radius: 4px;
   border: 1px solid #bbb;
   text-align: center;
-}
-
-.cantidad-cell {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .delete-btn {
