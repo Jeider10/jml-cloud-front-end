@@ -136,13 +136,8 @@
             <td>{{ item.codigo }}</td>
             <td>{{ item.producto }}</td>
             <td>{{ item.descripcion }}</td>
-            <td>{{ item.cantidad }}</td>
-            <td>{{ item.precio }}</td>
-            <td>{{ item.fechaCreacion }}</td>
-            <td class="no-print">{{ item.fechaActualizacion }}</td>
-            <td class="precio-total-cell">
-              <div class="total-value">{{ item.cantidad * item.precio }}</div>
 
+            <td>{{ item.cantidad }}
               <!-- Cuadrito para ingresar cantidad a eliminar y botón al lado -->
               <div class="mini-controls no-print" v-if="ordenEstado === 'ABIERTA'">
                 <input v-model.number="item.removeQty"
@@ -157,6 +152,13 @@
                         🗑️
                 </button>
               </div>
+            </td>
+
+            <td>{{ item.precio }}</td>
+            <td>{{ item.fechaCreacion }}</td>
+            <td class="no-print">{{ item.fechaActualizacion }}</td>
+            <td class="precio-total-cell">
+              {{ item.cantidad * item.precio }}
             </td>
           </tr>
 
@@ -1027,15 +1029,11 @@ input {
 }
 
 .precio-total-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.total-value {
+  background-color: white;
+  text-align: center;
   font-weight: 700;
   color: #0b3954;
+  padding: 4px 0;
 }
 
 .mini-controls {
