@@ -74,7 +74,7 @@
             <button type="button"
                     class="guardar-btn"
                     :disabled="!tieneTexto"
-                    @click="mostrarConfirmacion = true">
+                    @click="mostrarConfirmacionGuardar = true">
                     💾 Guardar
             </button>
 
@@ -114,13 +114,13 @@
       </div>
 
       <!-- Modal de confirmación -->
-      <div v-if="mostrarConfirmacion" class="modal-overlay">
+      <div v-if="mostrarConfirmacionGuardar" class="modal-overlay">
         <div class="modal">
           <h3>⚠️ Confirmación</h3>
           <p>¿Deseas guardar los datos de la empresa?</p>
           <div class="modal-buttons">
             <button class="si-btn" @click="confirmarGuardar">Sí</button>
-            <button class="no-btn" @click="mostrarConfirmacion = false">No</button>
+            <button class="no-btn" @click="mostrarConfirmacionGuardar = false">No</button>
           </div>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default {
       modoRegistrar: false,
       modoActualizar: false,
       modoEdicion: false,
-      mostrarConfirmacion: false,
+      mostrarConfirmacionGuardar: false,
       mostrarConfirmacionEliminar: false,
       empresa: {
         nit: '',
@@ -252,7 +252,7 @@ export default {
           this.mostrarMensaje(`✅ Empresa actualizada correctamente.`, 'success')
         }
 
-        this.mostrarConfirmacion = false
+        this.mostrarConfirmacionGuardar = false
         this.modoEdicion = false
         this.archivoLogo = null
 
@@ -336,12 +336,22 @@ export default {
       // 🔹 Limpiar comillas o espacios
       const cleanPath = path.toString().trim().replace(/(^"|"$)/g, '')
 
-      // 🔹 Si es una URL completa (S3, etc.), la usamos directamente
-      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://') || cleanPath.startsWith('data:')) {
+      // 🔹 Si es una URL completa (S3 u otra), úsala directamente
+      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
         return cleanPath
       }
 
-      // 🔹 Si es una ruta relativa, la completamos con el backend (solo para antiguos logos)
+      // 🔹 Si ya viene con formato data:image/... (Base64 con prefijo)
+      if (cleanPath.startsWith('data:image')) {
+        return cleanPath
+      }
+
+      // 🔹 Si es Base64 puro (sin prefijo), agregamos el tipo MIME más común (png)
+      if (/^[A-Za-z0-9+/=]+$/.test(cleanPath)) {
+        return `data:image/png;base64,${cleanPath}`
+      }
+
+      // 🔹 Si es una ruta relativa (casos antiguos o locales)
       return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`
     },
 
