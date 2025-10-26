@@ -267,6 +267,7 @@ export default {
 
       } catch (error) {
         // alert(`❌ Error al guardar: ${error.message}`)
+        this.mostrarConfirmacionGuardar = false
         this.mostrarMensaje(`❌ Error al guardar: ${error.message}`, 'error')
       }
     },
@@ -288,6 +289,7 @@ export default {
         window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: null }))
       } catch (error) {
         console.error('❌ Error al eliminar empresa:', error)
+        this.mostrarConfirmacionEliminar = false
         this.mostrarMensaje(`❌ Error al eliminar: ${error.message}`, 'error')
       }
     },
@@ -316,6 +318,21 @@ export default {
     onImageChange(event) {
       const file = event.target.files[0]
       if (file) {
+        // 🔹 Tamaño máximo permitido (10 MB, igual que en backend)
+        const MAX_SIZE_BYTES = 10 * 1024 * 1024
+
+        if (file.size > MAX_SIZE_BYTES) {
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(2)
+          const maxMB = (MAX_SIZE_BYTES / (1024 * 1024)).toFixed(2)
+          this.mostrarMensaje(`❌ La imagen supera el tamaño permitido (${sizeMB} MB > ${maxMB} MB)`, 'error')
+
+          // Limpiar archivo seleccionado para evitar envío
+          this.archivoLogo = null
+          this.empresa.logo = ''
+
+          return
+        }
+
         this.archivoLogo = file
         const reader = new FileReader()
         reader.onload = e => {
