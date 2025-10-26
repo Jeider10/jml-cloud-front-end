@@ -259,11 +259,6 @@ export default {
         // 🔄 Recargar datos actualizados desde backend
         await this.cargarEmpresa()
 
-        // 🔁 Forzar refresco del logo (evitar caché del navegador)
-        if (this.empresa.logo && this.empresa.logo.startsWith('http')) {
-          this.empresa.logo = `${this.empresa.logo}?t=${new Date().getTime()}`
-        }
-
         // 📢 Nuevo: emitir evento global con la empresa actualizada
         window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
 
@@ -325,7 +320,7 @@ export default {
         const reader = new FileReader()
         reader.onload = e => {
           // Mostrar vista previa del logo nuevo (base64)
-          this.empresa.logo = e.target.result + '?t=' + new Date().getTime()
+          this.empresa.logo = e.target.result
         }
         reader.readAsDataURL(file)
       }
@@ -339,7 +334,7 @@ export default {
       }
 
       // 🔹 Limpiar comillas o espacios
-      const cleanPath = path.toString().trim().replace(/^"|"$/g, '')
+      const cleanPath = path.toString().trim().replace(/(^"|"$)/g, '')
 
       // 🔹 Si es una URL completa (S3, etc.), la usamos directamente
       if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://') || cleanPath.startsWith('data:')) {
