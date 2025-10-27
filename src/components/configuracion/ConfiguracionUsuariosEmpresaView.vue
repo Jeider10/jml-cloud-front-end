@@ -11,7 +11,7 @@
         <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
       </div>
 
-      <!-- Tabla de datos -->
+      <!-- Tabla de Roles -->
       <table v-if="vistaActual === 'roles'" class="tabla">
         <thead>
           <tr>
@@ -20,19 +20,28 @@
             <th>Descripción</th>
             <th>Fecha Creación</th>
             <th>Fecha Actualización</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in roles" :key="r.roleCode">
+          <tr v-for="(r, idx) in roles" :key="r.roleCode">
             <td>{{ r.roleCode }}</td>
             <td>{{ r.roleName }}</td>
             <td>{{ r.descripcion || '-' }}</td>
             <td>{{ r.fechaCreacion || '-' }}</td>
             <td>{{ r.fechaActualizacion || '-' }}</td>
+            <td>
+              <button class="update-btn" @click="abrirActualizarRol(r)">✏️</button>
+              <button class="delete-btn" @click="confirmarEliminarRol(idx)">🗑️</button>
+            </td>
+          </tr>
+          <tr v-if="roles.length === 0">
+            <td colspan="6" class="empty-row">No hay roles registrados.</td>
           </tr>
         </tbody>
       </table>
 
+      <!-- Tabla de Usuarios -->
       <table v-else class="tabla">
         <thead>
           <tr>
@@ -46,10 +55,11 @@
             <th>Dirección</th>
             <th>Creación</th>
             <th>Actualización</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="u in usuarios" :key="u.identificacion">
+          <tr v-for="(u, idx) in usuarios" :key="u.identificacion">
             <td>{{ u.identificacion }}</td>
             <td>{{ u.nombres }}</td>
             <td>{{ u.apellidos }}</td>
@@ -60,6 +70,13 @@
             <td>{{ u.direccion }}</td>
             <td>{{ u.fechaCreacion || '-' }}</td>
             <td>{{ u.fechaActualizacion || '-' }}</td>
+            <td>
+              <button class="update-btn" @click="abrirActualizarUsuario(u)">✏️</button>
+              <button class="delete-btn" @click="confirmarEliminarUsuario(idx)">🗑️</button>
+            </td>
+          </tr>
+          <tr v-if="usuarios.length === 0">
+            <td colspan="11" class="empty-row">No hay usuarios registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -118,6 +135,24 @@ export default {
         this.$router.push('/registro/roles')
       } else {
         this.$router.push('/registro/usuarios')
+      }
+    },
+    abrirActualizarUsuario(usuario) {
+      this.$router.push({ path: `/actualizar-usuario/${usuario.identificacion}` })
+    },
+    abrirActualizarRol(rol) {
+      this.$router.push({ path: `/actualizar-rol/${rol.roleCode}` })
+    },
+    confirmarEliminarUsuario(idx) {
+      const u = this.usuarios[idx]
+      if (confirm(`¿Desea eliminar al usuario ${u.nombres} ${u.apellidos}?`)) {
+        this.usuarios.splice(idx, 1)
+      }
+    },
+    confirmarEliminarRol(idx) {
+      const r = this.roles[idx]
+      if (confirm(`¿Desea eliminar el rol ${r.roleName}?`)) {
+        this.roles.splice(idx, 1)
       }
     }
   }
@@ -192,5 +227,42 @@ export default {
 }
 .registrar-btn:hover {
   background: #0056b3;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background: #0077b6;
+  color: white;
+}
+
+.update-btn, .delete-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  margin: 0 4px;
+}
+
+.update-btn:hover {
+  color: #0077b6;
+}
+
+.delete-btn:hover {
+  color: #e63946;
+}
+
+.empty-row {
+  text-align: center;
+  color: #777;
 }
 </style>

@@ -20,6 +20,8 @@ import ConfiguracionEmpresaView from '@/components/configuracion/ConfiguracionEm
 import ConfiguracionUsuariosEmpresaView from '@/components/configuracion/ConfiguracionUsuariosEmpresaView.vue'
 import ConfiguracionRegistroRolesView from '@/components/configuracion/ConfiguracionRegistroRolesView.vue'
 import ConfiguracionRegistroUsuariosView from '@/components/configuracion/ConfiguracionRegistroUsuariosView.vue'
+import ConfiguracionActualizarUsuarioView from '@/components/configuracion/ConfiguracionActualizarUsuarioView.vue'
+import ConfiguracionActualizarRoleView from '@/components/configuracion/ConfiguracionActualizarRoleView.vue'
 
 const routes = [
   {
@@ -123,6 +125,18 @@ const routes = [
     path: '/registro/usuarios',
     name: 'ConfiguracionRegistroUsuariosView',
     component: ConfiguracionRegistroUsuariosView
+  },
+  {
+    path: '/actualizar/usuarios/:identificacion',
+    name: 'ConfiguracionActualizarUsuarioView',
+    component: ConfiguracionActualizarUsuarioView,
+    props: true   // 👈 Esto hace que "identificacion" llegue como prop
+  },
+  {
+    path: '/actualizar-roles/:roleCode',
+    name: 'ConfiguracionActualizarRoleView',
+    component: ConfiguracionActualizarRoleView,
+    props: true   // 👈 Esto hace que "roleCode" llegue como prop
   },
 ];
 
