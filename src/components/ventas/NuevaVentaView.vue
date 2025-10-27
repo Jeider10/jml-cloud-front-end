@@ -327,7 +327,8 @@ export default {
 
   mounted() {
     // 🔹 Cargar todas las ordenes abiertas desde backend al iniciar
-    // this.cargarOrdenesFiltradas()
+    this.filtroEstado = 'ABIERTA'
+    this.cargarOrdenesFiltradas()
   },
 
   methods: {
