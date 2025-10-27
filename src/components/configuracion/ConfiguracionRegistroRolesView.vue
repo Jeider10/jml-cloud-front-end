@@ -80,7 +80,7 @@ export default {
       setTimeout(() => {
         this.mensaje = ''
         if (tipo === 'success') {
-          this.$router.push('/configuracion/usuarios-empresa')
+          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
         }
       }, 2500)
     },

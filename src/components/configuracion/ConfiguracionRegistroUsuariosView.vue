@@ -24,6 +24,12 @@
           <label>Apellidos</label>
           <input v-model="usuarioForm.apellidos" type="text" />
 
+          <label>Usuario</label>
+          <input v-model="usuarioForm.userName" type="text" />
+
+          <label>Contraseña</label>
+          <input v-model="usuarioForm.password" type="text" />
+
           <label>Correo</label>
           <input v-model="usuarioForm.email" type="email" />
 
@@ -34,7 +40,7 @@
           <input v-model="usuarioForm.direccion" type="text" />
 
           <label>Rol</label>
-          <select v-model="usuarioForm.rolId">
+          <select v-model="usuarioForm.roleCode">
             <option disabled value="">Seleccione un rol</option>
             <option v-for="r in roles" :key="r.roleCode" :value="r.roleCode">{{ r.roleName }}</option>
           </select>
@@ -79,10 +85,12 @@ export default {
         identificacion: '',
         nombres: '',
         apellidos: '',
+        userName: '',
+        password: '',
         email: '',
         telefono: '',
         direccion: '',
-        rolId: ''
+        roleCode: ''
       },
       roles: [],
       mensaje: '',
@@ -108,12 +116,12 @@ export default {
       setTimeout(() => {
         this.mensaje = ''
         if (tipo === 'success') {
-          this.$router.push('/configuracion/usuarios-empresa')
+          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
         }
       }, 2500)
     },
     async registrarUsuario() {
-      if (!this.usuarioForm.identificacion || !this.usuarioForm.nombres || !this.usuarioForm.rolId) {
+      if (!this.usuarioForm.identificacion || !this.usuarioForm.nombres || !this.usuarioForm.userName || !this.usuarioForm.password || !this.usuarioForm.roleCode) {
         this.mostrarMensaje('⚠️ Complete los campos obligatorios.', 'error')
         return
       }
@@ -136,10 +144,12 @@ export default {
         identificacion: '',
         nombres: '',
         apellidos: '',
+        userName: '',
+        password: '',
         email: '',
         telefono: '',
         direccion: '',
-        rolId: ''
+        roleCode: ''
       }
     },
     volverAConfiguracion() {

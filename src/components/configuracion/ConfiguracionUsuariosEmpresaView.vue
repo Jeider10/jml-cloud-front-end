@@ -17,6 +17,7 @@
           <tr>
             <th>Código</th>
             <th>Nombre</th>
+            <th>Descripción</th>
             <th>Fecha Creación</th>
             <th>Fecha Actualización</th>
           </tr>
@@ -25,6 +26,7 @@
           <tr v-for="r in roles" :key="r.roleCode">
             <td>{{ r.roleCode }}</td>
             <td>{{ r.roleName }}</td>
+            <td>{{ r.descripcion || '-' }}</td>
             <td>{{ r.fechaCreacion || '-' }}</td>
             <td>{{ r.fechaActualizacion || '-' }}</td>
           </tr>
