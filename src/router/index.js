@@ -18,6 +18,8 @@ import ActualizarProductosView from '@/components/productos/ActualizarProductosV
 import HistorialVentasView from '@/components/ventas/HistorialVentasView.vue'
 import ConfiguracionEmpresaView from '@/components/configuracion/ConfiguracionEmpresaView.vue'
 import ConfiguracionUsuariosEmpresaView from '@/components/configuracion/ConfiguracionUsuariosEmpresaView.vue'
+import ConfiguracionRegistroRolesView from '@/components/configuracion/ConfiguracionRegistroRolesView.vue'
+import ConfiguracionRegistroUsuariosView from '@/components/configuracion/ConfiguracionRegistroUsuariosView.vue'
 
 const routes = [
   {
@@ -108,9 +110,19 @@ const routes = [
     component: ConfiguracionEmpresaView
   },
   {
-    path: '/registrar-usuario-empresa',
+    path: '/configuracion-empresa-usuario',
     name: 'ConfiguracionUsuariosEmpresaView',
     component: ConfiguracionUsuariosEmpresaView
+  },
+  {
+    path: '/registro/roles',
+    name: 'ConfiguracionRegistroRolesView',
+    component: ConfiguracionRegistroRolesView
+  },
+  {
+    path: '/registro/usuarios',
+    name: 'ConfiguracionRegistroUsuariosView',
+    component: ConfiguracionRegistroUsuariosView
   },
 ];
 
