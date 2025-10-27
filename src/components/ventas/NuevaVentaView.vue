@@ -279,7 +279,8 @@ export default {
       ordenSeleccionada: null, // Número de orden activa seleccionada
       ordenCargada: false, // Indica si se seleccionó una orden para mostrar detalles
       clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
-      empleadoEncontrado: false  // ✅ agregado para consistencia
+      empleadoEncontrado: false,  // ✅ agregado para consistencia
+      empleadosFiltrados: [],
     }
   },
 
@@ -495,51 +496,118 @@ export default {
 
     // 🔹 Buscar Empleado por identificación
     async buscarEmpleadoPorIdentificacionHandler() {
-      if (!this.empleado.identificacion || this.empleado.identificacion.trim() === '') {
+      const texto = this.empleado.identificacion?.trim()
+
+      if (!texto) {
         this.mostrarMensaje('Ingrese una identificación del empleado.', 'error')
         return
       }
+
       try {
-        const response = await buscarEmpleadoPorIdentificacion(Number(this.empleado.identificacion))
-        const empleado = response.data
-        if (empleado) {
-          this.empleado.nombres = empleado.nombres || ''
-          this.empleadoEncontrado = true   // ✅ corregido
-          this.mostrarMensaje(`✅ Empleado encontrado: ${empleado.nombres}`, 'success')
+        // Llamada al servicio
+        const response = await buscarEmpleadoPorIdentificacion(Number(texto))
+        const data = response.data
+
+        // Backend puede devolver objeto simple o null
+        if (data) {
+          this.empleadosFiltrados = [data] // siempre lo guardamos como array
+          this.empleadoEncontrado = true
+          this.mostrarMensaje(`✅ Empleado encontrado: ${data.nombres || ''} ${data.apellidos || ''}`, 'success')
         } else {
+          // No hay empleado
+          this.empleadosFiltrados = []
           this.empleadoEncontrado = false
-          this.mostrarMensaje('❌ Empleado no encontrado.', 'error')
+          this.mostrarMensaje('⚠️ Empleado no encontrado.', 'warning')
         }
       } catch (error) {
         console.error('❌ Error al buscar Empleado por identificación:', error)
-        this.mostrarMensaje('Error en búsqueda de Empleado por identificación.', 'error')
-        this.empleadoEncontrado = false   // ✅ corregido
+
+        // Si el backend devuelve null inesperado, tratamos como "no encontrado"
+        if (error.message?.includes('Cannot invoke')) {
+          this.empleadosFiltrados = []
+          this.empleadoEncontrado = false
+          this.mostrarMensaje('⚠️ Empleado no encontrado.', 'warning')
+        } else if (error.message?.includes('404')) {
+          this.empleadosFiltrados = []
+          this.empleadoEncontrado = false
+          this.mostrarMensaje('⚠️ Empleado no encontrado.', 'warning')
+        } else {
+          this.empleadosFiltrados = []
+          this.empleadoEncontrado = false
+          this.mostrarMensaje(error.message || '❌ Error en búsqueda de empleado.', 'error')
+        }
       }
     },
 
-    // 🔹 Buscar Empleado por nombre
+    // 🔹 Buscar Empleado por nombres
     async buscarEmpleadoPorNombreHandler() {
-      if (!this.empleado.nombres || this.empleado.nombres.trim() === '') {   // ✅ corregido (antes usaba cliente)
-        this.mostrarMensaje('Ingrese un nombre de Empleado.', 'error')
+      const texto = this.empleado.nombres?.trim()
+
+      if (!texto) {
+        this.mostrarMensaje('Ingrese un nombre de empleado.', 'error')
         return
       }
+
       try {
-        const response = await buscarEmpleadoPorNombres(this.empleado.nombres)  // ✅ corregido (antes usaba cliente)
-        const empleados = response.data
-        if (empleados && empleados.length > 0) {
-          // Tomamos el primero por simplicidad
-          const empleado = empleados[0]
-          this.empleado.identificacion = empleado.identificacion || ''
-          this.empleadoEncontrado = true
-          this.mostrarMensaje(`✅ Empleado encontrado: ${empleado.nombres}`, 'success')
-        } else {
-          this.empleadoEncontrado = false
-          this.mostrarMensaje('❌ No se encontraron empleados con ese nombre.', 'error')
+        const response = await buscarEmpleadoPorNombres(texto)
+        const data = response.data
+
+        // Normalizar: puede venir array, objeto o null
+        let empleadoEncontradoObj = null
+        if (Array.isArray(data) && data.length > 0 && data[0]) {
+          empleadoEncontradoObj = data[0]
+        } else if (data && typeof data === 'object') {
+          empleadoEncontradoObj = data
         }
+
+        // Consideramos "encontrado" solo si hay al menos un campo útil
+        const tieneCamposUtiles = empleadoEncontradoObj &&
+          (empleadoEncontradoObj.identificacion || empleadoEncontradoObj.nombres || empleadoEncontradoObj.apellidos)
+
+        if (tieneCamposUtiles) {
+          // Normalizar valores para evitar undefined
+          const identificacion = empleadoEncontradoObj.identificacion ?? ''
+          const nombres = empleadoEncontradoObj.nombres ?? ''
+          const apellidos = empleadoEncontradoObj.apellidos ?? ''
+
+          // Guardar como array para la UI (coherente con la otra búsqueda)
+          this.empleadosFiltrados = [empleadoEncontradoObj]
+
+          // Asignar al formulario
+          this.empleado.identificacion = identificacion
+          this.empleado.nombres = nombres
+          this.empleado.apellidos = apellidos
+          this.empleadoEncontrado = true
+
+          this.mostrarMensaje(`✅ Empleado encontrado: ${nombres} ${apellidos}`.trim(), 'success')
+        } else {
+          // No hay empleado válido
+          this.empleadosFiltrados = []
+          this.empleado.identificacion = ''
+          this.empleado.nombres = ''
+          this.empleado.apellidos = ''
+          this.empleadoEncontrado = false
+          this.mostrarMensaje('⚠️ No se encontraron empleados con ese nombre.', 'warning')
+        }
+
       } catch (error) {
         console.error('❌ Error al buscar empleado por nombre:', error)
-        this.mostrarMensaje('Error en búsqueda de empleado por nombre.', 'error')
-        this.empleadoEncontrado = false   // ✅ corregido
+
+        // Limpieza del estado
+        this.empleadosFiltrados = []
+        this.empleado.identificacion = ''
+        this.empleado.nombres = ''
+        this.empleado.apellidos = ''
+        this.empleadoEncontrado = false
+
+        // Si el backend lanzó un NullPointer o devolvió null tratado como excepción
+        if (error.message?.includes('Cannot invoke') || error.message?.includes('null')) {
+          this.mostrarMensaje('⚠️ No se encontraron empleados con ese nombre.', 'warning')
+        } else if (error.message?.includes('404')) {
+          this.mostrarMensaje('⚠️ No se encontraron empleados con ese nombre.', 'warning')
+        } else {
+          this.mostrarMensaje(error.message || '❌ Error en búsqueda de empleado por nombre.', 'error')
+        }
       }
     },
 
