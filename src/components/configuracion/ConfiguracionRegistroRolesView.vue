@@ -107,7 +107,7 @@ export default {
       this.roleForm = { roleCode: '', roleName: '', descripcion: '' }
     },
     volverAConfiguracion() {
-      this.$router.push('/configuracion-empresa-usuario')
+      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
     }
   }
 }

@@ -143,7 +143,7 @@ export default {
       }
     },
     volverAConfiguracion() {
-      this.$router.push('/configuracion-empresa-usuario')
+      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
     }
   }
 }

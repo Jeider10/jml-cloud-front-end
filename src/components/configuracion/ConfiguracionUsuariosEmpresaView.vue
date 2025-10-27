@@ -3,12 +3,12 @@
   <div class="configuracion-empresa-wrapper">
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />
     <div :class="['main-content', { expanded: menuOpen }]">
-      <h1 class="titulo">Administración de Roles y Usuarios</h1>
+      <h1 class="titulo">Administración de Usuarios y Roles</h1>
 
       <!-- Selector -->
       <div class="switch-view">
-        <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
         <button :class="{ activo: vistaActual === 'usuarios' }" @click="cambiarVista('usuarios')">👤 Usuarios</button>
+        <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
       </div>
 
       <!-- Tabla de datos -->
@@ -34,8 +34,10 @@
       <table v-else class="tabla">
         <thead>
           <tr>
-            <th>Usuario</th>
             <th>Identificación</th>
+            <th>Nombres</th>
+            <th>Apellidos</th>
+            <th>Usuario</th>
             <th>Rol</th>
             <th>Email</th>
             <th>Teléfono</th>
@@ -46,8 +48,10 @@
         </thead>
         <tbody>
           <tr v-for="u in usuarios" :key="u.identificacion">
-            <td>{{ u.userName }}</td>
             <td>{{ u.identificacion }}</td>
+            <td>{{ u.nombres }}</td>
+            <td>{{ u.apellidos }}</td>
+            <td>{{ u.userName }}</td>
             <td>{{ u.roleName }}</td>
             <td>{{ u.email }}</td>
             <td>{{ u.telefono }}</td>
@@ -61,7 +65,7 @@
       <!-- Botón de registro -->
       <div class="acciones">
         <button class="registrar-btn" @click="irARegistro">
-          ➕ Registrar {{ vistaActual === 'roles' ? 'Rol' : 'Usuario' }}
+          ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
         </button>
       </div>
     </div>
@@ -79,12 +83,18 @@ export default {
   data() {
     return {
       menuOpen: true,
-      vistaActual: 'roles',
+      vistaActual: 'usuarios',
       roles: [],
       usuarios: []
     }
   },
   async mounted() {
+    const vista = this.$route.query.vista
+    if (vista === 'roles' || vista === 'usuarios') {
+        this.vistaActual = vista
+    } else {
+        this.vistaActual = 'usuarios'
+    }
     await this.cargarDatos()
   },
   methods: {
