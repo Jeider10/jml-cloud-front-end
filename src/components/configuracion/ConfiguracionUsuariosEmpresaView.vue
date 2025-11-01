@@ -32,8 +32,8 @@
             <td>{{ r.fechaCreacion || '-' }}</td>
             <td>{{ r.fechaActualizacion || '-' }}</td>
             <td>
-              <button class="update-btn" @click="abrirActualizarRol(r)">✏️</button>
-              <button class="delete-btn" @click="confirmarEliminarRol(idx)">🗑️</button>
+              <button class="update-btn" @click="abrirConfirmacionActualizarRol(r)">✏️</button>
+              <button class="delete-btn" @click="abrirConfirmacionEliminarRol(idx)">🗑️</button>
             </td>
           </tr>
           <tr v-if="roles.length === 0">
@@ -72,8 +72,8 @@
             <td>{{ u.fechaCreacion || '-' }}</td>
             <td>{{ u.fechaActualizacion || '-' }}</td>
             <td>
-              <button class="update-btn" @click="abrirActualizarUsuario(u)">✏️</button>
-              <button class="delete-btn" @click="confirmarEliminarUsuario(idx)">🗑️</button>
+              <button class="update-btn" @click="abrirConfirmacionActualizarUsuario(u)">✏️</button>
+              <button class="delete-btn" @click="abrirConfirmacionEliminarUsuario(idx)">🗑️</button>
             </td>
           </tr>
           <tr v-if="usuarios.length === 0">
@@ -87,6 +87,30 @@
         <button class="registrar-btn" @click="irARegistro">
           ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
         </button>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación para actualización -->
+    <div v-if="mostrarConfirmacionActualizar" class="modal-overlay">
+      <div class="modal">
+        <h3>⚠️ Confirmación</h3>
+        <p>¿Deseas actualizar este {{ vistaActual === 'usuarios' ? 'usuario' : 'rol' }}?</p>
+        <div class="modal-buttons">
+          <button class="si-btn" @click="confirmarActualizar">Sí</button>
+          <button class="no-btn" @click="cerrarModalActualizar">No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminación -->
+    <div v-if="mostrarConfirmacionEliminar" class="modal-overlay">
+      <div class="modal">
+        <h3>⚠️ Confirmación</h3>
+        <p>¿Seguro que deseas eliminar este {{ vistaActual === 'usuarios' ? 'usuario' : 'rol' }}?</p>
+        <div class="modal-buttons">
+          <button class="si-btn" @click="confirmarEliminar">Sí</button>
+          <button class="no-btn" @click="cerrarModalEliminar">No</button>
+        </div>
       </div>
     </div>
   </div>
@@ -105,7 +129,12 @@ export default {
       menuOpen: true,
       vistaActual: 'usuarios',
       roles: [],
-      usuarios: []
+      usuarios: [],
+      mostrarConfirmacionActualizar: false,
+      mostrarConfirmacionEliminar: false,
+      usuarioSeleccionado: null,
+      rolSeleccionado: null,
+      indiceSeleccionado: null
     }
   },
 
@@ -152,42 +181,69 @@ export default {
       }
     },
 
-    abrirActualizarUsuario(usuario) {
-      this.$router.push({
-        name: 'ConfiguracionActualizarUsuarioView',
-        params: { identificacion: usuario.identificacion }
-      })
+    // 🔹 Abrir modal de confirmación para actualización
+    abrirConfirmacionActualizarUsuario(usuario) {
+      this.usuarioSeleccionado = usuario
+      this.mostrarConfirmacionActualizar = true
     },
 
-    abrirActualizarRol(rol) {
-      this.$router.push({ path: `/actualizar-rol/${rol.roleCode}` })
+    abrirConfirmacionActualizarRol(rol) {
+      this.rolSeleccionado = rol
+      this.mostrarConfirmacionActualizar = true
     },
 
-    async confirmarEliminarUsuario(idx) {
-      const usuario = this.usuarios[idx]
-      const confirmado = confirm(`⚠️ ¿Desea eliminar al usuario ${usuario.nombres} ${usuario.apellidos}?`)
-
-      if (!confirmado) return
-
-      try {
-        // Llama al backend
-        await eliminarUsuario(usuario.identificacion)
-        // alert(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
-        this.mostrarMensaje(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`, 'success')
-
-        // Elimina localmente de la lista
-        this.usuarios.splice(idx, 1)
-      } catch (error) {
-        console.error('❌ Error al eliminar usuario:', error)
-        alert(`❌ Error al eliminar usuario: ${error.message}`)
+    confirmarActualizar() {
+      if (this.vistaActual === 'usuarios' && this.usuarioSeleccionado) {
+        this.$router.push({
+          name: 'ConfiguracionActualizarUsuarioView',
+          params: { identificacion: this.usuarioSeleccionado.identificacion }
+        })
+      } else if (this.vistaActual === 'roles' && this.rolSeleccionado) {
+        this.$router.push({ path: `/actualizar-rol/${this.rolSeleccionado.roleCode}` })
       }
+      this.cerrarModalActualizar()
     },
 
-    confirmarEliminarRol(idx) {
-      const r = this.roles[idx]
-      if (confirm(`¿Desea eliminar el rol ${r.roleName}?`)) {
-        this.roles.splice(idx, 1)
+    cerrarModalActualizar() {
+      this.mostrarConfirmacionActualizar = false
+      this.usuarioSeleccionado = null
+      this.rolSeleccionado = null
+    },
+
+    // 🔹 Abrir modal de confirmación para eliminación
+    abrirConfirmacionEliminarUsuario(idx) {
+      this.indiceSeleccionado = idx
+      this.mostrarConfirmacionEliminar = true
+    },
+
+    abrirConfirmacionEliminarRol(idx) {
+      this.indiceSeleccionado = idx
+      this.mostrarConfirmacionEliminar = true
+    },
+
+    async confirmarEliminar() {
+      if (this.vistaActual === 'usuarios') {
+        const usuario = this.usuarios[this.indiceSeleccionado]
+        try {
+          await eliminarUsuario(usuario.identificacion)
+          // alert(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
+          this.mostrarMensaje(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
+          this.usuarios.splice(this.indiceSeleccionado, 1)
+        } catch (error) {
+          alert(`❌ Error al eliminar usuario: ${error.message}`)
+        }
+      } else {
+        // const rol = this.roles[this.indiceSeleccionado]
+        this.roles.splice(this.indiceSeleccionado, 1)
+        // alert(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
+        this.mostrarMensaje('✅ Rol "${rol.roleName}" eliminado correctamente.')
       }
+      this.cerrarModalEliminar()
+    },
+
+    cerrarModalEliminar() {
+      this.mostrarConfirmacionEliminar = false
+      this.indiceSeleccionado = null
     }
   }
 }
@@ -198,6 +254,7 @@ export default {
 .configuracion-empresa-wrapper {
   display: flex;
 }
+
 .main-content {
   position: absolute;
   top: 0;
@@ -208,21 +265,25 @@ export default {
   background-color: #d4f8e8;
   transition: left 0.5s ease;
 }
+
 .main-content.expanded {
   left: 220px;
 }
+
 .titulo {
   font-size: 1.8rem;
   font-weight: bold;
   margin-bottom: 20px;
   text-align: center;
 }
+
 .switch-view {
   display: flex;
   justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
 }
+
 .switch-view button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -231,37 +292,17 @@ export default {
   cursor: pointer;
   font-weight: bold;
 }
+
 .switch-view button.activo {
   background: #28a745;
   color: white;
 }
+
 .tabla {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
-}
-.tabla th, .tabla td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
-}
-.tabla th {
-  background-color: #28a745;
-  color: white;
-}
-.acciones {
-  text-align: center;
-}
-.registrar-btn {
-  background: #007bff;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.registrar-btn:hover {
-  background: #0056b3;
+  margin-top: 20px;
 }
 
 .tabla {
@@ -270,7 +311,13 @@ export default {
   margin-top: 20px;
 }
 
-th, td {
+th {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+td {
   border: 1px solid #ccc;
   padding: 8px;
   text-align: center;
@@ -279,6 +326,40 @@ th, td {
 th {
   background: #0077b6;
   color: white;
+}
+
+.tabla th {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+.tabla td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+.tabla th {
+  background-color: #28a745;
+  color: white;
+}
+
+.acciones {
+  text-align: center;
+}
+
+.registrar-btn {
+  background: #007bff;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.registrar-btn:hover {
+  background: #0056b3;
 }
 
 .update-btn, .delete-btn {
@@ -300,4 +381,64 @@ th {
   text-align: center;
   color: #777;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  width: 350px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.modal h3 {
+  margin-bottom: 15px;
+  color: #e67e22;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.si-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.no-btn {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.si-btn:hover {
+  background-color: #1e8449;
+}
+
+.no-btn:hover {
+  background-color: #922b21;
+}
+
 </style>
