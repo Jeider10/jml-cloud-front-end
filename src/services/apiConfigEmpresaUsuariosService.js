@@ -40,6 +40,18 @@ export const registrarUsuario = (usuario) => apiConfigEmpresaUsuario.post('/usua
 // Búsqueda de usuario por identificación
 export const buscarUsuarioPorIdentificacion = (identificacion) => apiConfigEmpresaUsuario.get('/usuario/identificacion', { params: { identificacion } })
 
+// Buscar por userName
+export const buscarUsuarioPorUserName = (userName) => apiConfigEmpresaUsuario.get('/usuario/userName', { params: { userName } })
+
+// Buscar por nombres
+export const buscarUsuarioPorNombres = (nombres) => apiConfigEmpresaUsuario.get('/usuario/nombres', { params: { nombres } })
+
+// Buscar por apellidos
+export const buscarUsuarioPorApellidos = (apellidos) => apiConfigEmpresaUsuario.get('/usuario/apellidos', { params: { apellidos } })
+
+// Buscar por roleName
+export const buscarUsuarioPorRoleName = (roleName) => apiConfigEmpresaUsuario.get('/usuario/roleName', { params: { roleName } })
+
 // Actualizar usuario
 export const actualizarUsuario = (usuario) => apiConfigEmpresaUsuario.put('/usuario/update', usuario)
 

@@ -180,7 +180,15 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { listarRoles, eliminarRole } from '@/services/apiConfigEmpresaRolesService'
-import { listarUsuarios, eliminarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
+import {
+  buscarUsuarioPorIdentificacion,
+  listarUsuarios,
+  eliminarUsuario,
+  buscarUsuarioPorUserName,
+  buscarUsuarioPorNombres,
+  buscarUsuarioPorApellidos,
+  buscarUsuarioPorRoleName
+} from '@/services/apiConfigEmpresaUsuariosService'
 
 export default {
   name: 'ConfiguracionUsuariosEmpresaView',
@@ -245,20 +253,50 @@ export default {
     },
 
     // 🔍 Filtrar según tipo y término
-    filtrarDatos() {
-      const termino = this.busqueda.trim().toLowerCase()
-      if (!termino) return
+    async filtrarDatos() {
+      const termino = this.busqueda.trim()
+      if (!termino || !this.tipoBusqueda) {
+        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y ingrese un término.', 'error')
+        return
+      }
 
-      if (this.vistaActual === 'usuarios') {
-        this.usuarios = this.usuariosOriginal.filter(u => {
-          const valor = u[this.tipoBusqueda]
-          return valor && valor.toString().toLowerCase().includes(termino)
-        })
-      } else {
-        this.roles = this.rolesOriginal.filter(r => {
-          const valor = r[this.tipoBusqueda]
-          return valor && valor.toString().toLowerCase().includes(termino)
-        })
+      try {
+        if (this.vistaActual === 'usuarios') {
+          let response
+
+          switch (this.tipoBusqueda) {
+            case 'identificacion':
+              response = await buscarUsuarioPorIdentificacion(termino)
+              break
+            case 'userName':
+              response = await buscarUsuarioPorUserName(termino)
+              break
+            case 'nombres':
+              response = await buscarUsuarioPorNombres(termino)
+              break
+            case 'apellidos':
+              response = await buscarUsuarioPorApellidos(termino)
+              break
+            case 'roleName':
+              response = await buscarUsuarioPorRoleName(termino)
+              break
+            default:
+              this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado.', 'error')
+              return
+          }
+
+          this.usuarios = response.data || []
+          if (this.usuarios.length === 0) {
+            this.mostrarMensaje('⚠️ No se encontraron usuarios con los criterios ingresados.', 'error')
+          }
+        } else {
+          // Roles (filtrado local o backend según tengas)
+          this.roles = this.rolesOriginal.filter(r =>
+            r[this.tipoBusqueda]?.toString().toLowerCase().includes(termino.toLowerCase())
+          )
+        }
+      } catch (error) {
+        this.mostrarMensaje(`❌ Error al filtrar: ${error.message}`, 'error')
       }
     },
 
