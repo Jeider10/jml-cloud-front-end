@@ -12,11 +12,14 @@
         <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
       </div>
 
-      <!-- 🔍 Filtro dinámico según vista -->
-      <div class="filtro-container">
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <select v-model="tipoBusqueda">
-            <option disabled value="">Seleccione un filtro</option>
+      <!-- 🔍 Filtro compacto dinámico centrado -->
+      <div style="display: flex; justify-content: center; margin-top: 15px;">
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <!-- Selector de tipo de búsqueda -->
+          <select v-model="tipoBusqueda" style="height: 32px;">
+            <option disabled value="">Seleccione una opción</option>
+
+            <!-- Opciones según vista -->
             <template v-if="vistaActual === 'usuarios'">
               <option value="identificacion">Identificación</option>
               <option value="nombres">Nombres</option>
@@ -31,12 +34,14 @@
             </template>
           </select>
 
+          <!-- 🔍 Termino de búsqueda -->
           <input v-model="busqueda"
                  type="text"
                  placeholder="Ingrese término de búsqueda"
                  :disabled="!tipoBusqueda"
-                 style="flex: 1;" />
+                 style="height: 30px; width: 200px; padding-left: 6px;" />
 
+          <!-- 🔍 Botón de búsqueda -->
           <button type="button"
                   class="buscar-btn"
                   :disabled="!busqueda || !tipoBusqueda"
@@ -44,6 +49,7 @@
                   🔍 Buscar
           </button>
 
+          <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
                   class="buscar-btn"
                   :disabled="!busqueda"
@@ -51,6 +57,7 @@
                   🧹 Limpiar
           </button>
 
+          <!-- ➕ Botón de registro -->
           <button type="button"
                   class="agregar-btn"
                   @click="irARegistro">
@@ -566,16 +573,29 @@ th {
 
 .buscar-btn {
   background-color: #3498db;
-  border: none;
   color: white;
-  padding: 6px 12px;
+  border: none;
   border-radius: 6px;
+  padding: 4px 10px;
   cursor: pointer;
+  font-size: 14px;
+  height: 32px;
 }
 
 .buscar-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.agregar-btn {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  height: 32px;
 }
 
 </style>
