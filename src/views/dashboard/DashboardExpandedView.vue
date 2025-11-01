@@ -102,9 +102,31 @@ export default {
     },
 
     getLogoUrl(path) {
-      if (!path) return require('@/assets/img/Empresa.png')
-      if (path.startsWith('http') || path.startsWith('data:')) return path
-      return `${process.env.VUE_APP_AUTH_BASE_URL}${path}`
+      if (!path) {
+        // Si no hay logo, muestra imagen por defecto
+        return require('@/assets/img/Empresa.png')
+      }
+
+      // 🔹 Limpiar comillas o espacios
+      const cleanPath = path.toString().trim().replace(/(^"|"$)/g, '')
+
+      // 🔹 Si es una URL completa (S3 u otra), úsala directamente
+      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
+        return cleanPath
+      }
+
+      // 🔹 Si ya viene con formato data:image/... (Base64 con prefijo)
+      if (cleanPath.startsWith('data:image')) {
+        return cleanPath
+      }
+
+      // 🔹 Si es Base64 puro (sin prefijo), agregamos el tipo MIME más común (png)
+      if (/^[A-Za-z0-9+/=]+$/.test(cleanPath)) {
+        return `data:image/png;base64,${cleanPath}`
+      }
+
+      // 🔹 Si es una ruta relativa (casos antiguos o locales)
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`
     }
   }
 }

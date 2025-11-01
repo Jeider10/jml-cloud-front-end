@@ -12,6 +12,53 @@
         <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
       </div>
 
+      <!-- 🔍 Filtro dinámico según vista -->
+      <div class="filtro-container">
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <select v-model="tipoBusqueda">
+            <option disabled value="">Seleccione un filtro</option>
+            <template v-if="vistaActual === 'usuarios'">
+              <option value="identificacion">Identificación</option>
+              <option value="nombres">Nombres</option>
+              <option value="apellidos">Apellidos</option>
+              <option value="userName">Usuario</option>
+              <option value="roleName">Rol</option>
+            </template>
+            <template v-else>
+              <option value="roleCode">Código</option>
+              <option value="roleName">Nombre</option>
+              <option value="descripcion">Descripción</option>
+            </template>
+          </select>
+
+          <input v-model="busqueda"
+                 type="text"
+                 placeholder="Ingrese término de búsqueda"
+                 :disabled="!tipoBusqueda"
+                 style="flex: 1;" />
+
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!busqueda || !tipoBusqueda"
+                  @click="filtrarDatos">
+                  🔍 Buscar
+          </button>
+
+          <button type="button"
+                  class="buscar-btn"
+                  :disabled="!busqueda"
+                  @click="limpiarBusqueda">
+                  🧹 Limpiar
+          </button>
+
+          <button type="button"
+                  class="agregar-btn"
+                  @click="irARegistro">
+                  ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
+          </button>
+        </div>
+      </div>
+
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
         <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
@@ -137,6 +184,10 @@ export default {
       vistaActual: 'usuarios',
       roles: [],
       usuarios: [],
+      usuariosOriginal: [],
+      rolesOriginal: [],
+      tipoBusqueda: '',
+      busqueda: '',
       mostrarConfirmacionActualizar: false,
       mostrarConfirmacionEliminar: false,
       usuarioSeleccionado: null,
@@ -171,20 +222,53 @@ export default {
       if (this.vistaActual === 'roles') {
         const { data } = await listarRoles()
         this.roles = data || []
+        this.rolesOriginal = [...this.roles]
       } else {
         const { data } = await listarUsuarios()
         this.usuarios = data || []
+        this.usuariosOriginal = [...this.usuarios]
       }
     },
 
     async cambiarVista(vista) {
       this.vistaActual = vista
+      this.tipoBusqueda = ''
+      this.busqueda = ''
       await this.cargarDatos()
+    },
+
+    // 🔍 Filtrar según tipo y término
+    filtrarDatos() {
+      const termino = this.busqueda.trim().toLowerCase()
+      if (!termino) return
+
+      if (this.vistaActual === 'usuarios') {
+        this.usuarios = this.usuariosOriginal.filter(u => {
+          const valor = u[this.tipoBusqueda]
+          return valor && valor.toString().toLowerCase().includes(termino)
+        })
+      } else {
+        this.roles = this.rolesOriginal.filter(r => {
+          const valor = r[this.tipoBusqueda]
+          return valor && valor.toString().toLowerCase().includes(termino)
+        })
+      }
+    },
+
+    // 🧹 Limpiar filtro
+    limpiarBusqueda() {
+      this.busqueda = ''
+      this.tipoBusqueda = ''
+      if (this.vistaActual === 'usuarios') {
+        this.usuarios = [...this.usuariosOriginal]
+      } else {
+        this.roles = [...this.rolesOriginal]
+      }
     },
 
     irARegistro() {
       if (this.vistaActual === 'roles') {
-        this.$router.push('/registro/roles')
+        this.$router.push({ name: 'ConfiguracionRegistroRolesView' })
       } else {
         this.$router.push({ name: 'ConfiguracionRegistroUsuariosView' })
       }
@@ -474,6 +558,24 @@ th {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+.filtro-container {
+  margin: 12px 0 20px;
+}
+
+.buscar-btn {
+  background-color: #3498db;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.buscar-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 </style>
