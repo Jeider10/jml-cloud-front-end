@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { registerUser } from '@/services/authService'
+import { registerUser } from '@/services/apiAuthService'
 
 export default {
   name: "RegisterUserView",

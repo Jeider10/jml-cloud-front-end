@@ -4,7 +4,7 @@ import axios from 'axios'
 import router from '@/router'
 
 const apiOrders = axios.create({
-  baseURL: process.env.VUE_APP_ORDERS_BASE_URL, // ⚠️ backend orders ventas
+  baseURL: process.env.VUE_APP_ORDERS_BASE_URL, // URL del backend
   headers: {
     'Content-Type': 'application/json'
   }

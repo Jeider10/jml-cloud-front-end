@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { searchUserByUsername, updateForgotPassword } from '@/services/authService'
+import { searchUserByUsername, updateForgotPassword } from '@/services/apiAuthService'
 
 export default {
   name: 'ForgotPasswordView',

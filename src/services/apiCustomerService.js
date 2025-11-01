@@ -4,7 +4,7 @@ import axios from 'axios'
 import router from '@/router'
 
 const apiClient = axios.create({
-  baseURL: process.env.VUE_APP_CUSTOMER_BASE_URL, // ⚠️ backend autenticacion
+  baseURL: process.env.VUE_APP_CUSTOMER_BASE_URL, // URL del backend
   headers: {
     'Content-Type': 'application/json'
   }

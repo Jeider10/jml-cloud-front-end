@@ -4,7 +4,7 @@ import axios from 'axios'
 import router from '@/router'
 
 const apiProducts = axios.create({
-  baseURL: process.env.VUE_APP_PRODUCTS_BASE_URL, // ⚠️ backend productos
+  baseURL: process.env.VUE_APP_PRODUCTS_BASE_URL, // URL del backend
   headers: {
     'Content-Type': 'application/json'
   }

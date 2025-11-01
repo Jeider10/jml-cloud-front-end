@@ -1,17 +1,17 @@
-// src/services/authService.js
+// src/services/apiAuthService.js
 
 import axios from 'axios'
 import router from '@/router'
 
-const apiClient = axios.create({
-  baseURL: process.env.VUE_APP_AUTH_BASE_URL, // ⚠️ backend autenticacion
+const apiAuthentication = axios.create({
+  baseURL: process.env.VUE_APP_AUTH_BASE_URL, // URL del backend
   headers: {
     'Content-Type': 'application/json'
   }
 })
 
 // 🔐 Interceptor para añadir token en cada request
-apiClient.interceptors.request.use(config => {
+apiAuthentication.interceptors.request.use(config => {
   const token = localStorage.getItem('sessionToken')
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
@@ -20,7 +20,7 @@ apiClient.interceptors.request.use(config => {
 })
 
 // ⚠️ Interceptor para manejar respuestas de error
-apiClient.interceptors.response.use(
+apiAuthentication.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
@@ -48,7 +48,7 @@ apiClient.interceptors.response.use(
 
 // Login
 export const login = (usuario, password) => {
-  return apiClient.post('/authentication/login', {
+  return apiAuthentication.post('/authentication/login', {
     usuario,
     password
   })
@@ -57,20 +57,20 @@ export const login = (usuario, password) => {
 // Registro de usuario
 export const registerUser = (user) => {
   // user = { userName, password, rolCode, email }
-  return apiClient.post('/user/register', user)
+  return apiAuthentication.post('/user/register', user)
 }
 
 // Validar que el usuario exista
 export const searchUserByUsername = (userName) => {
-  return apiClient.post('/user/search-by-user-name', { userName })
+  return apiAuthentication.post('/user/search-by-user-name', { userName })
 }
 
 // Recuperación de contraseña
 export const updateForgotPassword = (userName, password) => {
-  return apiClient.put('/user/forgot-password', { userName, password })
+  return apiAuthentication.put('/user/forgot-password', { userName, password })
 }
 
 // Se elimina la función de selección de rol
 // export const confirmarSeleccion = (data) => {
-//   return apiClient.post('/login/role-selection', data)
+//   return apiAuthentication.post('/login/role-selection', data)
 // }

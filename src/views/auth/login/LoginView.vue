@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { login } from '@/services/authService'
+import { login } from '@/services/apiAuthService'
 
 export default {
   name: 'LoginView',

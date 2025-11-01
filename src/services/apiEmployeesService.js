@@ -3,15 +3,15 @@
 import axios from 'axios'
 import router from '@/router'
 
-const apiClient = axios.create({
-  baseURL: process.env.VUE_APP_EMPLOYEES_BASE_URL, // ⚠️ backend empleados
+const apiEmployees = axios.create({
+  baseURL: process.env.VUE_APP_EMPLOYEES_BASE_URL, // URL del backend
   headers: {
     'Content-Type': 'application/json'
   }
 })
 
 // 🔐 Interceptor para añadir token en cada request
-apiClient.interceptors.request.use(config => {
+apiEmployees.interceptors.request.use(config => {
   const token = localStorage.getItem('sessionToken')
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
@@ -20,7 +20,7 @@ apiClient.interceptors.request.use(config => {
 })
 
 // ⚠️ Interceptor para manejar respuestas de error
-apiClient.interceptors.response.use(
+apiEmployees.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
@@ -46,23 +46,23 @@ apiClient.interceptors.response.use(
 // =======================
 
 // Listar todos los Empleados
-export const listarEmpleados = () => apiClient.get('/empleados/list/all')
+export const listarEmpleados = () => apiEmployees.get('/empleados/list/all')
 
 // Crear Empleado
-export const crearEmpleado = (cliente) => apiClient.post('/empleados/register', cliente)
+export const crearEmpleado = (cliente) => apiEmployees.post('/empleados/register', cliente)
 
 // Búsqueda por identificación
-export const buscarEmpleadoPorIdentificacion = (identificacion) => apiClient.get('/empleados/identificacion', { params: { identificacion } })
+export const buscarEmpleadoPorIdentificacion = (identificacion) => apiEmployees.get('/empleados/identificacion', { params: { identificacion } })
 
 // Búsqueda por nombres
-export const buscarEmpleadoPorNombres = (nombres) => apiClient.get('/empleados/nombres', { params: { nombres } })
+export const buscarEmpleadoPorNombres = (nombres) => apiEmployees.get('/empleados/nombres', { params: { nombres } })
 
 // Búsqueda por apellidos
-export const buscarEmpleadoPorApellidos = (apellidos) => apiClient.get('/empleados/apellidos', { params: { apellidos } })
+export const buscarEmpleadoPorApellidos = (apellidos) => apiEmployees.get('/empleados/apellidos', { params: { apellidos } })
 
 // Actualizar Empleado
-export const actualizarEmpleado = (cliente) => apiClient.put('/empleados/update', cliente)
+export const actualizarEmpleado = (cliente) => apiEmployees.put('/empleados/update', cliente)
 
 // Eliminar Empleado
-export const eliminarEmpleadoPorIdentificacion = (identificacion) => apiClient.delete('/empleados/delete', { params: { identificacion } })
+export const eliminarEmpleadoPorIdentificacion = (identificacion) => apiEmployees.delete('/empleados/delete', { params: { identificacion } })
 

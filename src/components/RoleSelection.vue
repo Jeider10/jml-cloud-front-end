@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { confirmarSeleccion } from '@/services/authService'
+import { confirmarSeleccion } from '@/services/apiAuthService'
 
 export default {
   name: 'RoleSelectionView',
