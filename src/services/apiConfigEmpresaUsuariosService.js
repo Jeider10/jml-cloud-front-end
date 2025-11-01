@@ -2,18 +2,18 @@
 import axios from 'axios'
 import router from '@/router'
 
-const apiClient = axios.create({
+const apiConfigEmpresaUsuario = axios.create({
   baseURL: process.env.VUE_APP_AUTH_BASE_URL, // URL del backend
   headers: { 'Content-Type': 'application/json' }
 })
 
-apiClient.interceptors.request.use(config => {
+apiConfigEmpresaUsuario.interceptors.request.use(config => {
   const token = localStorage.getItem('sessionToken')
   if (token) config.headers['Authorization'] = `Bearer ${token}`
   return config
 })
 
-apiClient.interceptors.response.use(
+apiConfigEmpresaUsuario.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
@@ -30,8 +30,18 @@ apiClient.interceptors.response.use(
 // ===============================
 // 📡 ENDPOINTS PARA USUARIOS
 // ===============================
-export const listarUsuarios = () => apiClient.get('/usuario/list/all')
-export const registrarUsuario = (usuario) => apiClient.post('/usuario/register', usuario)
-export const actualizarUsuario = (usuario) => apiClient.put('/usuario/update', usuario)
-export const eliminarUsuario = (identificacion) =>
-  apiClient.delete('/usuario/delete', { params: { identificacion } })
+
+// Listar todos los usuarios
+export const listarUsuarios = () => apiConfigEmpresaUsuario.get('/usuario/list/all')
+
+// Registrar usuario
+export const registrarUsuario = (usuario) => apiConfigEmpresaUsuario.post('/usuario/register', usuario)
+
+// Búsqueda de usuario por identificación
+export const buscarUsuarioPorIdentificacion = (identificacion) => apiConfigEmpresaUsuario.get('/usuario/identificacion', { params: { identificacion } })
+
+// Actualizar usuario
+export const actualizarUsuario = (usuario) => apiConfigEmpresaUsuario.put('/usuario/update', usuario)
+
+// Eliminar usuario
+export const eliminarUsuario = (identificacion) => apiConfigEmpresaUsuario.delete('/usuario/delete', { params: { identificacion } })

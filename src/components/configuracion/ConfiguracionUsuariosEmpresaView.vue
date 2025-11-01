@@ -1,4 +1,5 @@
 <!-- src/components/configuracion/ConfiguracionUsuariosEmpresaView.vue -->
+
 <template>
   <div class="configuracion-empresa-wrapper">
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />
@@ -137,9 +138,14 @@ export default {
         this.$router.push('/registro/usuarios')
       }
     },
+
     abrirActualizarUsuario(usuario) {
-      this.$router.push({ path: `/actualizar-usuario/${usuario.identificacion}` })
+      this.$router.push({
+        name: 'ConfiguracionActualizarUsuarioView',
+        params: { identificacion: usuario.identificacion }
+      })
     },
+
     abrirActualizarRol(rol) {
       this.$router.push({ path: `/actualizar-rol/${rol.roleCode}` })
     },
@@ -158,6 +164,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .configuracion-empresa-wrapper {

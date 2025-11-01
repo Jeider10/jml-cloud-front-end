@@ -66,9 +66,15 @@ export default {
       mensajeTipo: ''
     }
   },
+
   async mounted() {
-    await this.cargarUsuario()
+    if (this.identificacion) {
+      await this.cargarUsuario()
+    } else {
+      this.mostrarMensaje('Identificación no válida.', 'error')
+    }
   },
+
   methods: {
     async cargarUsuario() {
       try {
