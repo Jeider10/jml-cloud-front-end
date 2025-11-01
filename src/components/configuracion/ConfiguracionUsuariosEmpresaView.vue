@@ -267,28 +267,60 @@ export default {
           switch (this.tipoBusqueda) {
             case 'identificacion':
               response = await buscarUsuarioPorIdentificacion(termino)
-              // Como el backend devuelve un solo objeto, lo convertimos en arreglo
-              this.usuarios = response.data ? [response.data] : []
+
+              if (response.data) {
+                // ✅ Usuario encontrado
+                this.usuarios = [response.data]
+                this.mostrarMensaje('✅ Usuario encontrado correctamente.', 'success')
+              } else {
+                // ❌ No se encontró usuario (null)
+                this.usuarios = []
+                this.mostrarMensaje(`❌ No se encontró usuario con identificación: ${termino}`, 'info')
+              }
               break
 
             case 'userName':
               response = await buscarUsuarioPorUserName(termino)
-              this.usuarios = response.data || []
+              if (response.data && response.data.length > 0) {
+                this.usuarios = response.data
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con userName parecido a "${termino}".`, 'success')
+              } else {
+                this.usuarios = []
+                this.mostrarMensaje(`❌ No se encontraron usuarios con userName: ${termino}`, 'info')
+              }
               break
 
             case 'nombres':
               response = await buscarUsuarioPorNombres(termino)
-              this.usuarios = response.data || []
+              if (response.data && response.data.length > 0) {
+                this.usuarios = response.data
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con nombres similares a "${termino}".`, 'success')
+              } else {
+                this.usuarios = []
+                this.mostrarMensaje(`❌ No se encontraron usuarios con nombres: ${termino}`, 'info')
+              }
               break
 
             case 'apellidos':
               response = await buscarUsuarioPorApellidos(termino)
-              this.usuarios = response.data || []
+              if (response.data && response.data.length > 0) {
+                this.usuarios = response.data
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con apellidos similares a "${termino}".`, 'success')
+              } else {
+                this.usuarios = []
+                this.mostrarMensaje(`❌ No se encontraron usuarios con apellidos: ${termino}`, 'info')
+              }
               break
 
             case 'roleName':
               response = await buscarUsuarioPorRoleName(termino)
-              this.usuarios = response.data || []
+              if (response.data && response.data.length > 0) {
+                this.usuarios = response.data
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con rol parecido a "${termino}".`, 'success')
+              } else {
+                this.usuarios = []
+                this.mostrarMensaje(`❌ No se encontraron usuarios con rol: ${termino}`, 'info')
+              }
               break
 
             default:
@@ -296,10 +328,6 @@ export default {
               return
           }
 
-          // Si no hay resultados
-          if (this.usuarios.length === 0) {
-            this.mostrarMensaje('⚠️ No se encontraron usuarios con los criterios ingresados.', 'error')
-          }
         } else {
           // Roles (filtrado local o backend según tengas)
           this.roles = this.rolesOriginal.filter(r =>
@@ -307,7 +335,11 @@ export default {
           )
         }
       } catch (error) {
-        this.mostrarMensaje(`❌ Error al filtrar: ${error.message}`, 'error')
+        // Si algo falla realmente (error HTTP, conexión, etc.)
+        this.mostrarMensaje(
+          error.response?.data?.message || `❌ Error de conexión: ${error.message}`,
+          'error'
+        )
       }
     },
 
