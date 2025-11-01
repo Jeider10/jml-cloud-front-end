@@ -122,6 +122,12 @@ const routes = [
     component: ConfiguracionRegistroRolesView
   },
   {
+    path: '/actualizar-roles/:roleCode',
+    name: 'ConfiguracionActualizarRoleView',
+    component: ConfiguracionActualizarRoleView,
+    props: true   // 👈 Esto hace que "roleCode" llegue como prop
+  },
+  {
     path: '/registro/usuarios',
     name: 'ConfiguracionRegistroUsuariosView',
     component: ConfiguracionRegistroUsuariosView
@@ -131,12 +137,6 @@ const routes = [
     name: 'ConfiguracionActualizarUsuarioView',
     component: ConfiguracionActualizarUsuarioView,
     props: true   // 👈 Esto hace que "identificacion" llegue como prop
-  },
-  {
-    path: '/actualizar-roles/:roleCode',
-    name: 'ConfiguracionActualizarRoleView',
-    component: ConfiguracionActualizarRoleView,
-    props: true   // 👈 Esto hace que "roleCode" llegue como prop
   },
 ];
 

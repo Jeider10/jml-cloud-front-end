@@ -47,7 +47,8 @@ export default {
         descripcion: ''
       },
       mensaje: '',
-      mensajeTipo: ''
+      mensajeTipo: '',
+      mostrarConfirmacion: false
     }
   },
   async mounted() {

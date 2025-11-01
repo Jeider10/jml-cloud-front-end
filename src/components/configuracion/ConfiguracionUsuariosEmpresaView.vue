@@ -12,6 +12,13 @@
         <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
       </div>
 
+      <!-- 🔔 Mensaje visual -->
+      <transition name="fade">
+        <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
+          {{ mensaje }}
+        </div>
+      </transition>
+
       <!-- Tabla de Roles -->
       <table v-if="vistaActual === 'roles'" class="tabla">
         <thead>
@@ -134,7 +141,9 @@ export default {
       mostrarConfirmacionEliminar: false,
       usuarioSeleccionado: null,
       rolSeleccionado: null,
-      indiceSeleccionado: null
+      indiceSeleccionado: null,
+      mensaje: '',
+      mensajeTipo: 'success'
     }
   },
 
@@ -181,12 +190,13 @@ export default {
       }
     },
 
-    // 🔹 Abrir modal de confirmación para actualización
+    // 🔹 Abrir modal de confirmación para actualización de usuario
     abrirConfirmacionActualizarUsuario(usuario) {
       this.usuarioSeleccionado = usuario
       this.mostrarConfirmacionActualizar = true
     },
 
+    // 🔹 Abrir modal de confirmación para actualización de rol
     abrirConfirmacionActualizarRol(rol) {
       this.rolSeleccionado = rol
       this.mostrarConfirmacionActualizar = true
@@ -233,10 +243,10 @@ export default {
           alert(`❌ Error al eliminar usuario: ${error.message}`)
         }
       } else {
-        // const rol = this.roles[this.indiceSeleccionado]
+        const rol = this.roles[this.indiceSeleccionado]
         this.roles.splice(this.indiceSeleccionado, 1)
         // alert(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
-        this.mostrarMensaje('✅ Rol "${rol.roleName}" eliminado correctamente.')
+        this.mostrarMensaje(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
       }
       this.cerrarModalEliminar()
     },
@@ -439,6 +449,28 @@ th {
 
 .no-btn:hover {
   background-color: #922b21;
+}
+
+.mensaje {
+  margin: 10px auto 20px auto;
+  padding: 10px 20px;
+  width: 80%;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.mensaje.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.mensaje.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
 </style>

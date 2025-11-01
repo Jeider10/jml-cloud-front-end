@@ -2,20 +2,20 @@
 import axios from 'axios'
 import router from '@/router'
 
-const apiClient = axios.create({
+const apiConfigEmpresaRole = axios.create({
   baseURL: process.env.VUE_APP_AUTH_BASE_URL, // URL del backend
   headers: { 'Content-Type': 'application/json' }
 })
 
 // 🔐 Interceptor de request: agrega token
-apiClient.interceptors.request.use(config => {
+apiConfigEmpresaRole.interceptors.request.use(config => {
   const token = localStorage.getItem('sessionToken')
   if (token) config.headers['Authorization'] = `Bearer ${token}`
   return config
 })
 
 // ⚠️ Interceptor de response: maneja expiración de sesión
-apiClient.interceptors.response.use(
+apiConfigEmpresaRole.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
@@ -32,8 +32,7 @@ apiClient.interceptors.response.use(
 // ===============================
 // 📡 ENDPOINTS PARA ROLES
 // ===============================
-export const listarRoles = () => apiClient.get('/roles/list/all')
-export const registrarRole = (role) => apiClient.post('/roles/register', role)
-export const actualizarRole = (role) => apiClient.put('/roles/update', role)
-export const eliminarRole = (roleCode) =>
-  apiClient.delete('/roles/delete', { params: { roleCode } })
+export const listarRoles = () => apiConfigEmpresaRole.get('/roles/list/all')
+export const registrarRole = (role) => apiConfigEmpresaRole.post('/roles/register', role)
+export const actualizarRole = (role) => apiConfigEmpresaRole.put('/roles/update', role)
+export const eliminarRole = (roleCode) => apiConfigEmpresaRole.delete('/roles/delete', { params: { roleCode } })
