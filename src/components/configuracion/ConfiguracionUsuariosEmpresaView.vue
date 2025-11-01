@@ -95,7 +95,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
-import { listarUsuarios } from '@/services/apiConfigEmpresaUsuariosService'
+import { listarUsuarios, eliminarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
 
 export default {
   name: 'ConfiguracionUsuariosEmpresaView',
@@ -108,6 +108,7 @@ export default {
       usuarios: []
     }
   },
+
   async mounted() {
     const vista = this.$route.query.vista
     if (vista === 'roles' || vista === 'usuarios') {
@@ -117,7 +118,17 @@ export default {
     }
     await this.cargarDatos()
   },
+
   methods: {
+    // 🔹 Método de mostrar mensaje
+    mostrarMensaje(texto, tipo = 'success') {
+      this.mensaje = texto
+      this.mensajeTipo = tipo
+      setTimeout(() => {
+        this.mensaje = ''
+      }, 3000)
+    },
+
     async cargarDatos() {
       if (this.vistaActual === 'roles') {
         const { data } = await listarRoles()
@@ -127,15 +138,17 @@ export default {
         this.usuarios = data || []
       }
     },
+
     async cambiarVista(vista) {
       this.vistaActual = vista
       await this.cargarDatos()
     },
+
     irARegistro() {
       if (this.vistaActual === 'roles') {
         this.$router.push('/registro/roles')
       } else {
-        this.$router.push('/registro/usuarios')
+        this.$router.push({ name: 'ConfiguracionRegistroUsuariosView' })
       }
     },
 
@@ -149,12 +162,27 @@ export default {
     abrirActualizarRol(rol) {
       this.$router.push({ path: `/actualizar-rol/${rol.roleCode}` })
     },
-    confirmarEliminarUsuario(idx) {
-      const u = this.usuarios[idx]
-      if (confirm(`¿Desea eliminar al usuario ${u.nombres} ${u.apellidos}?`)) {
+
+    async confirmarEliminarUsuario(idx) {
+      const usuario = this.usuarios[idx]
+      const confirmado = confirm(`⚠️ ¿Desea eliminar al usuario ${usuario.nombres} ${usuario.apellidos}?`)
+
+      if (!confirmado) return
+
+      try {
+        // Llama al backend
+        await eliminarUsuario(usuario.identificacion)
+        // alert(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
+        this.mostrarMensaje(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`, 'success')
+
+        // Elimina localmente de la lista
         this.usuarios.splice(idx, 1)
+      } catch (error) {
+        console.error('❌ Error al eliminar usuario:', error)
+        alert(`❌ Error al eliminar usuario: ${error.message}`)
       }
     },
+
     confirmarEliminarRol(idx) {
       const r = this.roles[idx]
       if (confirm(`¿Desea eliminar el rol ${r.roleName}?`)) {
