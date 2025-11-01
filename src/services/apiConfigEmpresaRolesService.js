@@ -32,7 +32,18 @@ apiConfigEmpresaRole.interceptors.response.use(
 // ===============================
 // 📡 ENDPOINTS PARA ROLES
 // ===============================
+
+// Listar todos los roles
 export const listarRoles = () => apiConfigEmpresaRole.get('/roles/list/all')
+
+// Registrar role
 export const registrarRole = (role) => apiConfigEmpresaRole.post('/roles/register', role)
+
+// Búsqueda de role por roleCode
+export const buscarRolePorRoleCode = (roleCode) => apiConfigEmpresaRole.get('/roles/roleCode', { params: { roleCode } })
+
+// Actualizar role
 export const actualizarRole = (role) => apiConfigEmpresaRole.put('/roles/update', role)
+
+// Eliminar role
 export const eliminarRole = (roleCode) => apiConfigEmpresaRole.delete('/roles/delete', { params: { roleCode } })

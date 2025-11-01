@@ -125,7 +125,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
+import { listarRoles, eliminarRole } from '@/services/apiConfigEmpresaRolesService'
 import { listarUsuarios, eliminarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
 
 export default {
@@ -197,8 +197,8 @@ export default {
     },
 
     // 🔹 Abrir modal de confirmación para actualización de rol
-    abrirConfirmacionActualizarRol(rol) {
-      this.rolSeleccionado = rol
+    abrirConfirmacionActualizarRol(role) {
+      this.rolSeleccionado = role
       this.mostrarConfirmacionActualizar = true
     },
 
@@ -209,7 +209,10 @@ export default {
           params: { identificacion: this.usuarioSeleccionado.identificacion }
         })
       } else if (this.vistaActual === 'roles' && this.rolSeleccionado) {
-        this.$router.push({ path: `/actualizar-rol/${this.rolSeleccionado.roleCode}` })
+        this.$router.push({
+          name: 'ConfiguracionActualizarRoleView',
+          params: { roleCode: this.rolSeleccionado.roleCode }
+        })
       }
       this.cerrarModalActualizar()
     },
@@ -232,23 +235,23 @@ export default {
     },
 
     async confirmarEliminar() {
-      if (this.vistaActual === 'usuarios') {
-        const usuario = this.usuarios[this.indiceSeleccionado]
-        try {
+      try {
+        if (this.vistaActual === 'usuarios') {
+          const usuario = this.usuarios[this.indiceSeleccionado]
           await eliminarUsuario(usuario.identificacion)
-          // alert(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
           this.mostrarMensaje(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
           this.usuarios.splice(this.indiceSeleccionado, 1)
-        } catch (error) {
-          alert(`❌ Error al eliminar usuario: ${error.message}`)
+        } else if (this.vistaActual === 'roles') {
+          const rol = this.roles[this.indiceSeleccionado]
+          await eliminarRole(rol.roleCode)
+          this.mostrarMensaje(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
+          this.roles.splice(this.indiceSeleccionado, 1)
         }
-      } else {
-        const rol = this.roles[this.indiceSeleccionado]
-        this.roles.splice(this.indiceSeleccionado, 1)
-        // alert(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
-        this.mostrarMensaje(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
+      } catch (error) {
+        this.mostrarMensaje(`❌ Error al eliminar ${this.vistaActual === 'usuarios' ? 'usuario' : 'rol'}: ${error.message}`, 'error')
+      } finally {
+        this.cerrarModalEliminar()
       }
-      this.cerrarModalEliminar()
     },
 
     cerrarModalEliminar() {

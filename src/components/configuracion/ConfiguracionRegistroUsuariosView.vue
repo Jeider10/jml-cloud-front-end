@@ -7,6 +7,7 @@
     <div :class="['registro-container', { expanded: menuOpen }]">
       <h1 class="titulo">Registro de Usuario</h1>
 
+      <!-- 🔔 Mensaje visual -->
       <transition name="fade">
         <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
           {{ mensaje }}

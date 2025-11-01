@@ -178,7 +178,8 @@ input, select {
   border-radius: 4px;
 }
 
-.agregar-btn, .limpiar-campos-btn, .volver-btn {
+.agregar-btn {
+  background: #0077b6;
   padding: 8px 12px;
   border-radius: 6px;
   color: white;
@@ -187,13 +188,46 @@ input, select {
   font-weight: 600;
 }
 
-.agregar-btn { background: #0077b6; }
-.agregar-btn:hover { background: #005f8a; }
+.agregar-btn:hover {
+  background: #005f8a;
+}
 
-.limpiar-campos-btn { background: #f4a261; }
-.limpiar-campos-btn:hover { background: #e76f51; }
+.agregar-btn:disabled {
+  background: #a0c4d6;
+  cursor: not-allowed;
+}
 
-.volver-btn { background: #0077b6; }
-.volver-btn:hover { background: #005f8a; }
+.limpiar-campos-btn {
+  background: #f4a261;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.limpiar-campos-btn:hover {
+  background: #e76f51;
+}
+
+.limpiar-campos-btn:disabled {
+  background: #a0c4d6;
+  cursor: not-allowed;
+}
+
+.volver-btn {
+  background: #0077b6;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.volver-btn:hover {
+  background: #005f8a;
+}
 
 </style>

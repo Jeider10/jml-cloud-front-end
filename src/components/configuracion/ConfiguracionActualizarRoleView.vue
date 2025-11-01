@@ -22,8 +22,21 @@
           <label>Descripción</label>
           <input v-model="rolForm.descripcion" type="text" />
 
-          <button type="button" class="agregar-btn" @click="actualizarRol">💾 Actualizar</button>
+          <!-- Botones -->
+          <button type="button" class="agregar-btn" @click="abrirModalConfirmacion">💾 Actualizar</button>
           <button type="button" class="volver-btn" @click="volverConfiguracion">↩️ Volver</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔹 Modal de confirmación de actualización -->
+    <div v-if="mostrarConfirmacion" class="modal-overlay">
+      <div class="modal">
+        <h3>⚠️ Confirmación</h3>
+        <p>¿Deseas actualizar el rol con los datos ingresados?</p>
+        <div class="modal-buttons">
+          <button class="si-btn" @click="confirmarActualizacion">Sí</button>
+          <button class="no-btn" @click="cerrarModal">No</button>
         </div>
       </div>
     </div>
@@ -32,7 +45,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { buscarRolPorCodigo, actualizarRol } from '@/services/apiConfigEmpresaRolesService'
+import { buscarRolePorRoleCode, actualizarRole } from '@/services/apiConfigEmpresaRolesService'
 
 export default {
   name: 'ConfiguracionActualizarRoleView',
@@ -51,26 +64,45 @@ export default {
       mostrarConfirmacion: false
     }
   },
+
   async mounted() {
-    await this.cargarRol()
+    if (this.roleCode) {
+    await this.cargarRole()
+    } else {
+      this.mostrarMensaje('❌ No se proporcionó un código de rol válido.', 'error')
+    }
   },
+
   methods: {
-    async cargarRol() {
+    async cargarRole() {
       try {
-        const response = await buscarRolPorCodigo(this.roleCode)
+        const response = await buscarRolePorRoleCode(this.roleCode)
         this.rolForm = { ...response.data }
       } catch (error) {
         this.mostrarMensaje('Error al cargar rol.', 'error')
       }
     },
-    async actualizarRol() {
+
+    // 🔹 Abrir modal de confirmación antes de actualizar
+    abrirModalConfirmacion() {
+      this.mostrarConfirmacion = true
+    },
+
+    cerrarModal() {
+      this.mostrarConfirmacion = false
+    },
+
+    // 🔹 Confirmar y ejecutar actualización
+    async confirmarActualizacion() {
+      this.mostrarConfirmacion = false
       try {
-        await actualizarRol(this.rolForm)
+        await actualizarRole(this.rolForm)
         this.mostrarMensaje('✅ Rol actualizado correctamente.', 'success')
       } catch (error) {
         this.mostrarMensaje('❌ Error al actualizar rol.', 'error')
       }
     },
+
     mostrarMensaje(texto, tipo) {
       this.mensaje = texto
       this.mensajeTipo = tipo
@@ -81,6 +113,7 @@ export default {
         }
       }, 2000)
     },
+
     volverConfiguracion() {
       this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
     }
@@ -125,7 +158,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {
@@ -192,4 +225,64 @@ input {
 .volver-btn:hover {
   background: #005f8a;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  width: 350px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.modal h3 {
+  margin-bottom: 15px;
+  color: #e67e22;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.si-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.no-btn {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.si-btn:hover {
+  background-color: #1e8449;
+}
+
+.no-btn:hover {
+  background-color: #922b21;
+}
+
 </style>
