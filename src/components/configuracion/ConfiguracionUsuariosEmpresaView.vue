@@ -267,25 +267,36 @@ export default {
           switch (this.tipoBusqueda) {
             case 'identificacion':
               response = await buscarUsuarioPorIdentificacion(termino)
+              // Como el backend devuelve un solo objeto, lo convertimos en arreglo
+              this.usuarios = response.data ? [response.data] : []
               break
+
             case 'userName':
               response = await buscarUsuarioPorUserName(termino)
+              this.usuarios = response.data || []
               break
+
             case 'nombres':
               response = await buscarUsuarioPorNombres(termino)
+              this.usuarios = response.data || []
               break
+
             case 'apellidos':
               response = await buscarUsuarioPorApellidos(termino)
+              this.usuarios = response.data || []
               break
+
             case 'roleName':
               response = await buscarUsuarioPorRoleName(termino)
+              this.usuarios = response.data || []
               break
+
             default:
               this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado.', 'error')
               return
           }
 
-          this.usuarios = response.data || []
+          // Si no hay resultados
           if (this.usuarios.length === 0) {
             this.mostrarMensaje('⚠️ No se encontraron usuarios con los criterios ingresados.', 'error')
           }
