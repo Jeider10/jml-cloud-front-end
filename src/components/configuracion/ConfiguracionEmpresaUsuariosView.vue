@@ -115,8 +115,9 @@
             <th>Email</th>
             <th>Teléfono</th>
             <th>Dirección</th>
-            <th>Creación</th>
-            <th>Actualización</th>
+            <th>Fecha Creación</th>
+            <th>Fecha Actualización</th>
+            <th>Historial de Actualización</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -132,13 +133,14 @@
             <td>{{ u.direccion }}</td>
             <td>{{ u.fechaCreacion || '-' }}</td>
             <td>{{ u.fechaActualizacion || '-' }}</td>
+            <td>{{ u.historialUltimoActualizado || '-' }}</td>
             <td>
               <button class="update-btn" @click="abrirConfirmacionActualizarUsuario(u)">✏️</button>
               <button class="delete-btn" @click="abrirConfirmacionEliminarUsuario(idx)">🗑️</button>
             </td>
           </tr>
           <tr v-if="usuarios.length === 0">
-            <td colspan="11" class="empty-row">No hay usuarios registrados.</td>
+            <td colspan="12" class="empty-row">No hay usuarios registrados.</td>
           </tr>
         </tbody>
       </table>
