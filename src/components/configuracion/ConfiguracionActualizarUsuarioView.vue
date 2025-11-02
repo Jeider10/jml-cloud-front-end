@@ -35,6 +35,14 @@
           <label>Dirección</label>
           <input v-model="usuarioForm.direccion" type="text" />
 
+          <label>Rol</label>
+          <select v-model="usuarioForm.roleCode">
+            <option disabled value="">Seleccione un rol</option>
+            <option v-for="role in roles" :key="role.roleCode" :value="role.roleCode">
+              {{ role.roleName || role.roleCode }}
+            </option>
+          </select>
+
           <button type="button" class="agregar-btn" @click="abrirModalConfirmacion">💾 Actualizar</button>
           <button type="button" class="volver-btn" @click="volverConfiguracion">↩️ Volver</button>
         </div>
@@ -58,6 +66,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarUsuarioPorIdentificacion, actualizarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
+import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
 
 export default {
   name: 'ConfiguracionActualizarUsuarioView',
@@ -67,6 +76,8 @@ export default {
   data() {
     return {
       menuOpen: true,
+      roles: [],
+
       usuarioForm: {
         identificacion: '',
         nombres: '',
@@ -74,7 +85,8 @@ export default {
         userName: '',
         email: '',
         telefono: '',
-        direccion: ''
+        direccion: '',
+        roleCode: ''
       },
       mensaje: '',
       mensajeTipo: '',
@@ -83,20 +95,68 @@ export default {
   },
 
   async mounted() {
-    if (this.identificacion) {
-      await this.cargarUsuario()
-    } else {
+    if (!this.identificacion) {
       this.mostrarMensaje('Identificación no válida.', 'error')
+      return
+    }
+
+    // Cargar roles y usuario en paralelo
+    try {
+      await Promise.all([this.cargarRoles(), this.cargarUsuario()])
+    } catch (err) {
+      // Si alguno falla mostramos mensaje genérico (los métodos ya manejan logs)
+      this.mostrarMensaje('Error al inicializar datos del formulario.', 'error')
     }
   },
 
   methods: {
+    async cargarRoles() {
+      try {
+        const resp = await listarRoles()
+        // Asumimos que la respuesta viene en resp.data como array
+        this.roles = Array.isArray(resp.data) ? resp.data : []
+      } catch (error) {
+        // No bloqueamos la carga del usuario si falla la lista de roles,
+        // pero avisamos para que el usuario sepa que no se pudieron cargar.
+        this.roles = []
+        this.mostrarMensaje('⚠️ No se pudieron cargar los roles.', 'warning')
+        console.error('Error listarRoles:', error)
+      }
+    },
+
     async cargarUsuario() {
       try {
         const response = await buscarUsuarioPorIdentificacion(this.identificacion)
-        this.usuarioForm = { ...response.data }
+        const user = response.data
+
+        if (!user) {
+          this.mostrarMensaje('❌ Usuario no encontrado.', 'error')
+          return
+        }
+
+        // Mapeamos el DTO recibido al formulario.
+        // Intentamos detectar roleCode en varias formas posibles:
+        const roleCodeFromUser =
+          user.roleCode || (user.role && (user.role.roleCode || user.role.code)) || ''
+
+        this.usuarioForm = {
+          identificacion: user.identificacion ?? '',
+          nombres: user.nombres ?? '',
+          apellidos: user.apellidos ?? '',
+          userName: user.userName ?? '',
+          email: user.email ?? '',
+          telefono: user.telefono ?? '',
+          direccion: user.direccion ?? '',
+          roleCode: roleCodeFromUser
+        }
+
+        // Si la lista de roles ya está cargada y roleCode existe,
+        // nos aseguramos de que el select muestre la etiqueta correcta.
+        // (No es necesario más — el select está ligado a roleCode.)
+
       } catch (error) {
         this.mostrarMensaje('Error al cargar usuario.', 'error')
+        console.error('Error cargarUsuario:', error)
       }
     },
 
@@ -113,10 +173,14 @@ export default {
     async confirmarActualizacion() {
       this.mostrarConfirmacion = false
       try {
+        // Enviamos el objeto tal cual; backend debe aceptar roleCode como parte del DTO.
         await actualizarUsuario(this.usuarioForm)
         this.mostrarMensaje('✅ Usuario actualizado correctamente.', 'success')
       } catch (error) {
-        this.mostrarMensaje('❌ Error al actualizar usuario.', 'error')
+        // Si el backend devuelve mensaje, mostramos ese mensaje preferentemente
+        const backendMessage = error.response?.data?.message || error.response?.data?.mensaje
+        this.mostrarMensaje(backendMessage || '❌ Error al actualizar usuario.', 'error')
+        console.error('Error actualizarUsuario:', error)
       }
     },
 
