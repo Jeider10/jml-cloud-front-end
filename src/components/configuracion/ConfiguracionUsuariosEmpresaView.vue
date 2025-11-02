@@ -275,7 +275,7 @@ export default {
               } else {
                 // ❌ No se encontró usuario (null)
                 this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontró usuario con identificación: ${termino}`, 'info')
+                this.mostrarMensaje(`❌ No se encontró usuario con identificación: ${termino}`, 'warning')
               }
               break
 
@@ -286,7 +286,7 @@ export default {
                 this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con userName parecido a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con userName: ${termino}`, 'info')
+                this.mostrarMensaje(`❌ No se encontraron usuarios con userName: ${termino}`, 'warning')
               }
               break
 
@@ -297,7 +297,7 @@ export default {
                 this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con nombres similares a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con nombres: ${termino}`, 'info')
+                this.mostrarMensaje(`❌ No se encontraron usuarios con nombres: ${termino}`, 'warning')
               }
               break
 
@@ -308,7 +308,7 @@ export default {
                 this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con apellidos similares a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con apellidos: ${termino}`, 'info')
+                this.mostrarMensaje(`❌ No se encontraron usuarios con apellidos: ${termino}`, 'warning')
               }
               break
 
@@ -319,7 +319,7 @@ export default {
                 this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con rol parecido a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con rol: ${termino}`, 'info')
+                this.mostrarMensaje(`❌ No se encontraron usuarios con rol: ${termino}`, 'warning')
               }
               break
 
@@ -637,15 +637,18 @@ th {
 }
 
 .mensaje.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
 }
 
 .mensaje.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: #e74c3c;
+  color: white;
 }
 
 .filtro-container {
