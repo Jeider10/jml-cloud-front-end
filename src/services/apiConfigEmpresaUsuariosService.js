@@ -57,3 +57,22 @@ export const actualizarUsuario = (usuario) => apiConfigEmpresaUsuario.put('/usua
 
 // Eliminar usuario
 export const eliminarUsuario = (identificacion) => apiConfigEmpresaUsuario.delete('/usuario/delete', { params: { identificacion } })
+
+// Obtener usuario actual autenticado
+export const obtenerUsuarioActual = async (token) => {
+  try {
+    const response = await apiConfigEmpresaUsuario.get('/authentication/obtener-usuario-actual', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    return response
+  } catch (error) {
+    console.error('❌ Error al obtener usuario actual:', error)
+    throw error
+  }
+}
+
+// Buscar usuario por login
+export const buscarUsuarioPorLogin = (login) => apiConfigEmpresaUsuario.get(`/usuario/login?userName=${login}`)
+

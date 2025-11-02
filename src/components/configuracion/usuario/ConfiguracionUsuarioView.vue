@@ -13,84 +13,67 @@
         </div>
       </transition>
 
-      <!-- Tabla de Roles -->
-      <table v-if="vistaActual === 'roles'" class="tabla">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Fecha Creación</th>
-            <th>Fecha Actualización</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(r, idx) in roles" :key="r.roleCode">
-            <td>{{ r.roleCode }}</td>
-            <td>{{ r.roleName }}</td>
-            <td>{{ r.descripcion || '-' }}</td>
-            <td>{{ r.fechaCreacion || '-' }}</td>
-            <td>{{ r.fechaActualizacion || '-' }}</td>
-            <td>
-              <button class="update-btn" @click="abrirConfirmacionActualizarRol(r)">✏️</button>
-              <button class="delete-btn" @click="abrirConfirmacionEliminarRol(idx)">🗑️</button>
-            </td>
-          </tr>
-          <tr v-if="roles.length === 0">
-            <td colspan="6" class="empty-row">No hay roles registrados.</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- 🧾 Contenedor general de datos + botón -->
+      <div class="datos-container">
+        <!-- 📄 Cuadro blanco con datos -->
+        <div class="card">
+          <div class="campo">
+            <label>Identificación:</label>
+            <input type="text" v-model="usuario.identificacion" readonly />
+          </div>
 
-      <!-- Tabla de Usuarios -->
-      <table v-else class="tabla">
-        <thead>
-          <tr>
-            <th>Identificación</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
-            <th>Usuario</th>
-            <th>Rol</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Dirección</th>
-            <th>Creación</th>
-            <th>Actualización</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(u) in usuarios" :key="u.identificacion">
-            <td>{{ u.identificacion }}</td>
-            <td>{{ u.nombres }}</td>
-            <td>{{ u.apellidos }}</td>
-            <td>{{ u.userName }}</td>
-            <td>{{ u.roleName }}</td>
-            <td>{{ u.email }}</td>
-            <td>{{ u.telefono }}</td>
-            <td>{{ u.direccion }}</td>
-            <td>{{ u.fechaCreacion || '-' }}</td>
-            <td>{{ u.fechaActualizacion || '-' }}</td>
-            <td>
-              <button class="update-btn" @click="abrirConfirmacionActualizarUsuario(u)">✏️</button>
-            </td>
-          </tr>
-          <tr v-if="usuarios.length === 0">
-            <td colspan="11" class="empty-row">No hay usuarios registrados.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+          <div class="campo">
+            <label>Nombre de Usuario:</label>
+            <input
+              type="text"
+              :value="`${usuario.nombres} ${usuario.apellidos}`.trim() || usuario.userName"
+              readonly
+            />
+          </div>
 
-    <!-- Modal de confirmación para actualización -->
-    <div v-if="mostrarConfirmacionActualizar" class="modal-overlay">
-      <div class="modal">
-        <h3>⚠️ Confirmación</h3>
-        <p>¿Deseas actualizar este {{ vistaActual === 'usuarios' ? 'usuario' : 'rol' }}?</p>
-        <div class="modal-buttons">
-          <button class="si-btn" @click="confirmarActualizar">Sí</button>
-          <button class="no-btn" @click="cerrarModalActualizar">No</button>
+          <div class="campo">
+            <label>Email:</label>
+            <input type="text" v-model="usuario.email" readonly />
+          </div>
+
+          <div class="campo">
+            <label>Teléfono:</label>
+            <input type="text" v-model="usuario.telefono" readonly />
+          </div>
+
+          <div class="campo">
+            <label>Dirección:</label>
+            <input type="text" v-model="usuario.direccion" readonly />
+          </div>
+
+          <div class="campo">
+            <label>Fecha de Creación:</label>
+            <input type="text" v-model="usuario.fechaCreacion" readonly />
+          </div>
+
+          <div class="campo">
+            <label>Última Actualización:</label>
+            <input type="text" v-model="usuario.fechaActualizacion" readonly />
+          </div>
+        </div>
+
+        <!-- 📘 Botón de actualización -->
+        <div class="boton-container">
+          <button class="btn-actualizar" @click="abrirConfirmacionActualizar">
+            ✏️ Actualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal de confirmación para actualización -->
+      <div v-if="mostrarConfirmacionActualizar" class="modal-overlay">
+        <div class="modal">
+          <h3>⚠️ Confirmación</h3>
+          <p>¿Deseas actualizar los datos de tu usuario?</p>
+          <div class="modal-buttons">
+            <button class="si-btn" @click="confirmarActualizar">Sí</button>
+            <button class="no-btn" @click="cerrarModalActualizar">No</button>
+          </div>
         </div>
       </div>
     </div>
@@ -99,53 +82,80 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import {
-  buscarRolePorRoleCode,
-  listarRoles,
-  eliminarRole,
-  buscarRolePorRoleName
-} from '@/services/apiConfigEmpresaRolesService'
-import {
-  buscarUsuarioPorIdentificacion,
-  listarUsuarios,
-  eliminarUsuario,
-  buscarUsuarioPorUserName,
-  buscarUsuarioPorNombres,
-  buscarUsuarioPorApellidos,
-  buscarUsuarioPorRoleName
-} from '@/services/apiConfigEmpresaUsuariosService'
+import { obtenerUsuarioActual, buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
 
 export default {
-  name: 'ConfiguracionEmpresaUsuariosView',
+  name: 'ConfiguracionUsuarioView',
   components: { DashboardSideMenu },
   data() {
     return {
       menuOpen: true,
-      vistaActual: 'usuarios',
-      roles: [],
-      usuarios: [],
-      usuariosOriginal: [],
-      rolesOriginal: [],
-      tipoBusqueda: '',
-      busqueda: '',
+      usuario: {
+        identificacion: '',
+        userName: '',
+        email: '',
+        telefono: '',
+        direccion: '',
+        fechaCreacion: '',
+        fechaActualizacion: ''
+      },
       mostrarConfirmacionActualizar: false,
-      mostrarConfirmacionEliminar: false,
-      usuarioSeleccionado: null,
-      rolSeleccionado: null,
-      indiceSeleccionado: null,
       mensaje: '',
       mensajeTipo: 'success'
     }
   },
 
   async mounted() {
-    const vista = this.$route.query.vista
-    if (vista === 'roles' || vista === 'usuarios') {
-        this.vistaActual = vista
-    } else {
-        this.vistaActual = 'usuarios'
+    try {
+      const token = localStorage.getItem('sessionToken')
+      if (!token) {
+        this.mostrarMensaje('⚠️ No hay sesión activa. Inicia sesión nuevamente.', 'warning')
+        this.$router.push('/login')
+        return
+      }
+
+      const response = await obtenerUsuarioActual(token)
+      console.log('🔹 obtenerUsuarioActual →', response)
+
+      const data = response?.data || {}
+      const userName = data?.options?.login
+      console.log('🔸 userName obtenido:', userName)
+
+      if (userName) {
+        const { data: datosUsuario } = await buscarUsuarioPorUserName(userName)
+        console.log('🔹 buscarUsuarioPorUserName →', datosUsuario)
+
+        // ⚠️ Si el backend devuelve un array, toma el primer elemento
+        const usuarioData = Array.isArray(datosUsuario) ? datosUsuario[0] : datosUsuario
+
+        if (usuarioData) {
+          // Mapear los campos al modelo del frontend
+          this.usuario = {
+            identificacion: usuarioData.identificacion || '',
+            userName: usuarioData.userName || '',
+            nombres: usuarioData.nombres || '',
+            apellidos: usuarioData.apellidos || '',
+            email: usuarioData.email || '',
+            telefono: usuarioData.telefono || '',
+            direccion: usuarioData.direccion || '',
+            fechaCreacion: usuarioData.fechaCreacion || '',
+            fechaActualizacion: usuarioData.fechaActualizacion || ''
+          }
+
+          this.mostrarMensaje('✅ Usuario autenticado cargado correctamente.', 'success')
+        } else {
+          this.mostrarMensaje(`⚠️ No se encontraron datos para el usuario: ${userName}`, 'warning')
+        }
+      } else {
+        this.mostrarMensaje('⚠️ No se encontró información del usuario autenticado.', 'warning')
+      }
+    } catch (error) {
+      console.error('❌ Error al cargar usuario:', error)
+      this.mostrarMensaje(
+        error.response?.data?.message || `❌ Error al cargar datos del usuario: ${error.message}`,
+        'error'
+      )
     }
-    await this.cargarDatos()
   },
 
   methods: {
@@ -158,218 +168,20 @@ export default {
       }, 3000)
     },
 
-    async cargarDatos() {
-      if (this.vistaActual === 'roles') {
-        const { data } = await listarRoles()
-        this.roles = data || []
-        this.rolesOriginal = [...this.roles]
-      } else {
-        const { data } = await listarUsuarios()
-        this.usuarios = data || []
-        this.usuariosOriginal = [...this.usuarios]
-      }
-    },
-
-    async cambiarVista(vista) {
-      this.vistaActual = vista
-      this.tipoBusqueda = ''
-      this.busqueda = ''
-      await this.cargarDatos()
-    },
-
-    // 🔍 Filtrar según tipo y término
-    async filtrarDatos() {
-      const termino = this.busqueda.trim()
-      if (!termino || !this.tipoBusqueda) {
-        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y ingrese un término.', 'error')
-        return
-      }
-
-      try {
-        if (this.vistaActual === 'usuarios') {
-          let response
-
-          switch (this.tipoBusqueda) {
-            case 'identificacion':
-              response = await buscarUsuarioPorIdentificacion(termino)
-
-              if (response.data) {
-                // ✅ Usuario encontrado
-                this.usuarios = [response.data]
-                this.mostrarMensaje('✅ Usuario encontrado correctamente.', 'success')
-              } else {
-                // ❌ No se encontró usuario (null)
-                this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontró usuario con identificación: ${termino}`, 'warning')
-              }
-              break
-
-            case 'userName':
-              response = await buscarUsuarioPorUserName(termino)
-              if (response.data && response.data.length > 0) {
-                this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con userName parecido a "${termino}".`, 'success')
-              } else {
-                this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con userName: ${termino}`, 'warning')
-              }
-              break
-
-            case 'nombres':
-              response = await buscarUsuarioPorNombres(termino)
-              if (response.data && response.data.length > 0) {
-                this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con nombres similares a "${termino}".`, 'success')
-              } else {
-                this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con nombres: ${termino}`, 'warning')
-              }
-              break
-
-            case 'apellidos':
-              response = await buscarUsuarioPorApellidos(termino)
-              if (response.data && response.data.length > 0) {
-                this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con apellidos similares a "${termino}".`, 'success')
-              } else {
-                this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con apellidos: ${termino}`, 'warning')
-              }
-              break
-
-            case 'roleName':
-              response = await buscarUsuarioPorRoleName(termino)
-              if (response.data && response.data.length > 0) {
-                this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con rol parecido a "${termino}".`, 'success')
-              } else {
-                this.usuarios = []
-                this.mostrarMensaje(`❌ No se encontraron usuarios con rol: ${termino}`, 'warning')
-              }
-              break
-
-            default:
-              this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado.', 'error')
-              return
-          }
-
-        } else if (this.vistaActual === 'roles') {
-          // 🔍 Filtrado de roles
-          let response
-
-          switch (this.tipoBusqueda) {
-            case 'roleCode':
-              response = await buscarRolePorRoleCode(termino)
-              if (response.data) {
-                this.roles = [response.data]
-                this.mostrarMensaje('✅ Rol encontrado correctamente.', 'success')
-              } else {
-                this.roles = []
-                this.mostrarMensaje(`❌ No se encontró rol con código: ${termino}`, 'warning')
-              }
-              break
-
-            case 'roleName':
-              response = await buscarRolePorRoleName(termino)
-              if (response.data && response.data.length > 0) {
-                this.roles = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} roles con nombre parecido a "${termino}".`, 'success')
-              } else {
-                this.roles = []
-                this.mostrarMensaje(`❌ No se encontraron roles con nombre: ${termino}`, 'warning')
-              }
-              break
-
-            default:
-              this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado para roles.', 'error')
-              return
-          }
-        }
-
-      } catch (error) {
-        // Si algo falla realmente (error HTTP, conexión, etc.)
-        this.mostrarMensaje(
-          error.response?.data?.message || `❌ Error de conexión: ${error.message}`,
-          'error'
-        )
-      }
-    },
-
-    irARegistro() {
-      if (this.vistaActual === 'roles') {
-        this.$router.push({ name: 'ConfiguracionEmpresaRegistroRolesView' })
-      } else {
-        this.$router.push({ name: 'ConfiguracionEmpresaRegistroUsuariosView' })
-      }
-    },
-
-    // 🔹 Abrir modal de confirmación para actualización de usuario
-    abrirConfirmacionActualizarUsuario(usuario) {
-      this.usuarioSeleccionado = usuario
+    abrirConfirmacionActualizar() {
       this.mostrarConfirmacionActualizar = true
-    },
-
-    // 🔹 Abrir modal de confirmación para actualización de rol
-    abrirConfirmacionActualizarRol(role) {
-      this.rolSeleccionado = role
-      this.mostrarConfirmacionActualizar = true
-    },
-
-    confirmarActualizar() {
-      if (this.vistaActual === 'usuarios' && this.usuarioSeleccionado) {
-        this.$router.push({
-          name: 'ConfiguracionActualizarUsuarioView',
-          params: { identificacion: this.usuarioSeleccionado.identificacion }
-        })
-      } else if (this.vistaActual === 'roles' && this.rolSeleccionado) {
-        this.$router.push({
-          name: 'ConfiguracionEmpresaActualizarRoleView',
-          params: { roleCode: this.rolSeleccionado.roleCode }
-        })
-      }
-      this.cerrarModalActualizar()
     },
 
     cerrarModalActualizar() {
       this.mostrarConfirmacionActualizar = false
-      this.usuarioSeleccionado = null
-      this.rolSeleccionado = null
     },
 
-    // 🔹 Abrir modal de confirmación para eliminación
-    abrirConfirmacionEliminarUsuario(idx) {
-      this.indiceSeleccionado = idx
-      this.mostrarConfirmacionEliminar = true
-    },
-
-    abrirConfirmacionEliminarRol(idx) {
-      this.indiceSeleccionado = idx
-      this.mostrarConfirmacionEliminar = true
-    },
-
-    async confirmarEliminar() {
-      try {
-        if (this.vistaActual === 'usuarios') {
-          const usuario = this.usuarios[this.indiceSeleccionado]
-          await eliminarUsuario(usuario.identificacion)
-          this.mostrarMensaje(`✅ Usuario "${usuario.nombres} ${usuario.apellidos}" eliminado correctamente.`)
-          this.usuarios.splice(this.indiceSeleccionado, 1)
-        } else if (this.vistaActual === 'roles') {
-          const rol = this.roles[this.indiceSeleccionado]
-          await eliminarRole(rol.roleCode)
-          this.mostrarMensaje(`✅ Rol "${rol.roleName}" eliminado correctamente.`)
-          this.roles.splice(this.indiceSeleccionado, 1)
-        }
-      } catch (error) {
-        this.mostrarMensaje(`❌ Error al eliminar ${this.vistaActual === 'usuarios' ? 'usuario' : 'rol'}: ${error.message}`, 'error')
-      } finally {
-        this.cerrarModalEliminar()
-      }
-    },
-
-    cerrarModalEliminar() {
-      this.mostrarConfirmacionEliminar = false
-      this.indiceSeleccionado = null
+    confirmarActualizar() {
+      this.$router.push({
+        name: 'ConfiguracionActualizarUsuarioView',
+        params: { identificacion: this.usuario.identificacion }
+      })
+      this.cerrarModalActualizar()
     }
   }
 }
@@ -403,109 +215,87 @@ export default {
   text-align: center;
 }
 
-.switch-view {
+.datos-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  gap: 25px;
+  margin-top: 20px;
 }
 
-.switch-view button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 2px solid #28a745;
+.card {
   background: white;
-  cursor: pointer;
+  padding: 25px;
+  border-radius: 10px;
+  width: 500px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+label {
   font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
 }
 
-.switch-view button.activo {
-  background: #28a745;
-  color: white;
-}
-
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  margin-top: 20px;
-}
-
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-th {
-  border: 1px solid #ccc;
+input {
   padding: 8px;
-  text-align: center;
-}
-
-td {
+  border-radius: 6px;
   border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
+  background-color: #f5f5f5;
+  color: #555;
 }
 
-th {
-  background: #0077b6;
+.boton-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.btn-actualizar {
+  background-color: #007bff;
   color: white;
-}
-
-.tabla th {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
-}
-
-.tabla td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
-}
-
-.tabla th {
-  background-color: #28a745;
-  color: white;
-}
-
-.acciones {
-  text-align: center;
-}
-
-.registrar-btn {
-  background: #007bff;
-  color: white;
-  padding: 12px 20px;
+  padding: 12px 18px;
   border: none;
   border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.registrar-btn:hover {
-  background: #0056b3;
+.btn-actualizar:hover {
+  background-color: #0056b3;
 }
 
-.update-btn, .delete-btn {
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  margin: 0 4px;
-}
-
-.update-btn:hover {
-  color: #0077b6;
-}
-
-.delete-btn:hover {
-  color: #e63946;
-}
-
-.empty-row {
+.mensaje {
+  margin: 10px auto 20px auto;
+  padding: 10px 20px;
+  width: 80%;
+  border-radius: 8px;
   text-align: center;
-  color: #777;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
 }
 
 .modal-overlay {
@@ -565,62 +355,6 @@ th {
 
 .no-btn:hover {
   background-color: #922b21;
-}
-
-.mensaje {
-  margin: 10px auto 20px auto;
-  padding: 10px 20px;
-  width: 80%;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.mensaje.success {
-  background: #2ecc71;
-  color: white;
-}
-
-.mensaje.warning {
-  background: #f1c40f;
-  color: #333;
-}
-
-.mensaje.error {
-  background: #e74c3c;
-  color: white;
-}
-
-.filtro-container {
-  margin: 12px 0 20px;
-}
-
-.buscar-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 14px;
-  height: 32px;
-}
-
-.buscar-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.agregar-btn {
-  background-color: #2ecc71;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 14px;
-  height: 32px;
 }
 
 </style>
