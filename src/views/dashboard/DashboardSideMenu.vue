@@ -60,6 +60,12 @@
           <img src="@/assets/img/Usuario.png" alt="Usuario" />
           <span class="label">Usuarios Empresa</span>
         </div>
+
+        <!-- 🔹 Solo visible para USER -->
+        <div v-if="isUser" class="configuracion-usuario-icon nav-row" @click="onConfiguracionUsuarioClick">
+          <img src="@/assets/img/Configuracion.png" alt="ConfiguracionUsuario" />
+          <span class="label">Configuración Usuario</span>
+        </div>
       </div>
 
       <!-- 🔹 Botón de salir siempre abajo -->
@@ -95,6 +101,11 @@ export default {
     isAdmin() {
       // 👑 Control centralizado: si roleName === 'ADMIN'
       return this.roleName.toUpperCase() === 'ADMIN'
+    },
+
+    isUser() {
+      // 👑 Control centralizado: si roleName === 'USER'
+      return this.roleName.toUpperCase() === 'USER'
     }
   },
   methods: {
@@ -127,6 +138,10 @@ export default {
     },
     onUsuarioClick() {
       this.$router.push('/configuracion-empresa-usuario')
+    },
+    // 🔹 Nueva ruta para configuración personal del usuario
+    onConfiguracionUsuarioClick() {
+      this.$router.push('/configuracion-usuario')
     },
     logout() {
       // Redirigir al login o ejecutar logout real
