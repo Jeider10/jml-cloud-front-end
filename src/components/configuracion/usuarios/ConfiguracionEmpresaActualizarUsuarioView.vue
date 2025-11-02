@@ -1,4 +1,4 @@
-<!-- src/components/configuracion/ConfiguracionActualizarUsuarioView.vue -->
+<!-- src/components/configuracion/usuarios/ConfiguracionEmpresaActualizarUsuarioView.vue -->
 
 <template>
   <div class="registro-proveedor-wrapper">
@@ -69,7 +69,7 @@ import { buscarUsuarioPorIdentificacion, actualizarUsuario } from '@/services/ap
 import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
 
 export default {
-  name: 'ConfiguracionActualizarUsuarioView',
+  name: 'ConfiguracionEmpresaActualizarUsuarioView',
   components: { DashboardSideMenu },
   props: ['identificacion'],
 

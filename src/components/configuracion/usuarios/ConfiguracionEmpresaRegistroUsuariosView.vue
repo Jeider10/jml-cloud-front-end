@@ -1,13 +1,11 @@
-<!-- src/components/configuracion/RegistroRolesView.vue -->
+<!-- src/components/configuracion/usuarios/ConfiguracionEmpresaRegistroUsuariosView.vue -->
 
 <template>
   <div class="registro-wrapper">
-    <!-- Menú lateral -->
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />
 
-    <!-- Contenido principal -->
     <div :class="['registro-container', { expanded: menuOpen }]">
-      <h1 class="titulo">Registro de Rol</h1>
+      <h1 class="titulo">Registro de Usuario</h1>
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
@@ -16,24 +14,43 @@
         </div>
       </transition>
 
-      <!-- Formulario de rol -->
       <div class="form-container">
         <div class="form-row">
-          <label>Código Rol</label>
-          <input v-model="roleForm.roleCode" type="text" />
+          <label>Identificación</label>
+          <input v-model="usuarioForm.identificacion" type="text" />
 
-          <label>Nombre Rol</label>
-          <input v-model="roleForm.roleName" type="text" />
+          <label>Nombres</label>
+          <input v-model="usuarioForm.nombres" type="text" />
 
-          <label>Descripción</label>
-          <input v-model="roleForm.descripcion" type="text" />
+          <label>Apellidos</label>
+          <input v-model="usuarioForm.apellidos" type="text" />
 
-          <!-- Botones -->
+          <label>Usuario</label>
+          <input v-model="usuarioForm.userName" type="text" />
+
+          <label>Contraseña</label>
+          <input v-model="usuarioForm.password" type="text" />
+
+          <label>Correo</label>
+          <input v-model="usuarioForm.email" type="email" />
+
+          <label>Teléfono</label>
+          <input v-model="usuarioForm.telefono" type="text" />
+
+          <label>Dirección</label>
+          <input v-model="usuarioForm.direccion" type="text" />
+
+          <label>Rol</label>
+          <select v-model="usuarioForm.roleCode">
+            <option disabled value="">Seleccione un rol</option>
+            <option v-for="r in roles" :key="r.roleCode" :value="r.roleCode">{{ r.roleName }}</option>
+          </select>
+
           <button type="button"
                   class="agregar-btn"
                   :disabled="!hayDatos()"
-                  @click="registrarRol">
-            ➕ Registrar Rol
+                  @click="registrarUsuario">
+            ➕ Registrar Usuario
           </button>
 
           <button type="button"
@@ -56,58 +73,88 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { registrarRole } from '@/services/apiConfigEmpresaRolesService'
+import { registrarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
+import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
 
 export default {
-  name: 'RegistroRolesView',
+  name: 'RegistroUsuariosView',
   components: { DashboardSideMenu },
   data() {
     return {
       menuOpen: true,
-      roleForm: {
-        roleCode: '',
-        roleName: '',
-        descripcion: ''
+      usuarioForm: {
+        identificacion: '',
+        nombres: '',
+        apellidos: '',
+        userName: '',
+        password: '',
+        email: '',
+        telefono: '',
+        direccion: '',
+        roleCode: ''
       },
+      roles: [],
       mensaje: '',
       mensajeTipo: ''
     }
   },
+  async mounted() {
+    await this.cargarRoles()
+  },
   methods: {
+    async cargarRoles() {
+      try {
+        const { data } = await listarRoles()
+        this.roles = data || []
+      } catch (error) {
+        console.error('❌ Error al cargar roles:', error)
+        this.mostrarMensaje('No se pudieron cargar los roles.', 'error')
+      }
+    },
     mostrarMensaje(texto, tipo = 'success') {
       this.mensaje = texto
       this.mensajeTipo = tipo
       setTimeout(() => {
         this.mensaje = ''
         if (tipo === 'success') {
-          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
+          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
         }
       }, 2500)
     },
-    async registrarRol() {
-      if (!this.roleForm.roleCode || !this.roleForm.roleName) {
+    async registrarUsuario() {
+      if (!this.usuarioForm.identificacion || !this.usuarioForm.nombres || !this.usuarioForm.userName || !this.usuarioForm.password || !this.usuarioForm.roleCode) {
         this.mostrarMensaje('⚠️ Complete los campos obligatorios.', 'error')
         return
       }
 
       try {
-        const response = await registrarRole(this.roleForm)
+        const response = await registrarUsuario(this.usuarioForm)
         const data = response.data
-        this.mostrarMensaje(`✅ Rol "${data.roleName}" registrado correctamente.`, 'success')
+        this.mostrarMensaje(`✅ Usuario "${data.nombres} ${data.apellidos}" registrado correctamente.`, 'success')
         this.limpiarCampos()
       } catch (error) {
-        console.error('❌ Error al registrar rol:', error)
-        this.mostrarMensaje(error.message || 'Error al registrar rol.', 'error')
+        console.error('❌ Error al registrar usuario:', error)
+        this.mostrarMensaje(error.message || 'Error al registrar usuario.', 'error')
       }
     },
     hayDatos() {
-      return this.roleForm.roleCode || this.roleForm.roleName || this.roleForm.descripcion
+      return Object.values(this.usuarioForm).some(v => v)
     },
     limpiarCampos() {
-      this.roleForm = { roleCode: '', roleName: '', descripcion: '' }
+      this.usuarioForm = {
+        identificacion: '',
+        nombres: '',
+        apellidos: '',
+        userName: '',
+        password: '',
+        email: '',
+        telefono: '',
+        direccion: '',
+        roleCode: ''
+      }
     },
     volverAConfiguracion() {
-      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
+      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
     }
   }
 }
@@ -152,9 +199,20 @@ export default {
   box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
 }
 
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error { background: #e74c3c; color: white; }
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
 
 .form-container {
   margin-bottom: 0px;

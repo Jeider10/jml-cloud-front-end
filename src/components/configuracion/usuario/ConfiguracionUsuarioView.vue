@@ -1,70 +1,10 @@
-<!-- src/components/configuracion/ConfiguracionUsuariosEmpresaView.vue -->
+<!-- src/components/configuracion/usuario/ConfiguracionUsuarioView.vue -->
 
 <template>
   <div class="configuracion-empresa-wrapper">
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />
     <div :class="['main-content', { expanded: menuOpen }]">
-      <h1 class="titulo">Administración de Usuarios y Roles</h1>
-
-      <!-- Selector -->
-      <div class="switch-view">
-        <button :class="{ activo: vistaActual === 'usuarios' }" @click="cambiarVista('usuarios')">👤 Usuarios</button>
-        <button :class="{ activo: vistaActual === 'roles' }" @click="cambiarVista('roles')">🧩 Roles</button>
-      </div>
-
-      <!-- 🔍 Filtro compacto dinámico centrado -->
-      <div style="display: flex; justify-content: center; margin-top: 15px;">
-        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-          <!-- Selector de tipo de búsqueda -->
-          <select v-model="tipoBusqueda" style="height: 32px;">
-            <option disabled value="">Seleccione una opción</option>
-
-            <!-- Opciones según vista -->
-            <template v-if="vistaActual === 'usuarios'">
-              <option value="identificacion">Identificación</option>
-              <option value="nombres">Nombres</option>
-              <option value="apellidos">Apellidos</option>
-              <option value="userName">Usuario</option>
-              <option value="roleName">Rol</option>
-            </template>
-            <template v-else>
-              <option value="roleCode">Código</option>
-              <option value="roleName">Nombre</option>
-              <option value="descripcion">Descripción</option>
-            </template>
-          </select>
-
-          <!-- 🔍 Termino de búsqueda -->
-          <input v-model="busqueda"
-                 type="text"
-                 placeholder="Ingrese término de búsqueda"
-                 :disabled="!tipoBusqueda"
-                 style="height: 30px; width: 200px; padding-left: 6px;" />
-
-          <!-- 🔍 Botón de búsqueda -->
-          <button type="button"
-                  class="buscar-btn"
-                  :disabled="!busqueda || !tipoBusqueda"
-                  @click="filtrarDatos">
-                  🔍 Buscar
-          </button>
-
-          <!-- 🧹 Botón de limpiar búsqueda -->
-          <button type="button"
-                  class="buscar-btn"
-                  :disabled="!busqueda"
-                  @click="limpiarBusqueda">
-                  🧹 Limpiar
-          </button>
-
-          <!-- ➕ Botón de registro -->
-          <button type="button"
-                  class="agregar-btn"
-                  @click="irARegistro">
-                  ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
-          </button>
-        </div>
-      </div>
+      <h1 class="titulo">Configuración de Usuario</h1>
 
       <!-- 🔔 Mensaje visual -->
       <transition name="fade">
@@ -121,7 +61,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(u, idx) in usuarios" :key="u.identificacion">
+          <tr v-for="(u) in usuarios" :key="u.identificacion">
             <td>{{ u.identificacion }}</td>
             <td>{{ u.nombres }}</td>
             <td>{{ u.apellidos }}</td>
@@ -134,7 +74,6 @@
             <td>{{ u.fechaActualizacion || '-' }}</td>
             <td>
               <button class="update-btn" @click="abrirConfirmacionActualizarUsuario(u)">✏️</button>
-              <button class="delete-btn" @click="abrirConfirmacionEliminarUsuario(idx)">🗑️</button>
             </td>
           </tr>
           <tr v-if="usuarios.length === 0">
@@ -152,18 +91,6 @@
         <div class="modal-buttons">
           <button class="si-btn" @click="confirmarActualizar">Sí</button>
           <button class="no-btn" @click="cerrarModalActualizar">No</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de confirmación para eliminación -->
-    <div v-if="mostrarConfirmacionEliminar" class="modal-overlay">
-      <div class="modal">
-        <h3>⚠️ Confirmación</h3>
-        <p>¿Seguro que deseas eliminar este {{ vistaActual === 'usuarios' ? 'usuario' : 'rol' }}?</p>
-        <div class="modal-buttons">
-          <button class="si-btn" @click="confirmarEliminar">Sí</button>
-          <button class="no-btn" @click="cerrarModalEliminar">No</button>
         </div>
       </div>
     </div>
@@ -189,7 +116,7 @@ import {
 } from '@/services/apiConfigEmpresaUsuariosService'
 
 export default {
-  name: 'ConfiguracionUsuariosEmpresaView',
+  name: 'ConfiguracionEmpresaUsuariosView',
   components: { DashboardSideMenu },
   data() {
     return {
@@ -368,22 +295,11 @@ export default {
       }
     },
 
-    // 🧹 Limpiar filtro
-    limpiarBusqueda() {
-      this.busqueda = ''
-      this.tipoBusqueda = ''
-      if (this.vistaActual === 'usuarios') {
-        this.usuarios = [...this.usuariosOriginal]
-      } else {
-        this.roles = [...this.rolesOriginal]
-      }
-    },
-
     irARegistro() {
       if (this.vistaActual === 'roles') {
-        this.$router.push({ name: 'ConfiguracionRegistroRolesView' })
+        this.$router.push({ name: 'ConfiguracionEmpresaRegistroRolesView' })
       } else {
-        this.$router.push({ name: 'ConfiguracionRegistroUsuariosView' })
+        this.$router.push({ name: 'ConfiguracionEmpresaRegistroUsuariosView' })
       }
     },
 
@@ -407,7 +323,7 @@ export default {
         })
       } else if (this.vistaActual === 'roles' && this.rolSeleccionado) {
         this.$router.push({
-          name: 'ConfiguracionActualizarRoleView',
+          name: 'ConfiguracionEmpresaActualizarRoleView',
           params: { roleCode: this.rolSeleccionado.roleCode }
         })
       }

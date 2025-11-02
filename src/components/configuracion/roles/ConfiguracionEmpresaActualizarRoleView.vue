@@ -1,4 +1,4 @@
-<!-- src/components/configuracion/ConfiguracionActualizarRoleView.vue -->
+<!-- src/components/configuracion/roles/ConfiguracionEmpresaActualizarRoleView.vue -->
 <template>
   <div class="registro-proveedor-wrapper">
     <DashboardSideMenu @menu-toggle="menuOpen = $event" />
@@ -48,7 +48,7 @@ import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarRolePorRoleCode, actualizarRole } from '@/services/apiConfigEmpresaRolesService'
 
 export default {
-  name: 'ConfiguracionActualizarRoleView',
+  name: 'ConfiguracionEmpresaActualizarRoleView',
   components: { DashboardSideMenu },
   props: ['roleCode'],
   data() {

@@ -17,11 +17,13 @@ import ProductosView from '@/components/productos/ProductosView.vue'
 import ActualizarProductosView from '@/components/productos/ActualizarProductosView.vue'
 import HistorialVentasView from '@/components/ventas/HistorialVentasView.vue'
 import ConfiguracionEmpresaView from '@/components/configuracion/ConfiguracionEmpresaView.vue'
-import ConfiguracionUsuariosEmpresaView from '@/components/configuracion/ConfiguracionUsuariosEmpresaView.vue'
-import ConfiguracionRegistroRolesView from '@/components/configuracion/ConfiguracionRegistroRolesView.vue'
-import ConfiguracionRegistroUsuariosView from '@/components/configuracion/ConfiguracionRegistroUsuariosView.vue'
-import ConfiguracionActualizarUsuarioView from '@/components/configuracion/ConfiguracionActualizarUsuarioView.vue'
-import ConfiguracionActualizarRoleView from '@/components/configuracion/ConfiguracionActualizarRoleView.vue'
+import ConfiguracionEmpresaUsuariosView from '@/components/configuracion/ConfiguracionEmpresaUsuariosView.vue'
+import ConfiguracionEmpresaRegistroRolesView from '@/components/configuracion/roles/ConfiguracionEmpresaRegistroRolesView.vue'
+import ConfiguracionEmpresaActualizarRoleView from '@/components/configuracion/roles/ConfiguracionEmpresaActualizarRoleView.vue'
+import ConfiguracionEmpresaRegistroUsuariosView from '@/components/configuracion/usuarios/ConfiguracionEmpresaRegistroUsuariosView.vue'
+import ConfiguracionEmpresaActualizarUsuarioView from '@/components/configuracion/usuarios/ConfiguracionEmpresaActualizarUsuarioView.vue'
+import ConfiguracionUsuarioView from '@/components/configuracion/usuario/ConfiguracionUsuarioView.vue'
+import ConfiguracionActualizarUsuarioView from '@/components/configuracion/usuario/ConfiguracionActualizarUsuarioView.vue'
 
 const routes = [
   {
@@ -113,27 +115,38 @@ const routes = [
   },
   {
     path: '/configuracion-empresa-usuario',
-    name: 'ConfiguracionUsuariosEmpresaView',
-    component: ConfiguracionUsuariosEmpresaView
+    name: 'ConfiguracionEmpresaUsuariosView',
+    component: ConfiguracionEmpresaUsuariosView
   },
   {
     path: '/registro/roles',
-    name: 'ConfiguracionRegistroRolesView',
-    component: ConfiguracionRegistroRolesView
+    name: 'ConfiguracionEmpresaRegistroRolesView',
+    component: ConfiguracionEmpresaRegistroRolesView
   },
   {
     path: '/actualizar-roles/:roleCode',
-    name: 'ConfiguracionActualizarRoleView',
-    component: ConfiguracionActualizarRoleView,
+    name: 'ConfiguracionEmpresaActualizarRoleView',
+    component: ConfiguracionEmpresaActualizarRoleView,
     props: true   // 👈 Esto hace que "roleCode" llegue como prop
   },
   {
     path: '/registro/usuarios',
-    name: 'ConfiguracionRegistroUsuariosView',
-    component: ConfiguracionRegistroUsuariosView
+    name: 'ConfiguracionEmpresaRegistroUsuariosView',
+    component: ConfiguracionEmpresaRegistroUsuariosView
   },
   {
     path: '/actualizar/usuarios/:identificacion',
+    name: 'ConfiguracionEmpresaActualizarUsuarioView',
+    component: ConfiguracionEmpresaActualizarUsuarioView,
+    props: true   // 👈 Esto hace que "identificacion" llegue como prop
+  },
+  {
+    path: '/configuracion-usuario',
+    name: 'ConfiguracionUsuarioView',
+    component: ConfiguracionUsuarioView
+  },
+  {
+    path: '/actualizar/configuracion-usuario/:identificacion',
     name: 'ConfiguracionActualizarUsuarioView',
     component: ConfiguracionActualizarUsuarioView,
     props: true   // 👈 Esto hace que "identificacion" llegue como prop
