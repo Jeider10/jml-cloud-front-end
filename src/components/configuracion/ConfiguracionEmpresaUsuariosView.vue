@@ -187,7 +187,8 @@ import {
   buscarUsuarioPorUserName,
   buscarUsuarioPorNombres,
   buscarUsuarioPorApellidos,
-  buscarUsuarioPorRoleName
+  buscarUsuarioPorRoleName,
+  obtenerUsuarioActual
 } from '@/services/apiConfigEmpresaUsuariosService'
 
 export default {
@@ -209,17 +210,44 @@ export default {
       rolSeleccionado: null,
       indiceSeleccionado: null,
       mensaje: '',
-      mensajeTipo: 'success'
+      mensajeTipo: 'success',
+      userLogin: null
     }
   },
 
   async mounted() {
     const vista = this.$route.query.vista
     if (vista === 'roles' || vista === 'usuarios') {
-        this.vistaActual = vista
+      this.vistaActual = vista
     } else {
-        this.vistaActual = 'usuarios'
+      this.vistaActual = 'usuarios'
     }
+
+    // ✅ Cargar usuario logueado con cabecera Authorization
+    try {
+      const token = localStorage.getItem('sessionToken')
+      if (token) {
+        // ✅ Ppasamos el token
+        const response = await obtenerUsuarioActual(token)
+
+        // ✅ Leemos el login
+        this.userLogin = response?.data?.options?.login || null
+
+        // if (this.userLogin) {
+          // this.mostrarMensaje(`✅ Usuario autenticado cargado correctamente (${this.userLogin}).`, 'success')
+        // } else {
+          // this.mostrarMensaje('⚠️ No se encontró información del usuario autenticado.', 'warning')
+        // }
+
+        console.log('🆕 Usuario logueado detectado:', this.userLogin)
+      } else {
+        this.mostrarMensaje('⚠️ No se encontró token en localStorage.', 'warning')
+      }
+    } catch (error) {
+      console.error('❌ Error al obtener usuario logueado:', error)
+      this.mostrarMensaje('❌ Error al obtener el usuario actual.', 'error')
+    }
+
     await this.cargarDatos()
   },
 
@@ -256,7 +284,7 @@ export default {
     async filtrarDatos() {
       const termino = this.busqueda.trim()
       if (!termino || !this.tipoBusqueda) {
-        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y ingrese un término.', 'error')
+        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
         return
       }
 
@@ -281,9 +309,9 @@ export default {
 
             case 'userName':
               response = await buscarUsuarioPorUserName(termino)
-              if (response.data && response.data.length > 0) {
+              if (response.data?.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con userName parecido a "${termino}".`, 'success')
+                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con userName: ${termino}`, 'warning')
@@ -292,9 +320,9 @@ export default {
 
             case 'nombres':
               response = await buscarUsuarioPorNombres(termino)
-              if (response.data && response.data.length > 0) {
+              if (response.data?.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con nombres similares a "${termino}".`, 'success')
+                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con nombres: ${termino}`, 'warning')
@@ -303,9 +331,9 @@ export default {
 
             case 'apellidos':
               response = await buscarUsuarioPorApellidos(termino)
-              if (response.data && response.data.length > 0) {
+              if (response.data?.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con apellidos similares a "${termino}".`, 'success')
+                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con apellidos: ${termino}`, 'warning')
@@ -314,9 +342,9 @@ export default {
 
             case 'roleName':
               response = await buscarUsuarioPorRoleName(termino)
-              if (response.data && response.data.length > 0) {
+              if (response.data?.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con rol parecido a "${termino}".`, 'success')
+                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con rol: ${termino}`, 'warning')
@@ -325,7 +353,6 @@ export default {
 
             default:
               this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado.', 'error')
-              return
           }
 
         } else if (this.vistaActual === 'roles') {
@@ -346,9 +373,9 @@ export default {
 
             case 'roleName':
               response = await buscarRolePorRoleName(termino)
-              if (response.data && response.data.length > 0) {
+              if (response.data?.length > 0) {
                 this.roles = response.data
-                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} roles con nombre parecido a "${termino}".`, 'success')
+                this.mostrarMensaje(`✅ ${response.data.length} roles encontrados.`, 'success')
               } else {
                 this.roles = []
                 this.mostrarMensaje(`❌ No se encontraron roles con nombre: ${termino}`, 'warning')
@@ -357,7 +384,6 @@ export default {
 
             default:
               this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado para roles.', 'error')
-              return
           }
         }
 
@@ -405,7 +431,10 @@ export default {
       if (this.vistaActual === 'usuarios' && this.usuarioSeleccionado) {
         this.$router.push({
           name: 'ConfiguracionEmpresaActualizarUsuarioView',
-          params: { identificacion: this.usuarioSeleccionado.identificacion }
+          params: {
+            identificacion: this.usuarioSeleccionado.identificacion,
+            userLogin: this.userLogin
+          }
         })
       } else if (this.vistaActual === 'roles' && this.rolSeleccionado) {
         this.$router.push({
@@ -447,7 +476,7 @@ export default {
           this.roles.splice(this.indiceSeleccionado, 1)
         }
       } catch (error) {
-        this.mostrarMensaje(`❌ Error al eliminar ${this.vistaActual === 'usuarios' ? 'usuario' : 'rol'}: ${error.message}`, 'error')
+        this.mostrarMensaje(`❌ Error al eliminar: ${error.message}`, 'error')
       } finally {
         this.cerrarModalEliminar()
       }

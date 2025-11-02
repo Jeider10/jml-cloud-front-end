@@ -53,7 +53,11 @@ export const buscarUsuarioPorApellidos = (apellidos) => apiConfigEmpresaUsuario.
 export const buscarUsuarioPorRoleName = (roleName) => apiConfigEmpresaUsuario.get('/usuario/roleName', { params: { roleName } })
 
 // Actualizar usuario
-export const actualizarUsuario = (usuario) => apiConfigEmpresaUsuario.put('/usuario/update', usuario)
+export const actualizarUsuario = (usuario, userLogin) => {
+  return apiConfigEmpresaUsuario.put('/usuario/update', usuario, {
+    params: { userLogin }
+  })
+}
 
 // Eliminar usuario
 export const eliminarUsuario = (identificacion) => apiConfigEmpresaUsuario.delete('/usuario/delete', { params: { identificacion } })
