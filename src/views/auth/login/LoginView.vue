@@ -52,11 +52,16 @@ export default {
       this.errorMessage = ''
       try {
         const response = await login(this.usuario, this.password)
-        const { authorization } = response.data
 
         // Guarda datos temporalmente (o usa Vuex)
+        const { authorization, options } = response.data
+        const { login: username, roleCode, roleName } = options
+
+        // 🧠 Guardamos todo lo necesario
         localStorage.setItem('sessionToken', authorization)
-        localStorage.setItem('authUsername', this.usuario)
+        localStorage.setItem('authUsername', username)
+        localStorage.setItem('roleCode', roleCode)
+        localStorage.setItem('roleName', roleName)
 
         // Redirige directo al dashboard
         this.$router.push('/dashboard')
@@ -78,6 +83,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 /* Ajuste general */

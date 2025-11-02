@@ -13,7 +13,7 @@
           <span class="label">Inicio</span>
         </div>
 
-        <!-- Botón de menu justo debajo del logo -->
+        <!-- Menú principal de menu justo debajo del logo -->
         <div class="menu-icon nav-row" @click="onMenuClick">
           <img src="@/assets/img/Menu.png" alt="Menu" />
           <span class="label">Menú</span>
@@ -49,20 +49,20 @@
           <span class="label">Ventas</span>
         </div>
 
-        <!-- Botón de configuracion -->
-        <div class="configuracion-icon nav-row" @click="onConfiguracionClick">
+        <!-- 🔹 Solo visible para ADMIN -->
+        <div v-if="isAdmin" class="configuracion-icon nav-row" @click="onConfiguracionClick">
           <img src="@/assets/img/Configuracion.png" alt="Configuracion" />
-          <span class="label">Configuración</span>
+          <span class="label">Configuración Empresa</span>
         </div>
 
-        <!-- Botón de usuario -->
-        <div class="usuario-icon nav-row" @click="onUsuarioClick">
+        <!-- 🔹 Solo visible para ADMIN -->
+        <div v-if="isAdmin" class="usuario-icon nav-row" @click="onUsuarioClick">
           <img src="@/assets/img/Usuario.png" alt="Usuario" />
-          <span class="label">Usuarios</span>
+          <span class="label">Usuarios Empresa</span>
         </div>
       </div>
 
-      <!-- Botón de salir siempre abajo -->
+      <!-- 🔹 Botón de salir siempre abajo -->
       <div class="bottom-section">
         <div class="logout-icon nav-row" @click="logout">
           <img src="@/assets/img/BotonSalir.png" alt="Salir" />
@@ -88,19 +88,17 @@ export default {
   data() {
     return {
       menuOpen: true, // Siempre arranca expandido y false arranca oculto
-      menuItems: [
-        'Nueva Venta',
-        'Clientes',
-        'Proveedor',
-        'Productos',
-        'Ventas',
-        'Configuracion',
-        'Usuarios'
-      ]
+      roleName: localStorage.getItem('roleName') || ''
+    }
+  },
+  computed: {
+    isAdmin() {
+      // 👑 Control centralizado: si roleName === 'ADMIN'
+      return this.roleName.toUpperCase() === 'ADMIN'
     }
   },
   methods: {
-    onLogoClick () {
+    onLogoClick() {
       // Puedes redirigir a dashboard si lo deseas
       this.$router.push('/dashboard')
     },
@@ -133,11 +131,18 @@ export default {
     logout() {
       // Redirigir al login o ejecutar logout real
       // alert('Salir clickeado')
+      // 🧹 Limpieza completa de sesión
+      localStorage.removeItem('sessionToken')
+      localStorage.removeItem('authUsername')
+      localStorage.removeItem('roleCode')
+      localStorage.removeItem('roleName')
+
       this.$router.push('/login')
     }
   }
 }
 </script>
+
 
 <style scoped>
 .side-menu-wrapper {
