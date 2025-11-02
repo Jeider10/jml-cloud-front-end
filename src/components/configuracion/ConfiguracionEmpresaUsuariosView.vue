@@ -233,13 +233,27 @@ export default {
         // ✅ Leemos el login
         this.userLogin = response?.data?.options?.login || null
 
+        console.log('🆕 Usuario logueado detectado:', this.userLogin)
+
         // if (this.userLogin) {
           // this.mostrarMensaje(`✅ Usuario autenticado cargado correctamente (${this.userLogin}).`, 'success')
         // } else {
           // this.mostrarMensaje('⚠️ No se encontró información del usuario autenticado.', 'warning')
         // }
 
-        console.log('🆕 Usuario logueado detectado:', this.userLogin)
+        if (this.userLogin) {
+          const { data: datosUsuario } = await buscarUsuarioPorUserName(this.userLogin)
+          console.log('🔹 buscarUsuarioPorUserName →', datosUsuario)
+
+          // ⚠️ Si el backend devuelve un array, toma el primer elemento
+          const nombreUsuarioLogin = Array.isArray(datosUsuario) ? datosUsuario[0] : datosUsuario
+          console.log('🔹 Nombre usuario login →', nombreUsuarioLogin.nombres)
+
+          // this.userLogin = nombreUsuarioLogin.nombres nombreUsuarioLogin.apellidos
+          this.userLogin = nombreUsuarioLogin.nombres + ' ' + nombreUsuarioLogin.apellidos
+        }
+
+        console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
       } else {
         this.mostrarMensaje('⚠️ No se encontró token en localStorage.', 'warning')
       }
@@ -309,9 +323,9 @@ export default {
 
             case 'userName':
               response = await buscarUsuarioPorUserName(termino)
-              if (response.data?.length > 0) {
+              if (response.data && response.data.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con userName parecido a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con userName: ${termino}`, 'warning')
@@ -320,9 +334,9 @@ export default {
 
             case 'nombres':
               response = await buscarUsuarioPorNombres(termino)
-              if (response.data?.length > 0) {
+              if (response.data && response.data.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con nombres similares a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con nombres: ${termino}`, 'warning')
@@ -331,9 +345,9 @@ export default {
 
             case 'apellidos':
               response = await buscarUsuarioPorApellidos(termino)
-              if (response.data?.length > 0) {
+              if (response.data && response.data.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con apellidos similares a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con apellidos: ${termino}`, 'warning')
@@ -342,9 +356,9 @@ export default {
 
             case 'roleName':
               response = await buscarUsuarioPorRoleName(termino)
-              if (response.data?.length > 0) {
+              if (response.data && response.data.length > 0) {
                 this.usuarios = response.data
-                this.mostrarMensaje(`✅ ${response.data.length} usuarios encontrados.`, 'success')
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} usuarios con rol parecido a "${termino}".`, 'success')
               } else {
                 this.usuarios = []
                 this.mostrarMensaje(`❌ No se encontraron usuarios con rol: ${termino}`, 'warning')
@@ -353,6 +367,7 @@ export default {
 
             default:
               this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado.', 'error')
+              return
           }
 
         } else if (this.vistaActual === 'roles') {
@@ -476,7 +491,7 @@ export default {
           this.roles.splice(this.indiceSeleccionado, 1)
         }
       } catch (error) {
-        this.mostrarMensaje(`❌ Error al eliminar: ${error.message}`, 'error')
+        this.mostrarMensaje(`❌ Error al eliminar ${this.vistaActual === 'usuarios' ? 'usuario' : 'rol'}: ${error.message}`, 'error')
       } finally {
         this.cerrarModalEliminar()
       }
