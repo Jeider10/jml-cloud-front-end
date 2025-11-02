@@ -42,6 +42,9 @@ export const registrarRole = (role) => apiConfigEmpresaRole.post('/roles/registe
 // Búsqueda de role por roleCode
 export const buscarRolePorRoleCode = (roleCode) => apiConfigEmpresaRole.get('/roles/roleCode', { params: { roleCode } })
 
+// Buscar por roleName
+export const buscarRolePorRoleName = (roleName) => apiConfigEmpresaRole.get('/roles/roleName', { params: { roleName } })
+
 // Actualizar role
 export const actualizarRole = (role) => apiConfigEmpresaRole.put('/roles/update', role)
 

@@ -142,13 +142,6 @@
           </tr>
         </tbody>
       </table>
-
-      <!-- Botón de registro -->
-      <div class="acciones">
-        <button class="registrar-btn" @click="irARegistro">
-          ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
-        </button>
-      </div>
     </div>
 
     <!-- Modal de confirmación para actualización -->
@@ -179,7 +172,12 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { listarRoles, eliminarRole } from '@/services/apiConfigEmpresaRolesService'
+import {
+  buscarRolePorRoleCode,
+  listarRoles,
+  eliminarRole,
+  buscarRolePorRoleName
+} from '@/services/apiConfigEmpresaRolesService'
 import {
   buscarUsuarioPorIdentificacion,
   listarUsuarios,
@@ -328,12 +326,39 @@ export default {
               return
           }
 
-        } else {
-          // Roles (filtrado local o backend según tengas)
-          this.roles = this.rolesOriginal.filter(r =>
-            r[this.tipoBusqueda]?.toString().toLowerCase().includes(termino.toLowerCase())
-          )
+        } else if (this.vistaActual === 'roles') {
+          // 🔍 Filtrado de roles
+          let response
+
+          switch (this.tipoBusqueda) {
+            case 'roleCode':
+              response = await buscarRolePorRoleCode(termino)
+              if (response.data) {
+                this.roles = [response.data]
+                this.mostrarMensaje('✅ Rol encontrado correctamente.', 'success')
+              } else {
+                this.roles = []
+                this.mostrarMensaje(`❌ No se encontró rol con código: ${termino}`, 'warning')
+              }
+              break
+
+            case 'roleName':
+              response = await buscarRolePorRoleName(termino)
+              if (response.data && response.data.length > 0) {
+                this.roles = response.data
+                this.mostrarMensaje(`✅ Se encontraron ${response.data.length} roles con nombre parecido a "${termino}".`, 'success')
+              } else {
+                this.roles = []
+                this.mostrarMensaje(`❌ No se encontraron roles con nombre: ${termino}`, 'warning')
+              }
+              break
+
+            default:
+              this.mostrarMensaje('⚠️ Tipo de búsqueda no soportado para roles.', 'error')
+              return
+          }
         }
+
       } catch (error) {
         // Si algo falla realmente (error HTTP, conexión, etc.)
         this.mostrarMensaje(
