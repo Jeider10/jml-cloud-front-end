@@ -134,25 +134,7 @@ export default {
           return
         }
 
-        // Mapeamos el DTO recibido al formulario.
-        // Intentamos detectar roleCode en varias formas posibles:
-        const roleCodeFromUser =
-          user.roleCode || (user.role && (user.role.roleCode || user.role.code)) || ''
-
-        this.usuarioForm = {
-          identificacion: user.identificacion ?? '',
-          nombres: user.nombres ?? '',
-          apellidos: user.apellidos ?? '',
-          userName: user.userName ?? '',
-          email: user.email ?? '',
-          telefono: user.telefono ?? '',
-          direccion: user.direccion ?? '',
-          roleCode: roleCodeFromUser
-        }
-
-        // Si la lista de roles ya está cargada y roleCode existe,
-        // nos aseguramos de que el select muestre la etiqueta correcta.
-        // (No es necesario más — el select está ligado a roleCode.)
+        this.usuarioForm = { ...response.data }
 
       } catch (error) {
         this.mostrarMensaje('Error al cargar usuario.', 'error')
