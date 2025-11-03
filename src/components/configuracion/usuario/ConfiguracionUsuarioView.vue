@@ -101,7 +101,8 @@ export default {
       },
       mostrarConfirmacionActualizar: false,
       mensaje: '',
-      mensajeTipo: 'success'
+      mensajeTipo: 'success',
+      userLogin: null
     }
   },
 
@@ -114,19 +115,26 @@ export default {
         return
       }
 
+      // ✅ Pasamos el token
       const response = await obtenerUsuarioActual(token)
       console.log('🔹 obtenerUsuarioActual →', response)
 
-      const data = response?.data || {}
-      const userName = data?.options?.login
-      console.log('🔸 userName obtenido:', userName)
+      // ✅ Leemos el login
+      this.userLogin = response?.data?.options?.login || null
 
-      if (userName) {
-        const { data: datosUsuario } = await buscarUsuarioPorUserName(userName)
+      console.log('🆕 Usuario logueado detectado:', this.userLogin)
+
+      if (this.userLogin) {
+        const { data: datosUsuario } = await buscarUsuarioPorUserName(this.userLogin)
         console.log('🔹 buscarUsuarioPorUserName →', datosUsuario)
 
         // ⚠️ Si el backend devuelve un array, toma el primer elemento
         const usuarioData = Array.isArray(datosUsuario) ? datosUsuario[0] : datosUsuario
+        console.log('🔹 Nombre usuario login →', usuarioData.nombres)
+
+        this.userLogin = usuarioData.nombres + ' ' + usuarioData.apellidos
+
+        console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
 
         if (usuarioData) {
           // Mapear los campos al modelo del frontend
@@ -144,7 +152,7 @@ export default {
 
           this.mostrarMensaje('✅ Usuario autenticado cargado correctamente.', 'success')
         } else {
-          this.mostrarMensaje(`⚠️ No se encontraron datos para el usuario: ${userName}`, 'warning')
+          this.mostrarMensaje(`⚠️ No se encontraron datos para el usuario: ${this.userLogin}`, 'warning')
         }
       } else {
         this.mostrarMensaje('⚠️ No se encontró información del usuario autenticado.', 'warning')
@@ -177,9 +185,21 @@ export default {
     },
 
     confirmarActualizar() {
+      if (!this.usuario.identificacion) {
+        this.mostrarMensaje('⚠️ No se encontró identificación del usuario.', 'warning')
+        return
+      }
+      if (!this.userLogin) {
+        this.mostrarMensaje('⚠️ No se encontró login del usuario autenticado.', 'warning')
+        return
+      }
+
       this.$router.push({
         name: 'ConfiguracionActualizarUsuarioView',
-        params: { identificacion: this.usuario.identificacion }
+        params: {
+          identificacion: this.usuario.identificacion,
+          userLogin: this.userLogin
+        }
       })
       this.cerrarModalActualizar()
     }

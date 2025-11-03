@@ -146,7 +146,7 @@ const routes = [
     component: ConfiguracionUsuarioView
   },
   {
-    path: '/actualizar/configuracion-usuario/:identificacion',
+    path: '/actualizar/configuracion-usuario/:identificacion/:userLogin',
     name: 'ConfiguracionActualizarUsuarioView',
     component: ConfiguracionActualizarUsuarioView,
     props: true   // 👈 Esto hace que "identificacion" llegue como prop

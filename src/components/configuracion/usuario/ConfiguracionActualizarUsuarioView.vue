@@ -71,13 +71,12 @@ import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
 export default {
   name: 'ConfiguracionActualizarUsuarioView',
   components: { DashboardSideMenu },
-  props: ['identificacion'],
+  props: ['identificacion', 'userLogin'],
 
   data() {
     return {
       menuOpen: true,
       roles: [],
-
       usuarioForm: {
         identificacion: '',
         nombres: '',
@@ -95,6 +94,9 @@ export default {
   },
 
   async mounted() {
+    console.log('🟢 Parámetros recibidos:', this.$route.params)
+    console.log('🟢 userLogin recibido:', this.userLogin)
+
     if (!this.identificacion) {
       this.mostrarMensaje('Identificación no válida.', 'error')
       return
@@ -134,8 +136,7 @@ export default {
           return
         }
 
-        this.usuarioForm = { ...response.data }
-
+        this.usuarioForm = { ...user }
       } catch (error) {
         this.mostrarMensaje('Error al cargar usuario.', 'error')
         console.error('Error cargarUsuario:', error)
@@ -155,8 +156,8 @@ export default {
     async confirmarActualizacion() {
       this.mostrarConfirmacion = false
       try {
-        // Enviamos el objeto tal cual; backend debe aceptar roleCode como parte del DTO.
-        await actualizarUsuario(this.usuarioForm)
+        // Enviamos el objeto tal cual
+        await actualizarUsuario(this.usuarioForm, this.userLogin)
         this.mostrarMensaje('✅ Usuario actualizado correctamente.', 'success')
       } catch (error) {
         // Si el backend devuelve mensaje, mostramos ese mensaje preferentemente

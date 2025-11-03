@@ -227,7 +227,7 @@ export default {
     try {
       const token = localStorage.getItem('sessionToken')
       if (token) {
-        // ✅ Ppasamos el token
+        // ✅ Pasamos el token
         const response = await obtenerUsuarioActual(token)
 
         // ✅ Leemos el login
