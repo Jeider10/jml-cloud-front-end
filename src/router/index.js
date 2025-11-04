@@ -1,6 +1,7 @@
 // src/router/index.js
 
 import { createRouter, createWebHistory } from 'vue-router'
+import { sessionData } from '@/services/sessionService'
 import LoginView from '@/views/auth/login/LoginView.vue'
 import DashboardView from '@/views/dashboard/DashboardView.vue'
 import ForgotPasswordView from '@/views/auth/forgotPassword/ForgotPasswordView.vue'
@@ -38,7 +39,8 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: DashboardView
+    component: DashboardView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/forgot-password',
@@ -53,109 +55,144 @@ const routes = [
   {
     path: '/nueva-venta',
     name: 'NuevaVentaView',
-    component: NuevaVentaView
+    component: NuevaVentaView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/clientes',
     name: 'ClientesView',
-    component: ClientesView
+    component: ClientesView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/registro-cliente',
     name: 'RegistroClienteView',
-    component: RegistroClienteView
+    component: RegistroClienteView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/actualizar-cliente/:identificacion',
     name: 'ActualizarClienteView',
     component: ActualizarClienteView,
-    props: true   // 👈 Esto hace que "identificacion" llegue como prop
+    props: true,   // 👈 Esto hace que "identificacion" llegue como prop
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/registro-proveedor',
     name: 'RegistroProveedorView',
-    component: RegistroProveedorView
+    component: RegistroProveedorView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/proveedores',
     name: 'ProveedoresView',
-    component: ProveedoresView
+    component: ProveedoresView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/actualizar-proveedor/:codigoSucursal',
     name: 'ActualizarProveedorView',
     component: ActualizarProveedorView,
-    props: true   // 👈 Esto hace que "codigoSucursal" llegue como prop
+    props: true,   // 👈 Esto hace que "codigoSucursal" llegue como prop
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/registro-productos',
     name: 'RegistroProductosView',
-    component: RegistroProductosView
+    component: RegistroProductosView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/productos',
     name: 'ProductosView',
-    component: ProductosView
+    component: ProductosView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/actualizar-productos/:codigo',
     name: 'ActualizarProductosView',
     component: ActualizarProductosView,
-    props: true   // 👈 Esto hace que "codigo" llegue como prop
+    props: true,   // 👈 Esto hace que "codigo" llegue como prop
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/historial-ventas',
     name: 'HistorialVentasView',
-    component: HistorialVentasView
+    component: HistorialVentasView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/configuracion-empresa',
     name: 'ConfiguracionEmpresaView',
-    component: ConfiguracionEmpresaView
+    component: ConfiguracionEmpresaView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/configuracion-empresa-usuario',
     name: 'ConfiguracionEmpresaUsuariosView',
-    component: ConfiguracionEmpresaUsuariosView
+    component: ConfiguracionEmpresaUsuariosView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/registro/roles',
     name: 'ConfiguracionEmpresaRegistroRolesView',
-    component: ConfiguracionEmpresaRegistroRolesView
+    component: ConfiguracionEmpresaRegistroRolesView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/actualizar-roles/:roleCode',
     name: 'ConfiguracionEmpresaActualizarRoleView',
     component: ConfiguracionEmpresaActualizarRoleView,
-    props: true   // 👈 Esto hace que "roleCode" llegue como prop
+    props: true,   // 👈 Esto hace que "roleCode" llegue como prop
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/registro/usuarios',
     name: 'ConfiguracionEmpresaRegistroUsuariosView',
-    component: ConfiguracionEmpresaRegistroUsuariosView
+    component: ConfiguracionEmpresaRegistroUsuariosView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/actualizar/usuarios/:identificacion/:userLogin',
     name: 'ConfiguracionEmpresaActualizarUsuarioView',
     component: ConfiguracionEmpresaActualizarUsuarioView,
-    props: true   // 👈 Esto hace que "identificacion" llegue como prop
+    props: true,   // 👈 Esto hace que "identificacion" llegue como prop
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/configuracion-usuario',
     name: 'ConfiguracionUsuarioView',
-    component: ConfiguracionUsuarioView
+    component: ConfiguracionUsuarioView,
+    meta: { requiresAuth: true } // ✅ protegida
   },
   {
     path: '/actualizar/configuracion-usuario/:identificacion/:userLogin',
     name: 'ConfiguracionActualizarUsuarioView',
     component: ConfiguracionActualizarUsuarioView,
-    props: true   // 👈 Esto hace que "identificacion" llegue como prop
+    props: true,   // 👈 Esto hace que "identificacion" llegue como prop
+    meta: { requiresAuth: true } // ✅ protegida
   },
-];
+]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// ==============================
+// 🔒 Middleware global de autenticación
+// ==============================
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!sessionData.accessToken // ✅ verifica si hay sesión activa
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    console.warn('🚫 Ruta protegida sin sesión activa → redirigiendo a login')
+    next('/login')
+  } else if (to.path === '/login' && isAuthenticated) {
+    next('/dashboard') // ✅ evita volver al login si ya está logueado
+  } else {
+    next()
+  }
 })
 
 export default router
