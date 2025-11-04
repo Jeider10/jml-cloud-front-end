@@ -1,55 +1,62 @@
 // src/services/apiEmployeesService.js
 
 import axios from 'axios'
+import { sessionData, clearSession, setSession } from '@/services/sessionService'
+import { refreshToken } from '@/services/apiAuthService'
 import router from '@/router'
 
+// =======================
+// 🔹 Cliente Axios Employees
+// =======================
 const apiEmployees = axios.create({
   baseURL: process.env.VUE_APP_EMPLOYEES_BASE_URL, // URL del backend
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  headers: { 'Content-Type': 'application/json' }
 })
 
-// 🔐 Interceptor para añadir token en cada request
+// =======================
+// 🔐 Interceptor de Request
+// =======================
 apiEmployees.interceptors.request.use(config => {
-  const token = localStorage.getItem('sessionToken')
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`
+  if (sessionData.accessToken) {
+    config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
   }
   return config
 })
 
-// ⚠️ Interceptor para manejar respuestas de error
+// =======================
+// ⚠️ Interceptor de response con manejo de expiración
+// =======================
 apiEmployees.interceptors.response.use(
   response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      // ❌ Token expirado o inválido
-      localStorage.removeItem('sessionToken')
-      localStorage.removeItem('authUsername')
-
-      // 🔄 Redirigir al login
-      router.push('/login')
-
-      // Opcional: mostrar mensaje en consola
-      console.warn('⚠️ Sesión expirada. Por favor inicia sesión nuevamente.')
+  async error => {
+    // 🔁 Intentar refrescar el token si expira
+    if (error.response && error.response.status === 401 && sessionData.refreshToken) {
+      try {
+        console.warn('♻️ Intentando refrescar token...')
+        const refreshResponse = await refreshToken(sessionData.refreshToken)
+        setSession(refreshResponse.data)
+        // Reintenta la petición original con el nuevo token
+        error.config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
+        return apiEmployees.request(error.config)
+      } catch (refreshError) {
+        console.error('❌ Error al refrescar token:', refreshError)
+        clearSession()
+        router.push('/login')
+      }
     }
-
-    // Pasamos un Error con mensaje más útil (si viene del backend lo usamos)
-    const message = error.response?.data?.message || error.response?.data || error.message || 'Error en la petición'
-    return Promise.reject(new Error(typeof message === 'string' ? message : JSON.stringify(message)))
+    return Promise.reject(error)
   }
 )
 
 // =======================
-// 🔹 Endpoints del microservicio de Empleados
+// 📡 ENDPOINTS DEL MICROSERVICIO DE EMPLEADOS
 // =======================
 
-// Listar todos los Empleados
+// Listar todos los empleados
 export const listarEmpleados = () => apiEmployees.get('/empleados/list/all')
 
-// Crear Empleado
-export const crearEmpleado = (cliente) => apiEmployees.post('/empleados/register', cliente)
+// Crear empleado
+export const crearEmpleado = (empleado) => apiEmployees.post('/empleados/register', empleado)
 
 // Búsqueda por identificación
 export const buscarEmpleadoPorIdentificacion = (identificacion) => apiEmployees.get('/empleados/identificacion', { params: { identificacion } })
@@ -60,9 +67,8 @@ export const buscarEmpleadoPorNombres = (nombres) => apiEmployees.get('/empleado
 // Búsqueda por apellidos
 export const buscarEmpleadoPorApellidos = (apellidos) => apiEmployees.get('/empleados/apellidos', { params: { apellidos } })
 
-// Actualizar Empleado
-export const actualizarEmpleado = (cliente) => apiEmployees.put('/empleados/update', cliente)
+// Actualizar empleado
+export const actualizarEmpleado = (empleado) => apiEmployees.put('/empleados/update', empleado)
 
-// Eliminar Empleado
+// Eliminar empleado por identificación
 export const eliminarEmpleadoPorIdentificacion = (identificacion) => apiEmployees.delete('/empleados/delete', { params: { identificacion } })
-

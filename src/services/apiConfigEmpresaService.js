@@ -1,38 +1,6 @@
 // src/services/apiConfigEmpresaService.js
 
-import axios from 'axios'
-import router from '@/router'
-
-const apiConfigEmpresa = axios.create({
-  baseURL: process.env.VUE_APP_AUTH_BASE_URL, // URL del backend
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-
-// 🔐 Interceptor para añadir token
-apiConfigEmpresa.interceptors.request.use(config => {
-  const token = localStorage.getItem('sessionToken')
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`
-  }
-  return config
-})
-
-// ⚠️ Interceptor de errores
-apiConfigEmpresa.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('sessionToken')
-      localStorage.removeItem('authUsername')
-      router.push('/login')
-      console.warn('⚠️ Sesión expirada. Por favor inicia sesión nuevamente.')
-    }
-    const message = error.response?.data?.message || error.message || 'Error en la petición'
-    return Promise.reject(new Error(message))
-  }
-)
+import { apiAuth as apiConfigEmpresa } from '@/services/apiAuthService'
 
 // ==============================
 // 🔹 Endpoints del microservicio Empresa
@@ -70,6 +38,6 @@ export const actualizarEmpresa = (empresa, file) => {
   })
 }
 
-// Eliminar empresa por NIC
+// Eliminar empresa por NIT
 export const eliminarEmpresa = (nit) =>
   apiConfigEmpresa.delete('/empresa/delete', { params: { nit } })

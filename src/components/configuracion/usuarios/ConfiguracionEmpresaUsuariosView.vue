@@ -1,4 +1,4 @@
-<!-- src/components/configuracion/ConfiguracionEmpresaUsuariosView.vue -->
+<!-- src/components/configuracion/usuarios/ConfiguracionEmpresaUsuariosView.vue -->
 
 <template>
   <div class="configuracion-empresa-wrapper">
@@ -190,6 +190,7 @@ import {
   buscarUsuarioPorRoleName,
   obtenerUsuarioActual
 } from '@/services/apiConfigEmpresaUsuariosService'
+import { getSession } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionEmpresaUsuariosView',
@@ -225,13 +226,15 @@ export default {
 
     // ✅ Cargar usuario logueado con cabecera Authorization
     try {
-      const token = localStorage.getItem('sessionToken')
-      if (token) {
-        // ✅ Pasamos el token
-        const response = await obtenerUsuarioActual(token)
+      const session = getSession() // ✅ Obtenemos la sesión activa
+      const token = session?.accessToken // ✅ Token real de sesión
 
-        // ✅ Leemos el login
-        this.userLogin = response?.data?.options?.login || null
+      if (token) {
+        // ✅ Pasamos el token al servicio
+        const response = await obtenerUsuarioActual()
+
+        // ✅ Leemos el login desde la sesión o la respuesta del backend
+        this.userLogin = response?.data?.options?.login || session?.user?.login || null
 
         console.log('🆕 Usuario logueado detectado:', this.userLogin)
 
@@ -255,7 +258,7 @@ export default {
 
         console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
       } else {
-        this.mostrarMensaje('⚠️ No se encontró token en localStorage.', 'warning')
+        this.mostrarMensaje('⚠️ No se encontró sesión activa.', 'warning')
       }
     } catch (error) {
       console.error('❌ Error al obtener usuario logueado:', error)

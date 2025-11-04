@@ -83,6 +83,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { obtenerUsuarioActual, buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
+import { getSession } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionUsuarioView',
@@ -108,7 +109,10 @@ export default {
 
   async mounted() {
     try {
-      const token = localStorage.getItem('sessionToken')
+      // ✅ Obtenemos la sesión actual en memoria
+      const session = getSession()
+      const token = session?.accessToken
+
       if (!token) {
         this.mostrarMensaje('⚠️ No hay sesión activa. Inicia sesión nuevamente.', 'warning')
         this.$router.push('/login')

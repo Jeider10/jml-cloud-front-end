@@ -89,23 +89,37 @@
 </template>
 
 <script>
+import { getSession } from '@/services/apiAuthService'
+import { clearSession } from '@/services/sessionService'
+
 export default {
   name: 'DashboardSideMenu',
   data() {
     return {
       menuOpen: true, // Siempre arranca expandido y false arranca oculto
-      roleName: localStorage.getItem('roleName') || ''
+      roleName: ''
+    }
+  },
+  async created() {
+    // ✅ Cargamos el roleName desde la sesión activa
+    try {
+      const session = getSession()
+      this.roleName = session?.user?.roleName || ''
+      console.log('🎭 Rol detectado en sesión:', this.roleName)
+    } catch (error) {
+      console.error('⚠️ Error al obtener el rol desde sesión:', error)
+      this.roleName = ''
     }
   },
   computed: {
     isAdmin() {
       // 👑 Control centralizado: si roleName === 'ADMIN'
-      return this.roleName.toUpperCase() === 'ADMIN'
+      return this.roleName?.toUpperCase() === 'ADMIN'
     },
 
     isUser() {
       // 👑 Control centralizado: si roleName === 'USER'
-      return this.roleName.toUpperCase() === 'USER'
+      return this.roleName?.toUpperCase() === 'USER'
     }
   },
   methods: {
@@ -144,14 +158,9 @@ export default {
       this.$router.push('/configuracion-usuario')
     },
     logout() {
-      // Redirigir al login o ejecutar logout real
-      // alert('Salir clickeado')
-      // 🧹 Limpieza completa de sesión
-      localStorage.removeItem('sessionToken')
-      localStorage.removeItem('authUsername')
-      localStorage.removeItem('roleCode')
-      localStorage.removeItem('roleName')
-
+      // 🧹 Limpieza completa de sesión centralizada
+      clearSession()
+      console.log('🚪 Sesión cerrada correctamente.')
       this.$router.push('/login')
     }
   }

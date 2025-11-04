@@ -134,7 +134,15 @@ export default {
         this.limpiarCampos()
       } catch (error) {
         console.error('❌ Error al registrar usuario:', error)
-        this.mostrarMensaje(error.message || 'Error al registrar usuario.', 'error')
+
+        // Obtener mensaje real desde el backend
+        let mensajeBackend = 'Error al registrar usuario.'
+        if (error.response && error.response.data) {
+          // Si tu backend devuelve { message: "texto" }
+          mensajeBackend = error.response.data.message || mensajeBackend
+        }
+
+        this.mostrarMensaje(mensajeBackend, 'error')
       }
     },
     hayDatos() {
@@ -159,6 +167,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .registro-wrapper {

@@ -1,68 +1,74 @@
 // src/services/apiCustomerService.js
 
 import axios from 'axios'
+import { sessionData, clearSession, setSession } from '@/services/sessionService'
+import { refreshToken } from '@/services/apiAuthService'
 import router from '@/router'
 
-const apiClient = axios.create({
+// =======================
+// 🔹 Cliente Axios Customer
+// =======================
+const apiCustomer = axios.create({
   baseURL: process.env.VUE_APP_CUSTOMER_BASE_URL, // URL del backend
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  headers: { 'Content-Type': 'application/json' }
 })
 
-// 🔐 Interceptor para añadir token en cada request
-apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem('sessionToken')
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`
+// =======================
+// 🔐 Interceptor de Request
+// =======================
+apiCustomer.interceptors.request.use(config => {
+  if (sessionData.accessToken) {
+    config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
   }
   return config
 })
 
-// ⚠️ Interceptor para manejar respuestas de error
-apiClient.interceptors.response.use(
+// =======================
+// ⚠️ Interceptor de response con manejo de expiración
+// =======================
+apiCustomer.interceptors.response.use(
   response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      // ❌ Token expirado o inválido
-      localStorage.removeItem('sessionToken')
-      localStorage.removeItem('authUsername')
-
-      // 🔄 Redirigir al login
-      router.push('/login')
-
-      // Opcional: mostrar mensaje en consola
-      console.warn('⚠️ Sesión expirada. Por favor inicia sesión nuevamente.')
+  async error => {
+    // 🔁 Intentar refrescar el token si expira
+    if (error.response && error.response.status === 401 && sessionData.refreshToken) {
+      try {
+        console.warn('♻️ Intentando refrescar token...')
+        const refreshResponse = await refreshToken(sessionData.refreshToken)
+        setSession(refreshResponse.data)
+        // Reintenta la petición original con el nuevo token
+        error.config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
+        return apiCustomer.request(error.config)
+      } catch (refreshError) {
+        console.error('❌ Error al refrescar token:', refreshError)
+        clearSession()
+        router.push('/login')
+      }
     }
-
-    // Pasamos un Error con mensaje más útil (si viene del backend lo usamos)
-    const message = error.response?.data?.message || error.response?.data || error.message || 'Error en la petición'
-    return Promise.reject(new Error(typeof message === 'string' ? message : JSON.stringify(message)))
+    return Promise.reject(error)
   }
 )
 
 // =======================
-// 🔹 Endpoints del microservicio de clientes
+// 📡 ENDPOINTS DEL MICROSERVICIO DE CLIENTES
 // =======================
 
 // Listar todos los clientes
-export const listarClientes = () => apiClient.get('/clientes/list/all')
+export const listarClientes = () => apiCustomer.get('/clientes/list/all')
 
 // Crear cliente
-export const crearCliente = (cliente) => apiClient.post('/clientes/register', cliente)
+export const crearCliente = (cliente) => apiCustomer.post('/clientes/register', cliente)
 
 // Búsqueda por identificación
-export const buscarClientePorIdentificacion = (identificacion) => apiClient.get('/clientes/identificacion', { params: { identificacion } })
+export const buscarClientePorIdentificacion = (identificacion) => apiCustomer.get('/clientes/identificacion', { params: { identificacion } })
 
 // Búsqueda por nombres
-export const buscarClientePorNombres = (nombres) => apiClient.get('/clientes/nombres', { params: { nombres } })
+export const buscarClientePorNombres = (nombres) => apiCustomer.get('/clientes/nombres', { params: { nombres } })
 
 // Búsqueda por apellidos
-export const buscarClientePorApellidos = (apellidos) => apiClient.get('/clientes/apellidos', { params: { apellidos } })
+export const buscarClientePorApellidos = (apellidos) => apiCustomer.get('/clientes/apellidos', { params: { apellidos } })
 
 // Actualizar cliente
-export const actualizarCliente = (cliente) => apiClient.put('/clientes/update', cliente)
+export const actualizarCliente = (cliente) => apiCustomer.put('/clientes/update', cliente)
 
-// Eliminar cliente
-export const eliminarClientePorIdentificacion = (identificacion) => apiClient.delete('/clientes/delete', { params: { identificacion } })
-
+// Eliminar cliente por identificación
+export const eliminarClientePorIdentificacion = (identificacion) => apiCustomer.delete('/clientes/delete', { params: { identificacion } })
