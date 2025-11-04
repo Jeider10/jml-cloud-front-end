@@ -67,12 +67,10 @@ export const setSession = (data) => {
   } catch (e) {
     console.warn('⚠️ No se pudo guardar sessionData en sessionStorage.', e)
   }
-
-  // 🆕 Asegurar que sessionData en memoria quede sincronizado
-  sessionData = loadSessionFromStorage()
 }
 
 export const clearSession = () => {
+  // 🆕 Limpiar todas las propiedades para mantener referencia intacta
   sessionData.accessToken = null
   sessionData.authorization = null
   sessionData.refreshToken = null

@@ -5,7 +5,7 @@ import router from '@/router'
 import { sessionData, setSession, clearSession } from '@/services/sessionService'
 
 // =======================
-// 🔹 Cliente Axios Autenticación
+// 🔹 Cliente Axios para Autenticación
 // =======================
 const apiAuthentication = axios.create({
   baseURL: process.env.VUE_APP_AUTH_BASE_URL, // URL del backend
@@ -23,66 +23,41 @@ apiAuthentication.interceptors.request.use(config => {
 })
 
 // =======================
-// ⚠️ Interceptor de response con manejo de expiración
+// ⚠️ Interceptor de Response con manejo de expiración
 // =======================
-let isRefreshing = false // flag global para evitar múltiples refresh simultáneos
-let failedQueue = []
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error)
-    } else {
-      prom.resolve(token)
-    }
-  })
-  failedQueue = []
-}
+let isRefreshing = false // Flag global para evitar múltiples refresh simultáneos
 
 apiAuthentication.interceptors.response.use(
   response => response,
   async error => {
-    const originalRequest = error.config
+    // 🔁 Intentar refrescar el token si expira
+    if (error.response && error.response.status === 401 && sessionData.refreshToken) {
+      if (!isRefreshing) {
+        isRefreshing = true
+        try {
+          console.warn('♻️ Intentando refrescar token...')
 
-    if (error.response && error.response.status === 401 && sessionData.refreshToken && !originalRequest._retry) {
-      if (isRefreshing) {
-        // 🕐 Si ya hay un refresh en curso, encolar la petición y esperar
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        })
-          .then(token => {
-            originalRequest.headers['Authorization'] = 'Bearer ' + token
-            return apiAuthentication.request(originalRequest)
-          })
-          .catch(err => Promise.reject(err))
-      }
+          // Enviar ambos tokens al endpoint de refresh
+          const refreshResponse = await refreshToken(sessionData.refreshToken, sessionData.authorization)
 
-      originalRequest._retry = true
-      isRefreshing = true
+          setSession(refreshResponse.data)
 
-      try {
-        console.warn('♻️ Intentando refrescar token...')
+          // Reemplazar token en la solicitud original
+          const newAccessToken = refreshResponse.data.authorization
+          error.config.headers['Authorization'] = `Bearer ${newAccessToken}`
 
-        const refreshResponse = await refreshToken(sessionData.refreshToken, sessionData.authorization)
+          // Reintentar la petición original
+          return apiAuthentication.request(error.config)
+        } catch (refreshError) {
+          console.error('❌ Error al refrescar token:', refreshError)
 
-        setSession(refreshResponse.data)
-        const newAccessToken = refreshResponse.data.authorization
-
-        originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken
-        processQueue(null, newAccessToken)
-        return apiAuthentication.request(originalRequest)
-      } catch (refreshError) {
-        processQueue(refreshError, null)
-        console.error('❌ Error al refrescar token:', refreshError)
-
-        // ⚠️ Evitar ciclo infinito: limpiar sesión y redirigir
-        await logoutBackend()
-        clearSession()
-        router.push('/login')
-
-        return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
+          // Evitar ciclo infinito: limpiar sesión y redirigir
+          await logoutBackend()
+          clearSession()
+          router.push('/login')
+        } finally {
+          isRefreshing = false
+        }
       }
     }
 
@@ -91,7 +66,7 @@ apiAuthentication.interceptors.response.use(
 )
 
 // =======================
-// 🔹 Endpoints de autenticación
+// 🔹 Endpoints de Autenticación
 // =======================
 
 // Login
@@ -104,24 +79,23 @@ export const login = async (usuario, password) => {
 // Obtener usuario actual (usando token activo)
 export const obtenerUsuarioActual = async (token) =>
   apiAuthentication.get('/authentication/obtener-usuario-actual', {
-    headers: {
-      refreshToken: token
-    }
+    headers: { refreshToken: token }
   })
 
 // Refresh token
-export const refreshToken = (refreshTokenValue, authorizationValue) => {
-  return apiAuthentication.post('/authentication/refresh', {
+export const refreshToken = (refreshTokenValue, authorizationValue) =>
+  apiAuthentication.post('/authentication/refresh', {
     refreshToken: refreshTokenValue,
     authorization: authorizationValue
   })
-}
 
 // Logout
 export const logoutBackend = async () => {
   if (!sessionData.refreshToken) return
+
   try {
     await apiAuthentication.post('/authentication/logout', { refreshToken: sessionData.refreshToken })
+    console.info('✅ Logout exitoso en backend')
   } catch (err) {
     console.warn('⚠️ Error al hacer logout en backend:', err)
   } finally {
@@ -130,31 +104,19 @@ export const logoutBackend = async () => {
 }
 
 // Registro de usuario
-export const registerUser = (user) => {
-  return apiAuthentication.post('/user/register', user)
-}
+export const registerUser = (user) => apiAuthentication.post('/user/register', user)
 
 // Buscar usuario
-export const searchUserByUsername = (userName) => {
-  return apiAuthentication.post('/user/search-by-user-name', { userName })
-}
+export const searchUserByUsername = (userName) =>
+  apiAuthentication.post('/user/search-by-user-name', { userName })
 
 // Recuperar contraseña
-export const updateForgotPassword = (userName, password) => {
-  return apiAuthentication.put('/user/forgot-password', { userName, password })
-}
+export const updateForgotPassword = (userName, password) =>
+  apiAuthentication.put('/user/forgot-password', { userName, password })
 
 // =======================
-// 🔸 Exportar sesión actual (para el resto del front)
+// 🔸 Exportaciones de Autenticación para el resto del frontend
 // =======================
 export const getSession = () => sessionData
-
-// =======================
-// 🔸 Exportar logout actual (para el resto del front)
-// =======================
 export const getLogout = () => logoutBackend
-
-// =======================
-// 🔸 Exportar api actual (para el resto del front)
-// =======================
 export const apiAuth = apiAuthentication
