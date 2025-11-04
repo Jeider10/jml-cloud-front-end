@@ -40,10 +40,6 @@ export const actualizarUsuario = (usuario, userLogin) =>
 export const eliminarUsuario = (identificacion) =>
   apiConfigEmpresaUsuario.delete('/usuario/delete', { params: { identificacion } })
 
-// Obtener usuario actual autenticado
-export const obtenerUsuarioActual = async () =>
-  apiConfigEmpresaUsuario.get('/authentication/obtener-usuario-actual')
-
 // Buscar usuario por login
 export const buscarUsuarioPorLogin = (login) =>
   apiConfigEmpresaUsuario.get(`/usuario/login?userName=${login}`)

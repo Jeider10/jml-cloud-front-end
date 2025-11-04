@@ -82,8 +82,8 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { obtenerUsuarioActual, buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
-import { getSession } from '@/services/apiAuthService'
+import { buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
+import { getSession, obtenerUsuarioActual } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionUsuarioView',

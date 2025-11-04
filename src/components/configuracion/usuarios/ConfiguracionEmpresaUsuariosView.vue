@@ -180,6 +180,7 @@ import {
   eliminarRole,
   buscarRolePorRoleName
 } from '@/services/apiConfigEmpresaRolesService'
+
 import {
   buscarUsuarioPorIdentificacion,
   listarUsuarios,
@@ -187,10 +188,10 @@ import {
   buscarUsuarioPorUserName,
   buscarUsuarioPorNombres,
   buscarUsuarioPorApellidos,
-  buscarUsuarioPorRoleName,
-  obtenerUsuarioActual
+  buscarUsuarioPorRoleName
 } from '@/services/apiConfigEmpresaUsuariosService'
-import { getSession } from '@/services/apiAuthService'
+
+import { getSession, obtenerUsuarioActual } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionEmpresaUsuariosView',
@@ -227,11 +228,11 @@ export default {
     // ✅ Cargar usuario logueado con cabecera Authorization
     try {
       const session = getSession() // ✅ Obtenemos la sesión activa
-      const token = session?.accessToken // ✅ Token real de sesión
+      const token = session?.refreshToken // ✅ Token real de sesión
 
       if (token) {
         // ✅ Pasamos el token al servicio
-        const response = await obtenerUsuarioActual()
+        const response = await obtenerUsuarioActual(token)
 
         // ✅ Leemos el login desde la sesión o la respuesta del backend
         this.userLogin = response?.data?.options?.login || session?.user?.login || null

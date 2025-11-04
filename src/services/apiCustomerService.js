@@ -33,10 +33,16 @@ apiCustomer.interceptors.response.use(
     if (error.response && error.response.status === 401 && sessionData.refreshToken) {
       try {
         console.warn('♻️ Intentando refrescar token...')
-        const refreshResponse = await refreshToken(sessionData.refreshToken)
+        // Enviar ambos tokens, no solo refreshToken
+        const refreshResponse = await refreshToken(sessionData.refreshToken, sessionData.authorization)
+
         setSession(refreshResponse.data)
-        // Reintenta la petición original con el nuevo token
-        error.config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
+
+        // 🆕 Usar el nuevo accessToken directamente
+        const newAccessToken = refreshResponse.data.authorization
+        error.config.headers['Authorization'] = `Bearer ${newAccessToken}`
+
+        // 🆕 Reintentar la petición original
         return apiCustomer.request(error.config)
       } catch (refreshError) {
         console.error('❌ Error al refrescar token:', refreshError)

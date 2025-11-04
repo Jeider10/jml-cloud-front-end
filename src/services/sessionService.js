@@ -10,6 +10,7 @@ const SESSION_KEY = 'sessionData'
 // Crea el objeto por defecto
 const defaultSession = {
   accessToken: null,
+  authorization: null,
   refreshToken: null,
   user: null
 }
@@ -25,6 +26,7 @@ function loadSessionFromStorage() {
     // garantizar que tenga las claves esperadas
     return {
       accessToken: parsed.accessToken ?? null,
+      authorization: parsed.authorization ?? null,
       refreshToken: parsed.refreshToken ?? null,
       user: parsed.user ?? null
     }
@@ -49,7 +51,8 @@ export let sessionData = loadSessionFromStorage()
 export const setSession = (data) => {
   // Mantener compatibilidad con el formato que ya usas en el front
   // data: { authorization, refreshToken, options }
-  sessionData.accessToken = data?.authorization ?? null
+  sessionData.accessToken = data?.accessToken ?? data?.authorization ?? null
+  sessionData.authorization = data?.authorization ?? null
   sessionData.refreshToken = data?.refreshToken ?? null
   sessionData.user = data?.options ?? null
 
@@ -57,16 +60,21 @@ export const setSession = (data) => {
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
       accessToken: sessionData.accessToken,
+      authorization: sessionData.authorization,
       refreshToken: sessionData.refreshToken,
       user: sessionData.user
     }))
   } catch (e) {
     console.warn('⚠️ No se pudo guardar sessionData en sessionStorage.', e)
   }
+
+  // 🆕 Asegurar que sessionData en memoria quede sincronizado
+  sessionData = loadSessionFromStorage()
 }
 
 export const clearSession = () => {
   sessionData.accessToken = null
+  sessionData.authorization = null
   sessionData.refreshToken = null
   sessionData.user = null
 

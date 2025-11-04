@@ -25,25 +25,67 @@ apiAuthentication.interceptors.request.use(config => {
 // =======================
 // ⚠️ Interceptor de response con manejo de expiración
 // =======================
+let isRefreshing = false // flag global para evitar múltiples refresh simultáneos
+let failedQueue = []
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
 apiAuthentication.interceptors.response.use(
   response => response,
   async error => {
-    // 🔁 Intentar refrescar el token si expira
-    if (error.response && error.response.status === 401 && sessionData.refreshToken) {
+    const originalRequest = error.config
+
+    if (error.response && error.response.status === 401 && sessionData.refreshToken && !originalRequest._retry) {
+      if (isRefreshing) {
+        // 🕐 Si ya hay un refresh en curso, encolar la petición y esperar
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        })
+          .then(token => {
+            originalRequest.headers['Authorization'] = 'Bearer ' + token
+            return apiAuthentication.request(originalRequest)
+          })
+          .catch(err => Promise.reject(err))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
       try {
         console.warn('♻️ Intentando refrescar token...')
-        const refreshResponse = await refreshToken(sessionData.refreshToken)
+
+        const refreshResponse = await refreshToken(sessionData.refreshToken, sessionData.authorization)
+
         setSession(refreshResponse.data)
-        // Reintenta la petición original con el nuevo token
-        error.config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
-        return apiAuthentication.request(error.config)
+        const newAccessToken = refreshResponse.data.authorization
+
+        originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken
+        processQueue(null, newAccessToken)
+        return apiAuthentication.request(originalRequest)
       } catch (refreshError) {
+        processQueue(refreshError, null)
         console.error('❌ Error al refrescar token:', refreshError)
+
+        // ⚠️ Evitar ciclo infinito: limpiar sesión y redirigir
         await logoutBackend()
         clearSession()
         router.push('/login')
+
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
+
     return Promise.reject(error)
   }
 )
@@ -60,13 +102,19 @@ export const login = async (usuario, password) => {
 }
 
 // Obtener usuario actual (usando token activo)
-export const getCurrentUser = () => {
-  return apiAuthentication.get('/authentication/obtener-usuario-actual')
-}
+export const obtenerUsuarioActual = async (token) =>
+  apiAuthentication.get('/authentication/obtener-usuario-actual', {
+    headers: {
+      refreshToken: token
+    }
+  })
 
 // Refresh token
-export const refreshToken = (refreshTokenValue) => {
-  return apiAuthentication.post('/authentication/refresh', { refreshToken: refreshTokenValue })
+export const refreshToken = (refreshTokenValue, authorizationValue) => {
+  return apiAuthentication.post('/authentication/refresh', {
+    refreshToken: refreshTokenValue,
+    authorization: authorizationValue
+  })
 }
 
 // Logout
@@ -102,7 +150,11 @@ export const updateForgotPassword = (userName, password) => {
 export const getSession = () => sessionData
 
 // =======================
+// 🔸 Exportar logout actual (para el resto del front)
+// =======================
+export const getLogout = () => logoutBackend
+
+// =======================
 // 🔸 Exportar api actual (para el resto del front)
 // =======================
 export const apiAuth = apiAuthentication
-
