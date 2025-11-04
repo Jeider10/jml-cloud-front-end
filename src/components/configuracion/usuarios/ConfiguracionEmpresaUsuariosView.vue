@@ -294,6 +294,12 @@ export default {
       this.vistaActual = vista
       this.tipoBusqueda = ''
       this.busqueda = ''
+
+      // ✅ Actualiza la query en la URL sin recargar la vista
+      this.$router.replace({
+        query: { vista }
+      })
+
       await this.cargarDatos()
     },
 
