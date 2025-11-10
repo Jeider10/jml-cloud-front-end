@@ -19,19 +19,19 @@
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
-          <label>Identificación</label>
+          <label for="identificación">Identificación</label>
           <input v-model="clienteForm.identificacion" type="text" />
 
-          <label>Nombres</label>
+          <label for="nombres">Nombres</label>
           <input v-model="clienteForm.nombres" type="text" />
 
-          <label>Apellidos</label>
+          <label for="apellidos">Apellidos</label>
           <input v-model="clienteForm.apellidos" type="text" />
 
-          <label>Teléfono</label>
+          <label for="teléfono">Teléfono</label>
           <input v-model="clienteForm.telefono" type="text" />
 
-          <label>Dirección</label>
+          <label for="dirección">Dirección</label>
           <input v-model="clienteForm.direccion" type="text" />
 
           <!-- ➕ Botón de registrar -->
@@ -124,10 +124,12 @@ export default {
         this.mostrarMensaje('Ingrese la Identificación del cliente.', 'error')
         return
       }
+
       if (!this.clienteForm.nombres) {
         this.mostrarMensaje('Ingrese el nombre del cliente.', 'error')
         return
       }
+
       if (!this.clienteForm.apellidos) {
         this.mostrarMensaje('Ingrese el apellido del cliente.', 'error')
         return
@@ -148,17 +150,13 @@ export default {
         // Agregamos el cliente retornado por el backend a la lista local
         this.clientes.push(nuevoCliente)
         this.clientesFiltrados = [...this.clientes]
+
         this.mostrarMensaje(`✅ Cliente ${nuevoCliente.nombres} ${nuevoCliente.apellidos} registrado correctamente.`, 'success')
 
         // limpiar formulario
         this.limpiarCampos();
       } catch (error) {
-        console.error('❌ Error al crear cliente:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al crear cliente en el servidor.', 'error')
-        }
+        this.manejarErrorApiClienteRegistrar(error, `registrar cliente ${this.clienteForm.nombres}`)
       }
     },
 
@@ -185,10 +183,52 @@ export default {
     // 🔹 Método para volver a clientes
     volverClientes() {
       this.$router.push({ name: 'ClientesView' })
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiClienteRegistrar(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-cliente-wrapper {
@@ -232,7 +272,7 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -242,7 +282,7 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-container {
@@ -268,12 +308,13 @@ input {
 }
 
 .agregar-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
@@ -286,18 +327,19 @@ input {
   cursor: not-allowed;
 }
 
-.agregar-btn:not(:disabled):hover {
-  background: #e76f51;
-}
-
 .limpiar-campos-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #f4a261;
-  color: white;
+  color: #1a1a1a;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
+}
+
+.limpiar-campos-btn:hover {
+  background: #049670;
 }
 
 .limpiar-campos-btn:disabled {
@@ -310,12 +352,13 @@ input {
 }
 
 .volver-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 

@@ -19,25 +19,24 @@
       <!-- Formulario cliente -->
       <div class="form-container">
         <div class="form-row">
-          <label>Identificación</label>
+          <label for="identificación">Identificación</label>
           <input v-model="clienteForm.identificacion" type="text" disabled />
-          <!-- Deshabilitar <input v-model="clienteForm.dni" type="text" disabled /> -->
 
-          <label>Nombre</label>
+          <label for="nombre">Nombre</label>
           <input v-model="clienteForm.nombres" type="text" />
 
-          <label>Apellido</label>
+          <label for="apellido">Apellido</label>
           <input v-model="clienteForm.apellidos" type="text" />
 
-          <label>Teléfono</label>
+          <label for="telefono">Teléfono</label>
           <input v-model="clienteForm.telefono" type="text" />
 
-          <label>Dirección</label>
+          <label for="dirección">Dirección</label>
           <input v-model="clienteForm.direccion" type="text" />
 
           <!-- 💾 Botón de actualizar -->
           <button type="button"
-                  class="agregar-btn"
+                  class="actualizar-btn"
                   @click="actualizarCliente">
                   💾 Actualizar
           </button>
@@ -107,17 +106,12 @@ export default {
         const response = await buscarClientePorIdentificacion(this.identificacion)
         if (response.data) {
           this.clienteForm = { ...response.data } // ✅ llena el form directamente
+          this.mostrarMensaje(`✅ Cliente ${this.clienteForm.nombres} cargado correctamente.`, 'info')
+        } else {
+          this.mostrarMensaje('⚠️ No se encontraron datos del cliente.', 'warning')
         }
       } catch (error) {
-        console.error('❌ Error al cargar cliente:', error)
-
-        if (error.response && error.response.status === 404) {
-          this.mostrarMensaje(`Cliente no encontrado con identificacion ${this.identificacion}`, 'error')
-        } else if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de clientes.', 'error')
-        }
+        this.manejarErrorApiCliente(error, `buscar cliente con identificación ${this.identificacion}`)
       }
     },
 
@@ -139,18 +133,59 @@ export default {
         this.mostrarMensaje(`✅ Cliente ${actualizado.nombres} ${actualizado.apellidos} actualizado correctamente.`, 'success')
 
       } catch (error) {
-        console.error('❌ Error al actualizar cliente:', error)
-        this.mostrarMensaje(error.message || 'Error al actualizar el cliente.', 'error')
+        this.manejarErrorApiCliente(error, `actualizar cliente ${this.clienteForm.nombres}`)
       }
     },
 
     // 🔹 Método para volver a clientes
     volverClientes() {
       this.$router.push({ name: 'ClientesView' })
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiClienteActualizar(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-cliente-wrapper {
@@ -194,7 +229,12 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
+}
+
+.mensaje.info {
+  background: #2ecc71;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -204,7 +244,7 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-container {
@@ -221,31 +261,41 @@ input {
   border-radius: 4px;
 }
 
-.agregar-btn {
-  padding: 8px 12px;
+.actualizar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
-.agregar-btn:hover {
+.actualizar-btn:hover {
   background: #005f8a;
 }
 
 .volver-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
 .volver-btn:hover {
   background: #005f8a;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 </style>

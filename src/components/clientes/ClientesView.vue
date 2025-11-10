@@ -72,7 +72,7 @@
 
           <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
-                  class="buscar-btn"
+                  class="limpiar-btn"
                   :disabled="!hayDatosFiltro() || !tipoBusqueda"
                   @click="limpiarBusqueda">
                   🧹 Limpiar
@@ -80,7 +80,7 @@
 
           <!-- ➕ Botón de registrar producto -->
           <button type="button"
-                  class="agregar-btn"
+                  class="registrar-btn"
                   @click="agregarCliente">
                   ➕ Registrar Cliente
           </button>
@@ -163,7 +163,6 @@ export default {
       mensajeTipo: '',
       busqueda: '',
       tipoBusqueda: '',
-      // Modal de eliminación
       modalEliminar: {
         visible: false,
         idx: null,
@@ -191,23 +190,134 @@ export default {
       }, 3000)
     },
 
-    // 🔹 Método de cargar clientes
+    // 🔹 Método para cargar clientes desde el backend
     async cargarClientes() {
       try {
-        const response = await listarClientes() // ⚠️ Llama /clientes/listar-todo
+        const response = await listarClientes()
+
+        // 🟡 Caso 1: No hay clientes (HTTP 204)
+        if (response.status === 204) {
+          this.clientes = []
+          this.clientesFiltrados = []
+          this.mostrarMensaje('⚠️ No se encontraron clientes en el sistema.', 'warning')
+          return
+        }
+
+        // 🟢 Caso 2: Clientes cargados exitosamente
         this.clientes = response.data
         this.clientesFiltrados = [...this.clientes]
 
-      } catch (error) {
-        console.error('❌ Error al cargar clientes:', error)
+        this.mostrarMensaje(`✅ ${this.clientes.length} cliente${this.clientes.length === 1 ? '' : 's'} cargado${this.clientes.length === 1 ? '' : 's'} correctamente.`, 'success')
 
-        // Mostrar mensaje si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de clientes.', 'error')
-        }
+      } catch (error) {
+        this.manejarErrorApiClientes(error, 'cargar clientes')
       }
+    },
+
+    // 🔹 Método para llamar al componente de agregar cliente
+    async agregarCliente(cliente) {
+      this.$router.push({
+        name: 'RegistroClienteView',
+        state: { cliente }
+      })
+    },
+
+    // 🔹 Método para llamar al componente de actualizar cliente
+    abrirActualizarCliente(cliente) {
+      this.$router.push({
+        name: 'ActualizarClienteView',
+        params: {
+          identificacion: cliente.identificacion
+        }
+      })
+    },
+
+    // 🔹 Método para eliminar cliente
+    async eliminarCliente(idx) {
+      const cliente = this.clientes[idx]
+
+      try {
+        await eliminarClientePorIdentificacion(cliente.identificacion)
+
+        // ✅ Eliminamos solo si backend respondió bien
+        this.clientes.splice(idx, 1)
+        this.clientesFiltrados = [...this.clientes]
+
+        this.mostrarMensaje(`🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`, 'success')
+
+      } catch (error) {
+        this.manejarErrorApiClientes(error, `eliminar cliente ${cliente.nombres}`)
+      } finally {
+        // 🧹 Siempre cerramos el modal de confirmación
+        this.modalEliminar.visible = false
+      }
+    },
+
+    // 🔹 Método para filtrar clientes según el tipo de búsqueda
+    async filtrarClientes() {
+      const termino = this.busqueda.trim()
+      if (!termino || !this.tipoBusqueda) {
+        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
+        return
+      }
+
+      try {
+        let response
+
+        switch (this.tipoBusqueda) {
+          case 'identificacion':
+            response = await buscarClientePorIdentificacion(termino)
+            break
+          case 'nombres':
+            response = await buscarClientePorNombres(termino)
+            break
+          case 'apellidos':
+            response = await buscarClientePorApellidos(termino)
+            break
+          default:
+            this.mostrarMensaje('⚠️ Tipo de búsqueda no válido.', 'error')
+            return
+        }
+
+        console.log('📦 Respuesta del backend:', response)
+
+        // ✅ Cliente(s) no encontrado(s)
+        if (response.status === 204) {
+          this.clientesFiltrados = []
+          this.mostrarMensaje(`❌ No se encontraron clientes con ${this.tipoBusqueda}: ${termino}`, 'warning')
+          return
+        }
+
+        // ✅ Cliente(s) encontrado(s)
+        if (response.data) {
+          if (Array.isArray(response.data)) {
+            this.clientesFiltrados = response.data
+          } else {
+            this.clientesFiltrados = [response.data]
+          }
+          this.mostrarMensaje(`✅ Cliente${Array.isArray(response.data) && response.data.length > 1 ? 's' : ''} encontrado${Array.isArray(response.data) && response.data.length > 1 ? 's' : ''} correctamente.`, 'success')
+          return
+        }
+
+        // ⚠️ Caso defensivo (nunca debería entrar aquí)
+        this.clientesFiltrados = []
+        this.mostrarMensaje(`❌ No se encontró cliente con ${this.tipoBusqueda}: ${termino}`, 'warning')
+
+      } catch (error) {
+        this.manejarErrorApiClientes(error, `filtrar clientes por ${this.tipoBusqueda}`)
+      }
+    },
+
+    // 🔹 Método para abrir modal en vez de window.confirm
+    confirmarEliminar(idx) {
+      this.modalEliminar.idx = idx
+      this.modalEliminar.cliente = this.clientes[idx]
+      this.modalEliminar.visible = true
+    },
+
+    // 🔹 Método para saber si hay datos en el cuadro de filtro
+    hayDatosFiltro() {
+      return this.busqueda.trim().length > 0
     },
 
     // 🔹 Método para saber si hay datos en el formulario
@@ -230,129 +340,57 @@ export default {
       }
     },
 
-    // 🔹 Método para saber si hay datos en el cuadro de filtro
-    hayDatosFiltro() {
-      return this.busqueda.trim().length > 0
-    },
-
-    // 🔹 Método para abrir modal en vez de window.confirm
-    confirmarEliminar(idx) {
-      this.modalEliminar.idx = idx
-      this.modalEliminar.cliente = this.clientes[idx]
-      this.modalEliminar.visible = true
-    },
-
-    // 🔹 Método para eliminar cliente
-    async eliminarCliente(idx) {
-      const cliente = this.clientes[idx]
-
-      try {
-        await eliminarClientePorIdentificacion(cliente.identificacion)
-
-        // ✅ Eliminamos solo si backend respondió bien
-        this.clientes.splice(idx, 1)
-        this.clientesFiltrados = [...this.clientes]
-
-        this.mostrarMensaje(`🗑️ Cliente ${cliente.nombres} ${cliente.apellidos} eliminado correctamente.`, 'success')
-
-      } catch (error) {
-        console.error('❌ Error al eliminar cliente:', error)
-
-        if (error.response && error.response.status === 404) {
-          this.mostrarMensaje('⚠️ Cliente ${cliente.nombres} no encontrado en el servidor.', 'error')
-        } else {
-          this.mostrarMensaje('Error al eliminar cliente ${cliente.nombres} en el servidor.', 'error')
-        }
-      } finally {
-        this.modalEliminar.visible = false
-      }
-    },
-
-    // 🔹 Método para llamar al componente de agregar cliente
-    async agregarCliente(cliente) {
-      this.$router.push({
-        name: 'RegistroClienteView',
-        state: { cliente }
-      })
-    },
-
-    // 🔹 Método para llamar al componente de actualizar cliente
-    abrirActualizarCliente(cliente) {
-      this.$router.push({
-        name: 'ActualizarClienteView',
-        params: {
-          identificacion: cliente.identificacion
-        }
-      })
-    },
-
-    // 🔹 Método para filtrar clientes según el tipo de búsqueda
-    async filtrarClientes() {
-      if (!this.busqueda.trim()) {
-        this.limpiarBusqueda()
-        return
-      }
-
-      const texto = this.busqueda.trim()
-
-      try {
-        let response
-        switch (this.tipoBusqueda) {
-          case 'identificacion':
-            response = await buscarClientePorIdentificacion(Number(texto)) // ✅ Identificacion como número
-            break
-          case 'nombres':
-            response = await buscarClientePorNombres(texto)
-            break
-          case 'apellidos':
-            response = await buscarClientePorApellidos(texto)
-            break
-          default:
-            this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
-            return
-        }
-
-        const data = response.data
-
-        if (Array.isArray(data)) {
-          this.clientesFiltrados = data
-        } else if (data) {
-          // backend puede devolver objeto simple
-          this.clientesFiltrados = [data]
-        } else {
-          this.clientesFiltrados = []
-        }
-
-        if (this.clientesFiltrados.length === 0) {
-          this.mostrarMensaje('No se encontraron clientes.', 'error')
-        }
-      } catch (error) {
-        console.error('❌ Error al filtrar clientes:', error)
-
-        // Si es un Error construido en el interceptor lo mostramos con detalle
-        if (error.message) {
-          if (error.message.includes('404')) {
-            this.clientesFiltrados = []
-            this.mostrarMensaje('No se encontró cliente.', 'error')
-          } else {
-            // Intenta mostrar el mensaje del backend si vino
-            this.mostrarMensaje(error.message, 'error')
-          }
-        } else {
-          this.mostrarMensaje('Error al buscar clientes en el servidor.', 'error')
-        }
-      }
-    },
-
     // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
       this.cargarClientes() // 🔹 Vuelve a cargar todos los clientes
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiClientes(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-cliente-wrapper {
@@ -402,7 +440,7 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -412,7 +450,7 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-filtro {
@@ -431,33 +469,74 @@ input {
   border-radius: 4px;
 }
 
-.agregar-btn {
-  padding: 8px 12px;
+.buscar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
-.agregar-btn:hover {
+.buscar-btn:hover {
+  background: #049670;
+}
+
+.buscar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.buscar-btn:not(:disabled):hover {
   background: #005f8a;
 }
 
-.agregar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed; }
+.limpiar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: #1a1a1a;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
 
-.agregar-btn:not(:disabled):hover {
+.limpiar-btn:hover {
+  background: #049670;
+}
+
+.limpiar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.limpiar-btn:not(:disabled):hover {
   background: #e76f51;
+}
+
+.registrar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.registrar-btn:hover {
+  background: #005f8a;
 }
 
 .update-btn {
   padding: 6px 8px;
   border-radius: 6px;
   background: #f4a261;
-  color: white;
+  color: #2b2b2b;
   border: none;
   cursor: pointer;
   margin-right: 4px;
@@ -465,6 +544,20 @@ input {
 
 .update-btn:hover {
   background: #e76f51;
+}
+
+.delete-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #e63946;
+  color: #0a0a0a;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.delete-btn:hover {
+  background: #c5303b;
 }
 
 .clientes-table {
@@ -487,54 +580,22 @@ input {
   background: white;
 }
 
-.delete-btn {
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: #e63946;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.delete-btn:hover {
-  background: #b52a33;
-}
-
 .empty-row {
   text-align: center;
   padding: 18px;
   color: #666;
 }
 
-.buscar-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  background: #06d6a0;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-left: 4px;
-  font-weight: 600;
-}
-
-.buscar-btn:hover {
-  background: #049670;
-}
-
-.buscar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.buscar-btn:not(:disabled):hover {
-  background: #e76f51;
-}
-
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0,0,0,0.5);
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 9999;
 }
 
@@ -560,8 +621,12 @@ input {
   border: none;
   font-weight: 600;
   cursor: pointer;
-  background: #e63946;
+  background: #c92a2a;
   color: white;
+}
+
+.btn-yes:hover {
+  background: #a12222;
 }
 
 .btn-no {
@@ -571,11 +636,7 @@ input {
   font-weight: 600;
   cursor: pointer;
   background: #06d6a0;
-  color: white;
-}
-
-.btn-yes:hover {
-  background: #b52a33;
+  color: #1c1c1c;
 }
 
 .btn-no:hover {
