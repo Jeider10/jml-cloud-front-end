@@ -1,58 +1,11 @@
 // src/services/apiCustomerService.js
 
-import axios from 'axios'
-import { sessionData, clearSession, setSession } from '@/services/sessionService'
-import { refreshToken } from '@/services/apiAuthService'
-import router from '@/router'
+import { createAxiosWithAuth } from '@/services/axiosWithAuthRefreshToken'
 
 // =======================
 // 🔹 Cliente Axios Customer
 // =======================
-const apiCustomer = axios.create({
-  baseURL: process.env.VUE_APP_CUSTOMER_BASE_URL, // URL del backend
-  headers: { 'Content-Type': 'application/json' }
-})
-
-// =======================
-// 🔐 Interceptor de Request
-// =======================
-apiCustomer.interceptors.request.use(config => {
-  if (sessionData.accessToken) {
-    config.headers['Authorization'] = `Bearer ${sessionData.accessToken}`
-  }
-  return config
-})
-
-// =======================
-// ⚠️ Interceptor de response con manejo de expiración
-// =======================
-apiCustomer.interceptors.response.use(
-  response => response,
-  async error => {
-    // 🔁 Intentar refrescar el token si expira
-    if (error.response && error.response.status === 401 && sessionData.refreshToken) {
-      try {
-        console.warn('♻️ Intentando refrescar token...')
-        // Enviar ambos tokens, no solo refreshToken
-        const refreshResponse = await refreshToken(sessionData.refreshToken, sessionData.authorization)
-
-        setSession(refreshResponse.data)
-
-        // 🆕 Usar el nuevo accessToken directamente
-        const newAccessToken = refreshResponse.data.authorization
-        error.config.headers['Authorization'] = `Bearer ${newAccessToken}`
-
-        // 🆕 Reintentar la petición original
-        return apiCustomer.request(error.config)
-      } catch (refreshError) {
-        console.error('❌ Error al refrescar token:', refreshError)
-        clearSession()
-        router.push('/login')
-      }
-    }
-    return Promise.reject(error)
-  }
-)
+export const apiCustomer = createAxiosWithAuth(process.env.VUE_APP_CUSTOMER_BASE_URL)
 
 // =======================
 // 📡 ENDPOINTS DEL MICROSERVICIO DE CLIENTES

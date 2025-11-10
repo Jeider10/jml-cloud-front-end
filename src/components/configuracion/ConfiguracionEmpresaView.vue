@@ -7,138 +7,148 @@
 
     <!-- Contenido principal -->
     <div :class="['main-content', { expanded: menuOpen }]">
-      <h1 class="titulo">Datos de la Empresa</h1>
-
-      <!-- 🟢 mensaje de confirmación visual -->
-      <div v-if="mensaje" :class="['alerta', mensajeTipo]">
-        {{ mensaje }}
+      <!-- 🔹 Loader centrado solo cuando está cargando -->
+      <div v-if="loading" class="loading-state">
+        <p>Cargando información de la empresa...</p>
+        <div class="spinner"></div>
       </div>
 
-      <!-- 🔹 Contenedor fila: cuadro datos + botones al lado -->
-      <div class="fila-contenedor">
-        <!-- Bloque con datos -->
-        <div class="datos-empresa">
-          <div class="dato-row">
-            <label>NIT:</label>
-            <input type="text" v-model="empresa.nit" :disabled="modoActualizar || !modoEdicion" />
-          </div>
-          <div class="dato-row">
-            <label>Nombre:</label>
-            <input type="text" v-model="empresa.nombreEmpresa" :disabled="!modoEdicion" />
-          </div>
-          <div class="dato-row">
-            <label>Dirección:</label>
-            <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
-          </div>
-          <div class="dato-row">
-            <label>Teléfono:</label>
-            <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
-          </div>
-          <div class="dato-row">
-            <label>Mensaje:</label>
-            <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
-          </div>
-          <div class="dato-row">
-            <label>Ruta Logo:</label>
-            <input type="text" v-model="empresa.logo" disabled />
-          </div>
-          <div class="dato-row" v-if="modoEdicion">
-            <label>Logo:</label>
-            <input type="file" accept="image/*" @change="onImageChange" />
-          </div>
+      <!-- 🔹 Datos de la empresa (solo se muestran cuando ya cargó) -->
+      <div v-else>
+        <h1 class="titulo">Datos de la Empresa</h1>
+
+        <!-- 🟢 mensaje de confirmación visual -->
+        <div v-if="mensaje" :class="['alerta', mensajeTipo]">
+          {{ mensaje }}
         </div>
 
-        <!-- 🔹 Acciones -->
-        <div class="acciones-lateral">
-          <!-- Si no hay empresa, mostrar botón Registrar -->
-          <!-- ✏️ Botón de Registrar -->
-          <button v-if="modoRegistrar && !modoEdicion"
-                  type="button"
-                  class="registrar-btn"
-                  @click="activarEdicion">
-                  🆕 Registrar
-          </button>
+        <!-- 🔹 Contenedor fila: cuadro datos + botones al lado -->
+        <div class="fila-contenedor">
+          <!-- Bloque con datos -->
+          <div class="datos-empresa">
+            <div class="dato-row">
+              <label>NIT:</label>
+              <input type="text" v-model="empresa.nit" :disabled="modoActualizar || !modoEdicion" />
+            </div>
+            <div class="dato-row">
+              <label>Nombre:</label>
+              <input type="text" v-model="empresa.nombreEmpresa" :disabled="!modoEdicion" />
+            </div>
+            <div class="dato-row">
+              <label>Dirección:</label>
+              <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
+            </div>
+            <div class="dato-row">
+              <label>Teléfono:</label>
+              <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
+            </div>
+            <div class="dato-row">
+              <label>Mensaje:</label>
+              <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
+            </div>
+            <div class="dato-row">
+              <label>Ruta Logo:</label>
+              <input type="text" v-model="empresa.logo" disabled />
+            </div>
+            <div class="dato-row" v-if="modoEdicion">
+              <label>Logo:</label>
+              <input type="file" accept="image/*" @change="onImageChange" />
+            </div>
+          </div>
 
-          <!-- Si hay empresa, mostrar botón Actualizar -->
-          <!-- ✏️ Botón de Actualizar -->
-          <button v-if="modoActualizar && !modoEdicion"
-                  type="button"
-                  class="actualizar-btn"
-                  @click="activarEdicion">
-                  ✏️ Actualizar
-          </button>
+          <!-- 🔹 Acciones -->
+          <div class="acciones-lateral">
+            <!-- Si no hay empresa, mostrar botón Registrar -->
+            <!-- ✏️ Botón de Registrar -->
+            <button v-if="modoRegistrar && !modoEdicion"
+                    type="button"
+                    class="registrar-btn"
+                    @click="activarEdicion">
+                    🆕 Registrar
+            </button>
 
-          <!-- Modo edición: mostrar guardar/limpiar/volver -->
+            <!-- Si hay empresa, mostrar botón Actualizar -->
+            <!-- ✏️ Botón de Actualizar -->
+            <button v-if="modoActualizar && !modoEdicion"
+                    type="button"
+                    class="actualizar-btn"
+                    @click="activarEdicion">
+                    ✏️ Actualizar
+            </button>
+
+            <!-- Modo edición: mostrar guardar/limpiar/volver -->
             <!-- 💾 Botón de Guardar -->
-          <div v-if="modoEdicion" class="btn-group">
-            <button type="button"
-                    class="guardar-btn"
-                    :disabled="!tieneTexto"
-                    @click="mostrarConfirmacionGuardar = true">
-                    💾 Guardar
-            </button>
+            <div v-if="modoEdicion" class="btn-group">
+              <button type="button"
+                      class="guardar-btn"
+                      :disabled="!tieneTexto"
+                      @click="mostrarConfirmacionGuardar = true">
+                      💾 Guardar
+              </button>
 
-            <!-- 🧹 Botón de Limpiar -->
-            <button type="button"
-                    class="limpiar-btn"
-                    @click="limpiar">
-                    🧹 Limpiar
-            </button>
+              <!-- 🧹 Botón de Limpiar -->
+              <button type="button"
+                      class="limpiar-btn"
+                      @click="limpiar">
+                      🧹 Limpiar
+              </button>
 
-            <!-- 🔙 Botón de Volver -->
-            <button type="button"
-                    class="volver-btn"
-                    @click="cancelarEdicion">
-                    🔙 Volver
-            </button>
+              <!-- 🔙 Botón de Volver -->
+              <button type="button"
+                      class="volver-btn"
+                      @click="cancelarEdicion">
+                      🔙 Volver
+              </button>
 
-            <!-- 🗑️ Botón de Eliminar -->
-            <button type="button"
-                    v-if="modoActualizar"
-                    class="eliminar-btn"
-                    @click="mostrarConfirmacionEliminar = true">
-                    🗑️ Eliminar
-            </button>
+              <!-- 🗑️ Botón de Eliminar -->
+              <button type="button"
+                      v-if="modoActualizar"
+                      class="eliminar-btn"
+                      @click="mostrarConfirmacionEliminar = true">
+                      🗑️ Eliminar
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Logo grande -->
-      <div class="logo-container">
-        <img
-          :src="getLogoUrl(empresa.logo)"
-          alt="Logo Empresa"
-          class="logo-empresa"
-          @error="onLogoError"
-        />
-      </div>
+        <!-- Logo grande -->
+        <div class="logo-container">
+          <img
+            :src="getLogoUrl(empresa.logo)"
+            alt="Logo Empresa"
+            class="logo-empresa"
+            @error="onLogoError"
+          />
+        </div>
 
-      <!-- Modal de confirmación -->
-      <div v-if="mostrarConfirmacionGuardar" class="modal-overlay">
-        <div class="modal">
-          <h3>⚠️ Confirmación</h3>
-          <p>¿Deseas guardar los datos de la empresa?</p>
-          <div class="modal-buttons">
-            <button class="si-btn" @click="confirmarGuardar">Sí</button>
-            <button class="no-btn" @click="mostrarConfirmacionGuardar = false">No</button>
+        <!-- Modal de confirmación -->
+        <div v-if="mostrarConfirmacionGuardar" class="modal-overlay">
+          <div class="modal">
+            <h3>⚠️ Confirmación</h3>
+            <p>¿Deseas guardar los datos de la empresa?</p>
+            <div class="modal-buttons">
+              <button class="si-btn" @click="confirmarGuardar">Sí</button>
+              <button class="no-btn" @click="mostrarConfirmacionGuardar = false">No</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Modal de confirmación para eliminar -->
-      <div v-if="mostrarConfirmacionEliminar" class="modal-overlay">
-        <div class="modal">
-          <h3>⚠️ Confirmación</h3>
-          <p>¿Seguro que deseas eliminar esta empresa?</p>
-          <div class="modal-buttons">
-            <button class="si-btn" @click="confirmarEliminar">Sí</button>
-            <button class="no-btn" @click="mostrarConfirmacionEliminar = false">No</button>
+        <!-- Modal de confirmación para eliminar -->
+        <div v-if="mostrarConfirmacionEliminar" class="modal-overlay">
+          <div class="modal">
+            <h3>⚠️ Confirmación</h3>
+            <p>¿Seguro que deseas eliminar esta empresa?</p>
+            <div class="modal-buttons">
+              <button class="si-btn" @click="confirmarEliminar">Sí</button>
+              <button class="no-btn" @click="mostrarConfirmacionEliminar = false">No</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
@@ -166,7 +176,8 @@ export default {
       },
       archivoLogo: null,
       mensaje: '',
-      mensajeTipo: ''
+      mensajeTipo: '',
+      loading: true
     }
   },
 
@@ -177,7 +188,9 @@ export default {
   },
 
   async mounted() {
+    this.loading = true
     await this.cargarEmpresa()
+    this.loading = false
   },
 
   methods: {
@@ -213,7 +226,6 @@ export default {
 
         // ✅ Tomar el primer elemento de la lista
         const empresaData = response.data[0]
-        console.log('✅ Empresa cargada correctamente:', empresaData)
 
         // Asignar datos al modelo de Vue
         this.empresa = {
@@ -405,6 +417,34 @@ export default {
 
 .main-content.expanded {
   left: 220px;
+}
+
+/* Loader */
+.loading-state {
+  text-align: center;
+  padding-top: 100px;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.spinner {
+  margin: 20px auto;
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .titulo {
