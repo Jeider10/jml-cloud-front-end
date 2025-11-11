@@ -50,15 +50,15 @@
         </div>
 
         <!-- 🔹 Solo visible para ADMIN -->
-        <div v-if="isAdmin" class="configuracion-icon nav-row" @click="onConfiguracionClick">
-          <img src="@/assets/img/Configuracion.png" alt="Configuracion" />
-          <span class="label">Configuración Empresa</span>
-        </div>
-
-        <!-- 🔹 Solo visible para ADMIN -->
         <div v-if="isAdmin" class="usuario-icon nav-row" @click="onUsuarioClick">
           <img src="@/assets/img/Usuario.png" alt="Usuario" />
           <span class="label">Usuarios Empresa</span>
+        </div>
+
+        <!-- 🔹 Solo visible para ADMIN -->
+        <div v-if="isAdmin" class="configuracion-icon nav-row" @click="onConfiguracionClick">
+          <img src="@/assets/img/Configuracion.png" alt="Configuracion" />
+          <span class="label">Configuración Empresa</span>
         </div>
 
         <!-- 🔹 Solo visible para USER -->

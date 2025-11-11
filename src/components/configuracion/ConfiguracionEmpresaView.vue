@@ -153,6 +153,14 @@
           </div>
         </div>
       </div>
+
+      <!-- Footer -->
+      <footer class="page-footer">
+        <p>Copyright © 2025 Creative Tim</p>
+        <p>
+          Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok
+        </p>
+      </footer>
     </div>
   </div>
 </template>
@@ -770,5 +778,14 @@ export default {
 
 .modal h3 {
   margin-bottom: 10px;
+}
+
+/* Footer */
+.page-footer {
+  margin-top: auto; /* empuja el footer hacia abajo */
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+  opacity: 0.8;
 }
 </style>
