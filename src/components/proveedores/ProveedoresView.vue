@@ -62,7 +62,7 @@
 
           <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
-                  class="buscar-btn"
+                  class="limpiar-btn"
                   :disabled="!hayDatosFiltro() || !tipoBusqueda"
                   @click="limpiarBusqueda">
                   🧹 Limpiar
@@ -70,7 +70,7 @@
 
           <!-- ➕ Botón de registrar producto -->
           <button type="button"
-                  class="agregar-btn"
+                  class="registrar-btn"
                   @click="agregarProveedor">
                   ➕ Registrar Proveedor
           </button>
@@ -152,7 +152,6 @@ export default {
       mensajeTipo: '',
       busqueda: '',
       tipoBusqueda: '',
-      // Modal de eliminación
       modalEliminar: {
         visible: false,
         idx: null,
@@ -182,20 +181,128 @@ export default {
     // 🔹 Método de cargar proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores() // ⚠️ Llama /proveedores/listar-proveedores
+        const response = await listarProveedores()
+
+        // 🟡 Caso 1: No hay proveedores (HTTP 204)
+        if (response.status === 204) {
+          this.proveedores = []
+          this.proveedoresFiltrados = []
+          this.mostrarMensaje('⚠️ No se encontraron proveedores en el sistema.', 'warning')
+          return
+        }
+
+        // 🟢 Caso 2: Proveedores cargados exitosamente
         this.proveedores = response.data
         this.proveedoresFiltrados = [...this.proveedores]
 
-      } catch (error) {
-        console.error('❌ Error al cargar proveedores:', error)
+        this.mostrarMensaje(`✅ ${this.proveedores.length} proveedor${this.proveedores.length === 1 ? '' : 'es'} cargado${this.proveedores.length === 1 ? '' : 's'} correctamente.`, 'success')
 
-        // Mostrar mensaje si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
-        }
+      } catch (error) {
+        this.manejarErrorApiProveedores(error, 'cargar proveedores')
       }
+    },
+
+    // 🔹 Método para llamar al componente de agregar proveedor
+    async agregarProveedor(proveedor) {
+      this.$router.push({
+        name: 'RegistroProveedorView',
+        state: { proveedor }
+      })
+    },
+
+    // 🔹 Método para llamar al componente de actualizar proveedor
+    abrirActualizarProveedor(proveedor) {
+      this.$router.push({
+        name: 'ActualizarProveedorView',
+        params: {
+          codigoSucursal: proveedor.codigoSucursal
+        }
+      })
+    },
+
+    // 🔹 Método para eliminar producto
+    async eliminarProveedor(idx) {
+      const proveedor = this.proveedores[idx]
+
+      try {
+        await eliminarProveedorPorCodigoSucursal(proveedor.codigoSucursal)
+
+        // ✅ Eliminamos solo si backend respondió bien
+        this.proveedores.splice(idx, 1)
+        this.proveedoresFiltrados = [...this.proveedores]
+
+        this.mostrarMensaje(`🗑️ Proveedor ${proveedor.nombre} eliminado.`, 'success')
+
+      } catch (error) {
+        this.manejarErrorApiProveedores(error, `eliminar proveedor ${proveedor.nombre}`)
+      } finally {
+        // 🧹 Siempre cerramos el modal de confirmación
+        this.modalEliminar.visible = false
+      }
+    },
+
+    // 🔹 Método para filtrar proveedores según el tipo de búsqueda
+    async filtrarProveedores() {
+      const termino = this.busqueda.trim()
+      if (!termino || !this.tipoBusqueda) {
+        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
+        return
+      }
+
+      try {
+        let response
+
+        switch (this.tipoBusqueda) {
+          case 'codigoSucursal':
+            response = await buscarProveedorPorCodigoSucursal(termino)
+            break
+          case 'nombre':
+            response = await buscarProveedorPorNombre(termino)
+            break
+          default:
+            this.mostrarMensaje('⚠️ Tipo de búsqueda no válido.', 'error')
+            return
+        }
+
+        console.log('📦 Respuesta del backend:', response)
+
+        // ✅ Proveedor(es) no encontrado(s)
+        if (response.status === 204) {
+          this.proveedoresFiltrados = []
+          this.mostrarMensaje(`❌ No se encontraron proveedores con ${this.tipoBusqueda}: ${termino}`, 'warning')
+          return
+        }
+
+        // ✅ Proveedor(es) encontrado(s)
+        if(response.data) {
+          if (Array.isArray(response.data)) {
+            this.proveedoresFiltrados = response.data
+          } else {
+            this.proveedoresFiltrados = [response.data]
+          }
+          this.mostrarMensaje(`✅ Proveedor${Array.isArray(response.data) && response.data.length > 1 ? 'es' : ''} encontrado${Array.isArray(response.data) && response.data.length > 1 ? 's' : ''} correctamente.`, 'success')
+          return
+        }
+
+        // ⚠️ Caso defensivo (nunca debería entrar aquí)
+        this.proveedoresFiltrados = []
+        this.mostrarMensaje(`❌ No se encontraron proveedores con ${this.tipoBusqueda}: ${termino}`, 'warning')
+
+      } catch (error) {
+        this.manejarErrorApiProveedores(error, `filtrar proveedores por ${this.tipoBusqueda}`)
+      }
+    },
+
+    // 🔹 Método para abrir modal en vez de window.confirm
+    confirmarEliminar(idx) {
+      this.modalEliminar.idx = idx
+      this.modalEliminar.proveedor = this.proveedores[idx]
+      this.modalEliminar.visible = true
+    },
+
+    // 🔹 Método para saber si hay datos en el cuadro de filtro
+    hayDatosFiltro() {
+      return this.busqueda.trim().length > 0
     },
 
     // 🔹 Método para saber si hay datos en el formulario
@@ -218,124 +325,57 @@ export default {
       }
     },
 
-    // 🔹 Método para saber si hay datos en el cuadro de filtro
-    hayDatosFiltro() {
-      return this.busqueda.trim().length > 0
-    },
-
-    // 🔹 Método para abrir modal en vez de window.confirm
-    confirmarEliminar(idx) {
-      this.modalEliminar.idx = idx
-      this.modalEliminar.proveedor = this.proveedores[idx]
-      this.modalEliminar.visible = true
-    },
-
-    // 🔹 Método para eliminar producto
-    async eliminarProveedor(idx) {
-      const proveedor = this.proveedores[idx]
-      try {
-        await eliminarProveedorPorCodigoSucursal(proveedor.codigoSucursal)
-
-        // ✅ Eliminamos solo si backend respondió bien
-        this.proveedores.splice(idx, 1)
-        this.proveedoresFiltrados = [...this.proveedores]
-
-        this.mostrarMensaje(`🗑️ Proveedor ${proveedor.nombre} eliminado.`, 'success')
-
-      } catch (error) {
-        console.error('❌ Error al eliminar proveedor:', error)
-        if (error.response && error.response.status === 404) {
-          this.mostrarMensaje('⚠️ Proveedor ${proveedor.nombre} no encontrado en el servidor.', 'error')
-        } else {
-          this.mostrarMensaje('Error al eliminar proveedor en el servidor.', 'error')
-        }
-      } finally {
-        this.modalEliminar.visible = false
-      }
-    },
-
-    // 🔹 Método para llamar al componente de agregar proveedor
-    agregarProveedor(proveedor) {
-      this.$router.push({
-        name: 'RegistroProveedorView',
-        state: { proveedor }
-      })
-    },
-
-    // 🔹 Método para llamar al componente de actualizar proveedor
-    abrirActualizarProveedor(proveedor) {
-      this.$router.push({
-        name: 'ActualizarProveedorView',
-        params: {
-          codigoSucursal: proveedor.codigoSucursal
-        }
-      })
-    },
-
-    // 🔹 Método para filtrar proveedores según el tipo de búsqueda
-    async filtrarProveedores() {
-      if (!this.busqueda.trim()) {
-        this.limpiarBusqueda()
-        return
-      }
-
-      const texto = this.busqueda.trim()
-
-      try {
-        let response
-        switch (this.tipoBusqueda) {
-          case 'codigoSucursal':
-            response = await buscarProveedorPorCodigoSucursal(Number(texto)) // ✅ Codigo de Sucursal como número
-            break
-          case 'nombre':
-            response = await buscarProveedorPorNombre(texto)
-            break
-          default:
-            this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
-            return
-        }
-
-        const data = response.data
-
-        if (Array.isArray(data)) {
-          this.proveedoresFiltrados = data
-        } else if (data) {
-          // backend puede devolver objeto simple
-          this.proveedoresFiltrados = [data]
-        } else {
-          this.proveedoresFiltrados = []
-        }
-
-        if (this.proveedoresFiltrados.length === 0) {
-          this.mostrarMensaje('No se encontraron proveedores.', 'error')
-        }
-      } catch (error) {
-        console.error('❌ Error al filtrar proveedores:', error)
-
-        // Si es un Error construido en el interceptor lo mostramos con detalle
-        if (error.message) {
-          if (error.message.includes('404')) {
-            this.proveedoresFiltrados = []
-            this.mostrarMensaje('No se encontró proveedores.', 'error')
-          } else {
-            // Intenta mostrar el mensaje del backend si vino
-            this.mostrarMensaje(error.message, 'error')
-          }
-        } else {
-          this.mostrarMensaje('Error al buscar proveedores en el servidor.', 'error')
-        }
-      }
-    },
-
     // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
       this.cargarProveedores() // 🔹 Vuelve a cargar todos los proveedores
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiProveedores(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-proveedor-wrapper {
@@ -385,7 +425,7 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -395,17 +435,17 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-filtro {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 20px;
-  margin-bottom: 12px;
+  align-items: center;      /* o center según prefieras */
+  gap: 4px;                 /* espacio entre el texto y los inputs/botones */
+  margin-top: 20px;         /* espacio arriba del bloque */
+  margin-bottom: 12px;      /* espacio debajo del bloque */
 }
 
 input {
@@ -414,59 +454,95 @@ input {
   border-radius: 4px;
 }
 
-.agregar-btn {
+.buscar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 12px;         /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.buscar-btn:hover {
+  background: #049670;
+}
+
+.buscar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.buscar-btn:not(:disabled):hover {
+  background: #005f8a;
+}
+
+.limpiar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: #1a1a1a;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.limpiar-btn:hover {
+  background: #049670;
+}
+
+.limpiar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.limpiar-btn:not(:disabled):hover {
+  background: #e76f51;
+}
+
+.registrar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.registrar-btn:hover {
+  background: #005f8a;
 }
 
 .update-btn {
+  padding: 6px 8px;
   border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px;          /* De aqui al final del boton era otro */
   background: #f4a261;
-  color: white;
+  color: #2b2b2b;
+  border: none;
+  cursor: pointer;
   margin-right: 4px;
-}
-
-.delete-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px;         /* De aqui al final del boton era otro */
-  background: #e63946;
-  color: white;
-}
-
-.buscar-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 12px;         /* De aqui al final del boton era otro */
-  background: #06d6a0;
-  color: white;
-  margin-left: 4px;
-}
-
-.agregar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }
 
 .update-btn:hover {
   background: #e76f51;
 }
 
+.delete-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #e63946;
+  color: #0a0a0a;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .delete-btn:hover {
-  background: #b52a33;
+  background: #c5303b;
 }
 
 .proveedores-table {
@@ -475,14 +551,14 @@ input {
   margin: 20px 0;
 }
 
-.proveedores-table th {
+.proveedores-table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
   background: white;
 }
 
-.proveedores-table td {
+.proveedores-table th {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
@@ -493,15 +569,6 @@ input {
   text-align: center;
   padding: 18px;
   color: #666;
-}
-
-.buscar-btn:hover {
-  background: #049670;
-}
-
-.buscar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }
 
 .modal-overlay {
@@ -535,18 +602,26 @@ input {
 
 .btn-yes {
   padding: 6px 12px;
-  background: #e63946;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #c92a2a;
   color: white;
 }
 
 .btn-yes:hover {
-  background: #b52a33;
+  background: #a12222;
 }
 
 .btn-no {
   padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
   background: #06d6a0;
-  color: white;
+  color: #1c1c1c;
 }
 
 .btn-no:hover {

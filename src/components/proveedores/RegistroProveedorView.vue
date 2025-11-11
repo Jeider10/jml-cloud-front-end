@@ -153,16 +153,11 @@ export default {
       }
 
       try {
-        // 🔹 Llamada al backend (codigoSucursal convertido a número)
-        const payload = {
-          ...this.proveedorForm,
-          codigoSucursal: Number(this.proveedorForm.codigoSucursal)
-        }
-
-        const response = await crearProveedor(payload)
+        // Llamada al backend
+        const response = await crearProveedor(this.proveedorForm)
         const nuevoProveedor = response.data
 
-        // 🔹 Agregamos el proveedor retornado por el backend a la lista local
+        // Agregamos el proveedor retornado por el backend a la lista local
         this.proveedores.push(nuevoProveedor)
         this.proveedoresFiltrados = [...this.proveedores]
 
@@ -171,12 +166,7 @@ export default {
         // limpiar formulario
         this.limpiarCampos();
       } catch (error) {
-        console.error('❌ Error al crear proveedor:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al crear proveedor en el servidor.', 'error')
-        }
+        this.manejarErrorApiProveedorRegistrar(error, `registrar proveedor ${this.proveedorForm.nombre}`)
       }
     },
 
@@ -203,10 +193,52 @@ export default {
     // 🔹 Método para volver a registro de proveedores
     volverProveedores() {
       this.$router.push({ name: 'ProveedoresView' })
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiProveedorRegistrar(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-proveedor-wrapper {
@@ -250,7 +282,7 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -260,7 +292,7 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-container {
@@ -286,23 +318,14 @@ input {
 }
 
 .agregar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
-}
-
-.limpiar-campos-btn {
-  border-radius: 6px;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
-  padding: 8px 12px;        /* De aqui al final del boton era otro */
-  background: #f4a261;
-  color: white;
 }
 
 .agregar-btn:hover {
@@ -314,18 +337,38 @@ input {
   cursor: not-allowed;
 }
 
+.limpiar-campos-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: #1a1a1a;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.limpiar-campos-btn:hover {
+  background: #049670;
+}
+
 .limpiar-campos-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
 
+.limpiar-campos-btn:not(:disabled):hover {
+  background: #e76f51;
+}
+
 .volver-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
