@@ -71,18 +71,19 @@ export default {
       }
     }
 
-    window.addEventListener('empresaUpdated', this._empresaUpdatedHandler)
+    globalThis.addEventListener('empresaUpdated', this._empresaUpdatedHandler)
   },
 
   beforeUnmount() {
     // Limpiar listener al desmontar para evitar fugas de memoria
-    window.removeEventListener('empresaUpdated', this._empresaUpdatedHandler)
+    globalThis.removeEventListener('empresaUpdated', this._empresaUpdatedHandler)
   },
 
   methods: {
     async cargarDatosEmpresa() {
       try {
         const response = await obtenerPrimeraEmpresa()
+        console.log('📢 Datos de empresa cargados:', response.data)
         if (response?.data?.length > 0) {
           const empresa = response.data[0]
           this.mensajeEmpresa = empresa.mensaje || 'Bienvenido a nuestro sistema.'
@@ -108,7 +109,7 @@ export default {
       }
 
       // 🔹 Limpiar comillas o espacios
-      const cleanPath = path.toString().trim().replace(/(^"|"$)/g, '')
+      const cleanPath = path.toString().trim().replaceAll(/(^"|"$)/g, '')
 
       // 🔹 Si es una URL completa (S3 u otra), úsala directamente
       if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {

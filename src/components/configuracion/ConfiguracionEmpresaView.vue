@@ -17,41 +17,49 @@
       <div v-else>
         <h1 class="titulo">Datos de la Empresa</h1>
 
-        <!-- 🟢 mensaje de confirmación visual -->
-        <div v-if="mensaje" :class="['alerta', mensajeTipo]">
-          {{ mensaje }}
-        </div>
+        <!-- 🔔 Mensaje visual -->
+        <transition name="fade">
+          <div v-if="mensaje" :class="['mensaje', mensajeTipo]">
+            {{ mensaje }}
+          </div>
+        </transition>
 
         <!-- 🔹 Contenedor fila: cuadro datos + botones al lado -->
         <div class="fila-contenedor">
           <!-- Bloque con datos -->
           <div class="datos-empresa">
             <div class="dato-row">
-              <label>NIT:</label>
+              <label for="nit">NIT</label>
               <input type="text" v-model="empresa.nit" :disabled="modoActualizar || !modoEdicion" />
             </div>
+
             <div class="dato-row">
-              <label>Nombre:</label>
+              <label for="nombre">Nombre</label>
               <input type="text" v-model="empresa.nombreEmpresa" :disabled="!modoEdicion" />
             </div>
+
             <div class="dato-row">
-              <label>Dirección:</label>
+              <label for="dirección">Dirección</label>
               <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
             </div>
+
             <div class="dato-row">
-              <label>Teléfono:</label>
+              <label for="teléfono">Teléfono</label>
               <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
             </div>
+
             <div class="dato-row">
-              <label>Mensaje:</label>
+              <label for="mensaje">Mensaje</label>
               <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
             </div>
+
             <div class="dato-row">
-              <label>Ruta Logo:</label>
+              <label for="rutaLogo">Ruta Logo</label>
               <input type="text" v-model="empresa.logo" disabled />
             </div>
+
             <div class="dato-row" v-if="modoEdicion">
-              <label>Logo:</label>
+              <label for="logo">Logo</label>
               <input type="file" accept="image/*" @change="onImageChange" />
             </div>
           </div>
@@ -203,14 +211,17 @@ export default {
       }, 3000)
     },
 
+    // 🔹 Método para cargar la empresa registrada.
     async cargarEmpresa() {
       try {
-        console.log('🔍 Solicitando empresa registrada (si existe)...')
+        console.log('🔍 Solicitando empresa registrada (desde la base de datos)...')
         const response = await obtenerPrimeraEmpresa()
+        console.log('🔍 Respuesta de la base de datos:', response)
 
         // Validar si la respuesta viene vacía o no contiene elementos
         if (!response || !response.data || response.data.length === 0) {
           console.warn('⚠️ No hay empresa registrada.')
+
           this.modoRegistrar = true
           this.modoActualizar = false
           this.empresa = {
@@ -224,7 +235,7 @@ export default {
           return
         }
 
-        // ✅ Tomar el primer elemento de la lista
+        // ✅ Tomar la empresa y asignarla al modelo
         const empresaData = response.data[0]
 
         // Asignar datos al modelo de Vue
@@ -237,7 +248,7 @@ export default {
           logo: empresaData.logo ?? ''
         }
 
-        console.log('✅ Empresa cargada correctamente:', this.empresa)
+        console.log('✅ Empresa cargada correctamente desde base:', empresaData)
 
         // Ajustar modos
         this.modoRegistrar = false
@@ -272,7 +283,7 @@ export default {
         await this.cargarEmpresa()
 
         // 📢 Nuevo: emitir evento global con la empresa actualizada
-        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
+        globalThis.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
 
         this.modoRegistrar = false
         this.modoActualizar = true
@@ -298,7 +309,7 @@ export default {
         this.limpiar()
 
         // Actualizar vista y emitir evento global
-        window.dispatchEvent(new CustomEvent('empresaUpdated', { detail: null }))
+        globalThis.dispatchEvent(new CustomEvent('empresaUpdated', { detail: null }))
       } catch (error) {
         console.error('❌ Error al eliminar empresa:', error)
         this.mostrarConfirmacionEliminar = false
@@ -363,7 +374,7 @@ export default {
       }
 
       // 🔹 Limpiar comillas o espacios
-      const cleanPath = path.toString().trim().replace(/(^"|"$)/g, '')
+      const cleanPath = path.toString().trim().replaceAll(/(^"|"$)/g, '')
 
       // 🔹 Si es una URL completa (S3 u otra), úsala directamente
       if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
@@ -400,23 +411,210 @@ export default {
 
 .main-content {
   position: absolute;
-  min-height: 100vh;   /* ocupa siempre toda la altura de la ventana */
   top: 0;
   left: 60px;
   right: 0;
+  bottom: 0;
   padding: 20px;
   background-color: #6fffd4;
-  transition: left 0.5s ease;
-
+  overflow-y: auto;       /* scroll solo si el contenido lo necesita */
+  transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
+
+  min-height: 100vh;   /* ocupa siempre toda la altura de la ventana */
   align-items: center;  /* centra horizontalmente los hijos, pero sin recortar el fondo */
   box-sizing: border-box; /* ✅ asegura que el padding no rompa el ancho */
-  overflow-y: auto;       /* scroll solo si el contenido lo necesita */
 }
 
 .main-content.expanded {
   left: 220px;
+}
+
+.titulo {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  margin-top: -10px;    /* espacio desde arriba */
+}
+
+.mensaje {
+  padding: 12px 18px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 10px;
+  z-index: 1000;
+  width: 90%;
+  max-width: 600px;
+}
+
+.mensaje.success {
+  background: #2ecc71;
+  color: #0b2e13;
+}
+
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+
+.mensaje.error {
+  background: #e74c3c;
+  color: #2b0500;
+}
+
+.registrar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #218838;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.registrar-btn:disabled {
+  background: #94d3a2;
+  cursor: not-allowed;
+}
+
+.registrar-btn:hover {
+  background: #51b568;
+}
+
+.actualizar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 4px;
+  font-size: 1rem;
+}
+
+.actualizar-btn:hover {
+  background: #005f8a;
+}
+
+.guardar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #1e7e34;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 4px;
+  font-size: 1rem;
+}
+
+.guardar-btn:hover {
+  background: #2ecc71;
+}
+
+.guardar-btn:disabled {
+  background: #94d3a2;
+  cursor: not-allowed;
+}
+
+.guardar-btn:not(:disabled):hover {
+  background: #155d27;
+}
+
+.limpiar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #e74c3c;
+  color: #1a1a1a;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 4px;
+  font-size: 1rem;
+}
+
+.limpiar-btn:hover {
+  background: #c0392b;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.si-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #c92a2a;
+  color: white;
+}
+
+.si-btn:hover {
+  background: #218838;
+}
+
+.no-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #06d6a0;
+  color: #1c1c1c;
+}
+
+.no-btn:hover {
+  background: #c0392b;
+}
+
+.volver-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.volver-btn:hover {
+  background: #5a6268;
+}
+
+.eliminar-btn {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #e63946;
+  color: #0a0a0a;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.eliminar-btn:hover {
+  background-color: #c1121f;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 /* Loader */
@@ -445,14 +643,6 @@ export default {
   to {
     transform: rotate(360deg);
   }
-}
-
-.titulo {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-align: center;
-  margin-top: -10px;    /* espacio desde arriba */
 }
 
 /* 🔹 Contenedor fila: cuadro + botones */
@@ -516,82 +706,6 @@ export default {
   height: auto;
 }
 
-.btn-group {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.registrar-btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  background: #28a745;
-  color: white;
-}
-
-.registrar-btn:disabled {
-  background: #94d3a2;
-  cursor: not-allowed;
-}
-
-.registrar-btn:hover {
-  background: #51b568;
-}
-
-.actualizar-btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  background: #0077b6;
-  color: white;
-}
-
-.actualizar-btn:hover {
-  background: #005f8a;
-}
-
-.guardar-btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  background: #28a745;
-  color: white;
-}
-
-.guardar-btn:disabled {
-  background: #94d3a2;
-  cursor: not-allowed;
-}
-
-.guardar-btn:not(:disabled):hover {
-  background: #218838;
-}
-
-.limpiar-btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  background: #e74c3c;
-  color: white;
-}
-
-.limpiar-btn:hover {
-  background: #c0392b;
-}
-
 /* Estilos del modal */
 .modal-overlay {
   position: fixed;
@@ -617,92 +731,5 @@ export default {
 
 .modal h3 {
   margin-bottom: 10px;
-}
-
-.modal-buttons {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-around;
-}
-
-.si-btn {
-  background: #28a745;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-}
-
-.no-btn {
-  background: #e74c3c;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-}
-
-.si-btn:hover {
-  background: #218838;
-}
-
-.no-btn:hover {
-  background: #c0392b;
-}
-
-.volver-btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  background: #6c757d;
-  color: white;
-}
-
-.volver-btn:hover {
-  background: #5a6268;
-}
-
-.eliminar-btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  background: #e63946;
-  color: white;
-}
-
-.eliminar-btn:hover {
-  background-color: #c1121f;
-}
-
-.alerta {
-  position: sticky;
-  top: 10px;
-  z-index: 1000;
-  margin: 0 auto 15px;
-  width: 90%;
-  max-width: 600px;
-  text-align: center;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-/* Colores según tipo */
-.alerta.success {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.alerta.error {
-  background-color: #f8d7da;
-  color: #721c24;
 }
 </style>
