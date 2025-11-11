@@ -191,7 +191,7 @@ import {
   buscarUsuarioPorRoleName
 } from '@/services/apiConfigEmpresaUsuariosService'
 
-import { getSession, obtenerUsuarioActual } from '@/services/apiAuthService'
+import { getSession } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionEmpresaUsuariosView',
@@ -225,42 +225,33 @@ export default {
       this.vistaActual = 'usuarios'
     }
 
-    // ✅ Cargar usuario logueado con cabecera Authorization
+    // ✅ Cargar usuario logueado desde la sesión
     try {
       const session = getSession() // ✅ Obtenemos la sesión activa
-      const token = session?.refreshToken // ✅ Token real de sesión
+      console.log('👤 sesión:', session)
+      const token = session?.refreshToken
 
-      if (token) {
-        // ✅ Pasamos el token al servicio
-        const response = await obtenerUsuarioActual(token)
-
-        // ✅ Leemos el login desde la sesión o la respuesta del backend
-        this.userLogin = response?.data?.options?.login || session?.user?.login || null
-
-        console.log('🆕 Usuario logueado detectado:', this.userLogin)
-
-        // if (this.userLogin) {
-          // this.mostrarMensaje(`✅ Usuario autenticado cargado correctamente (${this.userLogin}).`, 'success')
-        // } else {
-          // this.mostrarMensaje('⚠️ No se encontró información del usuario autenticado.', 'warning')
-        // }
-
-        if (this.userLogin) {
-          const { data: datosUsuario } = await buscarUsuarioPorUserName(this.userLogin)
-          console.log('🔹 buscarUsuarioPorUserName →', datosUsuario)
-
-          // ⚠️ Si el backend devuelve un array, toma el primer elemento
-          const nombreUsuarioLogin = Array.isArray(datosUsuario) ? datosUsuario[0] : datosUsuario
-          console.log('🔹 Nombre usuario login →', nombreUsuarioLogin.nombres)
-
-          // this.userLogin = nombreUsuarioLogin.nombres nombreUsuarioLogin.apellidos
-          this.userLogin = nombreUsuarioLogin.nombres + ' ' + nombreUsuarioLogin.apellidos
-        }
-
-        console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
-      } else {
-        this.mostrarMensaje('⚠️ No se encontró sesión activa.', 'warning')
+      if (!token) {
+        this.mostrarMensaje('⚠️ No hay sesión activa. Inicia sesión nuevamente.', 'warning')
+        this.$router.push('/login')
+        return
       }
+
+      this.userLogin = session?.user?.login || null
+      console.log('🆕 Usuario logueado detectado:', this.userLogin)
+
+      if (this.userLogin) {
+        const { data: datosUsuario } = await buscarUsuarioPorUserName(this.userLogin)
+        console.log('🔹 buscarUsuarioPorUserName →', datosUsuario)
+
+        // ⚠️ Si el backend devuelve un array, toma el primer elemento
+        const nombreUsuarioLogin = Array.isArray(datosUsuario) ? datosUsuario[0] : datosUsuario
+        console.log('🔹 Nombre usuario login →', nombreUsuarioLogin.nombres)
+
+        this.userLogin = nombreUsuarioLogin.nombres + ' ' + nombreUsuarioLogin.apellidos
+      }
+
+      console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
     } catch (error) {
       console.error('❌ Error al obtener usuario logueado:', error)
       this.mostrarMensaje('❌ Error al obtener el usuario actual.', 'error')

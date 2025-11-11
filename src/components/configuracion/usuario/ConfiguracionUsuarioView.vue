@@ -18,12 +18,12 @@
         <!-- 📄 Cuadro blanco con datos -->
         <div class="card">
           <div class="campo">
-            <label>Identificación:</label>
+            <label for="identificación">Identificación</label>
             <input type="text" v-model="usuario.identificacion" readonly />
           </div>
 
           <div class="campo">
-            <label>Nombre de Usuario:</label>
+            <label for="nombreDeUsuario">Nombre de Usuario</label>
             <input
               type="text"
               :value="`${usuario.nombres} ${usuario.apellidos}`.trim() || usuario.userName"
@@ -32,27 +32,27 @@
           </div>
 
           <div class="campo">
-            <label>Email:</label>
+            <label for="email">Email</label>
             <input type="text" v-model="usuario.email" readonly />
           </div>
 
           <div class="campo">
-            <label>Teléfono:</label>
+            <label for="teléfono">Teléfono</label>
             <input type="text" v-model="usuario.telefono" readonly />
           </div>
 
           <div class="campo">
-            <label>Dirección:</label>
+            <label for="dirección">Dirección</label>
             <input type="text" v-model="usuario.direccion" readonly />
           </div>
 
           <div class="campo">
-            <label>Fecha de Creación:</label>
+            <label for="fechaDeCreación">Fecha de Creación</label>
             <input type="text" v-model="usuario.fechaCreacion" readonly />
           </div>
 
           <div class="campo">
-            <label>Última Actualización:</label>
+            <label for="ultimaActualización">Última Actualización</label>
             <input type="text" v-model="usuario.fechaActualizacion" readonly />
           </div>
         </div>
@@ -83,7 +83,7 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
-import { getSession, obtenerUsuarioActual } from '@/services/apiAuthService'
+import { getSession } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionUsuarioView',
@@ -111,7 +111,8 @@ export default {
     try {
       // ✅ Obtenemos la sesión actual en memoria
       const session = getSession()
-      const token = session?.accessToken
+      console.log('👤 sesión:', session)
+      const token = session?.refreshToken
 
       if (!token) {
         this.mostrarMensaje('⚠️ No hay sesión activa. Inicia sesión nuevamente.', 'warning')
@@ -119,13 +120,8 @@ export default {
         return
       }
 
-      // ✅ Pasamos el token
-      const response = await obtenerUsuarioActual(token)
-      console.log('🔹 obtenerUsuarioActual →', response)
-
-      // ✅ Leemos el login
-      this.userLogin = response?.data?.options?.login || null
-
+      // ✅ Leemos directamente el login desde la sesión
+      this.userLogin = session?.user?.login || null
       console.log('🆕 Usuario logueado detectado:', this.userLogin)
 
       if (this.userLogin) {
@@ -137,11 +133,10 @@ export default {
         console.log('🔹 Nombre usuario login →', usuarioData.nombres)
 
         this.userLogin = usuarioData.nombres + ' ' + usuarioData.apellidos
-
         console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
 
         if (usuarioData) {
-          // Mapear los campos al modelo del frontend
+          // 🔹 Mapear los campos al modelo del frontend
           this.usuario = {
             identificacion: usuarioData.identificacion || '',
             userName: usuarioData.userName || '',
