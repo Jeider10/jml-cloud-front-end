@@ -255,7 +255,7 @@ export default {
         this.modoActualizar = true
 
       } catch (error) {
-        console.error('❌ Error al cargar empresa:', error)
+        this.manejarErrorConfigEmpresa(error, `Cargar empresa`)
         this.modoRegistrar = true
         this.modoActualizar = false
       }
@@ -289,9 +289,8 @@ export default {
         this.modoActualizar = true
 
       } catch (error) {
-        // alert(`❌ Error al guardar: ${error.message}`)
+        this.manejarErrorConfigEmpresa(error, `Guardar empresa`)
         this.mostrarConfirmacionGuardar = false
-        this.mostrarMensaje(`❌ Error al guardar: ${error.message}`, 'error')
       }
     },
 
@@ -311,9 +310,8 @@ export default {
         // Actualizar vista y emitir evento global
         globalThis.dispatchEvent(new CustomEvent('empresaUpdated', { detail: null }))
       } catch (error) {
-        console.error('❌ Error al eliminar empresa:', error)
+        this.manejarErrorConfigEmpresa(error, `Eliminar empresa`)
         this.mostrarConfirmacionEliminar = false
-        this.mostrarMensaje(`❌ Error al eliminar: ${error.message}`, 'error')
       }
     },
 
@@ -398,6 +396,47 @@ export default {
     onLogoError(event) {
       // Si falla la carga, mostrar imagen por defecto
       event.target.src = require('@/assets/img/Empresa.png')
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorConfigEmpresa(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
