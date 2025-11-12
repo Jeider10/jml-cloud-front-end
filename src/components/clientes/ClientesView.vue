@@ -469,6 +469,12 @@ input {
   border-radius: 4px;
 }
 
+select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .buscar-btn {
   padding: 6px 12px;
   border-radius: 6px;
