@@ -19,19 +19,19 @@
       <!-- Formulario producto -->
       <div class="form-container">
         <div class="form-row">
-          <label>Código:</label>
+          <label for="código">Código</label>
           <input v-model="productoForm.codigo" type="text" />
 
-          <label>Nombre:</label>
+          <label for="nombre">Nombre</label>
           <input v-model="productoForm.nombre" type="text" />
 
-          <label>Descripción:</label>
+          <label for="descripción">Descripción</label>
           <input v-model="productoForm.descripcion" type="text" />
 
-          <label>Cantidad:</label>
+          <label for="cantidad">Cantidad</label>
           <input v-model="productoForm.cantidad" type="number" />
 
-          <label>Precio:</label>
+          <label for="precio">Precio</label>
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
           <label for="proveedor">Proveedor</label>
@@ -165,7 +165,7 @@ export default {
         return
       }
 
-      // 🔹 Validar duplicado local
+      // 🔍 Verificar si ya existe un producto con el mismo código en la lista local
       const existente = this.productos.find(p => p.codigo === this.productoForm.codigo)
       if (existente) {
         this.mostrarMensaje(`⚠️ Ya existe un producto: ${existente.nombre} con el código ${existente.codigo}.`, 'error')
@@ -186,12 +186,7 @@ export default {
         const proveedorSeleccionado = proveedoresEncontrados[0]
 
         const payload = {
-          // ...this.productoForm,
-          codigo: this.productoForm.codigo,
-          nombre: this.productoForm.nombre,
-          descripcion: this.productoForm.descripcion,
-          cantidad: this.productoForm.cantidad,
-          precio: this.productoForm.precio,
+          ...this.productoForm,
           proveedorId: proveedorSeleccionado.codigoSucursal,     // <-- código real del proveedor
           proveedorName: proveedorSeleccionado.nombre            // <-- nombre del proveedor
         }
@@ -209,17 +204,7 @@ export default {
         // limpiar formulario
         this.limpiarCampos();
       } catch (error) {
-        console.error('❌ Error al crear producto:', error)
-
-        // Captura específica de duplicado
-        if (error.response && error.response.status === 409) {
-          this.mostrarMensaje(`⚠️ Ya existe un producto con el código ${this.productoForm.codigo}.`, 'error')
-        } else if (error.response && error.response.data) {
-          const mensajeBackend = error.response.data?.message || JSON.stringify(error.response.data)
-          this.mostrarMensaje(`Error del servidor: ${mensajeBackend}`, 'error')
-        } else {
-          this.mostrarMensaje(`Error inesperado: ${error.message}`, 'error')
-        }
+        this.manejarErrorApiProductosRegistrar(error, `registrar producto ${this.productoForm.nombre}`)
       }
     },
 
@@ -246,6 +231,11 @@ export default {
       }
     },
 
+    // 🔹 Método para volver a registro de productos
+    volverProductos() {
+      this.$router.push({ name: 'ProductosView' })
+    },
+
     // 🔹 Método para cargar proveedores
     async cargarProveedores() {
       try {
@@ -253,18 +243,49 @@ export default {
         this.proveedores = response.data
         this.proveedoresFiltrados = [...this.proveedores]
       } catch (error) {
-        console.error('❌ Error al cargar proveedores:', error)
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
-        }
+        this.manejarErrorApiProductosRegistrar(error, 'cargar proveedores')
       }
     },
 
-    // 🔹 Método para volver a registro de productos
-    volverProductos() {
-      this.$router.push({ name: 'ProductosView' })
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiProductosRegistrar(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
@@ -313,7 +334,7 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -323,7 +344,7 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-container {
@@ -348,30 +369,15 @@ input {
   border-radius: 4px;
 }
 
-select {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
 .agregar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
-}
-
-.limpiar-campos-btn {
-  border-radius: 6px;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
-  padding: 8px 12px;        /* De aqui al final del boton era otro */
-  background: #f4a261;
-  color: white;
 }
 
 .agregar-btn:hover {
@@ -383,22 +389,48 @@ select {
   cursor: not-allowed;
 }
 
+.limpiar-campos-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: #1a1a1a;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.limpiar-campos-btn:hover {
+  background: #049670;
+}
+
 .limpiar-campos-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
 
+.limpiar-campos-btn:not(:disabled):hover {
+  background: #e76f51;
+}
+
 .volver-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
 .volver-btn:hover {
   background: #005f8a;
+}
+
+select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 </style>

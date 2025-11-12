@@ -19,22 +19,22 @@
       <!-- Formulario producto -->
       <div class="form-container">
         <div class="form-row">
-          <label>Código</label>
+          <label for="código">Código</label>
           <input v-model="productoForm.codigo" type="text" disabled />
 
-          <label>Nombre</label>
+          <label for="nombre">Nombre</label>
           <input v-model="productoForm.nombre" type="text" />
 
-          <label>Descripción</label>
+          <label for="descripción">Descripción</label>
           <input v-model="productoForm.descripcion" type="text" />
 
-          <label>Cantidad</label>
+          <label for="cantidad">Cantidad</label>
           <input v-model="productoForm.cantidad" type="number" />
 
-          <label>Precio U.</label>
+          <label for="precioU">Precio U.</label>
           <input v-model="productoForm.precio" type="number" step="0.01" />
 
-          <label>Proveedor</label>
+          <label for="proveedor">Proveedor</label>
           <div class="form-group">
             <select v-model="productoForm.proveedorId" @change="actualizarProveedorName" class="form-control">
               <option disabled value="">Seleccione un proveedor</option>
@@ -46,7 +46,7 @@
 
           <!-- 💾 Botón de actualizar -->
           <button type="button"
-                  class="agregar-btn"
+                  class="actualizar-btn"
                   @click="actualizarProductoEnServidor">
                   💾 Actualizar
           </button>
@@ -117,40 +117,20 @@ export default {
       }, 3000)
     },
 
-    // 🔹 Método para cargar lista de proveedores
-    async cargarProveedores() {
-      try {
-        const response = await listarProveedores()
-        this.proveedores = response.data.map(p => ({
-          codigoSucursal: String(p.codigoSucursal),
-          nombre: p.nombre
-        }))
-      } catch (error) {
-        console.error('❌ Error al cargar proveedores:', error)
-
-        // Mostrar mensaje si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
-        }
-      }
-    },
-
     // 🔹 Método para cargar producto y normalizar proveedorId
     async cargarProducto() {
       try {
         const response = await buscarProductoPorCodigo(this.codigo)
-        const data = response.data
 
-        this.productoForm = {
-          codigo: data.codigo,
-          nombre: data.nombre,
-          descripcion: data.descripcion,
-          cantidad: data.cantidad,
-          precio: data.precio,
-          proveedorId: data.proveedorId ? String(data.proveedorId) : '',
-          proveedorName: data.proveedorName || ''
+        if (response.data) {
+          this.productoForm = {
+            ...response.data,
+            proveedorId: response.data.proveedorId ? String(response.data.proveedorId) : '',
+            proveedorName: response.data.proveedorName || ''
+          }
+          this.mostrarMensaje(`✅ Producto ${this.productoForm.nombre} cargado correctamente.`, 'info')
+        } else {
+          this.mostrarMensaje('⚠️ No se encontraron datos del producto.', 'warning')
         }
 
         // 🔹 Verificar si el proveedor está en la lista
@@ -162,8 +142,7 @@ export default {
           })
         }
       } catch (error) {
-        console.error('❌ Error al cargar el producto:', error)
-        this.mostrarMensaje('Error al cargar el producto.', 'error')
+        this.manejarErrorApiProductosActualizar(error, `buscar producto con código ${this.codigo}`)
       }
     },
 
@@ -190,34 +169,78 @@ export default {
         const proveedorSel = this.proveedores.find(p => p.codigoSucursal === this.productoForm.proveedorId)
         this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : this.productoForm.proveedorName
 
-        // preparar payload
-        const payload = {
-          codigo: this.productoForm.codigo,
-          nombre: this.productoForm.nombre,
-          descripcion: this.productoForm.descripcion,
-          cantidad: this.productoForm.cantidad,
-          precio: this.productoForm.precio,
-          proveedorId: Number(this.productoForm.proveedorId),
-          proveedorName: this.productoForm.proveedorName
-        }
+        const response = await actualizarProducto(this.productoForm)
+        const actualizado = response.data
 
-        await actualizarProducto(payload)
-
-        this.mostrarMensaje(`Producto ${this.productoForm.nombre} actualizado correctamente.`, 'success')
+        this.mostrarMensaje(`✅ Producto ${actualizado.nombre} actualizado correctamente.`, 'success')
 
       } catch (error) {
-        console.error('❌ Error al actualizar producto:', error)
-        this.mostrarMensaje('Error al actualizar producto en el servidor.', 'error')
+        this.manejarErrorApiProductosActualizar(error, `actualizar producto ${this.productoForm.nombre}`)
       }
     },
 
     // 🔹 Método para volver a todos los productos
     volverProductos() {
       this.$router.push({ name: 'ProductosView' })
+    },
+
+    // 🔹 Método para cargar lista de proveedores
+    async cargarProveedores() {
+      try {
+        const response = await listarProveedores()
+        this.proveedores = response.data.map(p => ({
+          codigoSucursal: String(p.codigoSucursal),
+          nombre: p.nombre
+        }))
+      } catch (error) {
+        this.manejarErrorApiProductosActualizar(error, 'listar proveedores')
+      }
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiProductosActualizar(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-producto-wrapper {
@@ -261,7 +284,12 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
+}
+
+.mensaje.info {
+  background: #2ecc71;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -271,19 +299,11 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-container {
   margin-bottom: 20px;
-}
-
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 label {
@@ -296,37 +316,47 @@ input {
   border-radius: 4px;
 }
 
-select {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.agregar-btn {
-  padding: 8px 12px;
+.actualizar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
-.agregar-btn:hover {
+.actualizar-btn:hover {
   background: #005f8a;
 }
 
 .volver-btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 4px;
   font-weight: 600;
 }
 
 .volver-btn:hover {
   background: #005f8a;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 </style>

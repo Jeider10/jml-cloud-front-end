@@ -56,7 +56,6 @@
             <option value="cantidad">Cantidad</option>
             <option value="precio">Precio</option>
             <option value="proveedor">Proveedor</option>
-            <option value="fechaCreacion">Fecha de Creación</option>
           </select>
 
           <!-- 🔍 Termino de búsqueda -->
@@ -75,7 +74,7 @@
 
           <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
-                  class="buscar-btn"
+                  class="limpiar-btn"
                   :disabled="!hayDatosFiltro() || !tipoBusqueda"
                   @click="limpiarBusqueda">
                   🧹 Limpiar
@@ -83,7 +82,7 @@
 
           <!-- ➕ Botón de registrar producto -->
           <button type="button"
-                  class="agregar-btn"
+                  class="registrar-btn"
                   @click="agregarProducto">
                   ➕ Registrar Producto
           </button>
@@ -139,6 +138,7 @@
   </div>
 </template>
 
+
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import {
@@ -148,7 +148,6 @@ import {
   buscarProductoPorDescripcion,
   buscarProductoPorCantidad,
   buscarProductoPorPrecio,
-  buscarProductoPorProveedorId,
   buscarProductoPorProveedorName,
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
@@ -212,18 +211,135 @@ export default {
     async cargarProductos() {
       try {
         const response = await listarProductos()
+
+        // 🟡 Caso 1: No hay productos (HTTP 204)
+        if (response.status === 204) {
+          this.productos = []
+          this.productosFiltrados = []
+          this.mostrarMensaje('⚠️ No se encontraron productos en el sistema.', 'warning')
+          return
+        }
+
+        // 🟢 Caso 2: Productos cargados exitosamente
         this.productos = response.data
         this.productosFiltrados = [...this.productos]
-      } catch (error) {
-        console.error('❌ Error al cargar productos:', error)
 
-        // Mostrar mensaje si hay respuesta del backend
-        if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
-        }
+        this.mostrarMensaje(`✅ ${this.productos.length} producto${this.productos.length === 1 ? '' : 's'} cargado${this.productos.length === 1 ? '' : 's'} correctamente.`, 'success')
+
+      } catch (error) {
+        this.manejarErrorApiProductos(error, 'cargar productos')
       }
+    },
+
+    // 🔹 Método para llamar al componente de agregar producto
+    agregarProducto(producto) {
+      this.$router.push({
+        name: 'RegistroProductosView',
+        state: { producto }
+      })
+    },
+
+    // 🔹 Método para llamar al componente de actualizar producto
+    abrirActualizarProducto(producto) {
+      this.$router.push({
+        name: 'ActualizarProductosView',
+        params: {
+          codigo: producto.codigo
+        }
+      })
+    },
+
+    // 🔹 Método para eliminar producto
+    async eliminarProducto(idx) {
+      const producto = this.productos[idx]
+      try {
+        await eliminarProductoPorCodigo(producto.codigo)
+
+        // ✅ Eliminamos solo si backend respondió bien
+        this.productos.splice(idx, 1)
+        this.productosFiltrados = [...this.productos]
+
+        this.mostrarMensaje(`🗑️ Producto ${producto.nombre} eliminado.`, 'success')
+
+      } catch (error) {
+        this.manejarErrorApiProductos(error, `eliminar producto ${producto.nombre}`)
+      } finally {
+        // 🧹 Siempre cerramos el modal de confirmación
+        this.modalEliminar.visible = false
+      }
+    },
+
+    // 🔹 Método para filtrar productos según el tipo de búsqueda
+    async filtrarProductos() {
+      const termino = this.busqueda.trim()
+      if (!termino || !this.tipoBusqueda) {
+        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
+        return
+      }
+
+      try {
+        const response = await this.obtenerProductosSegunTipo(termino)
+
+        console.log('📦 Respuesta del backend:', response)
+
+        // ✅ Producto(s) no encontrado(s)
+        if (response.status === 204) {
+          this.productosFiltrados = []
+          this.mostrarMensaje(`❌ No se encontraron productos con ${this.tipoBusqueda}: ${termino}`, 'warning')
+          return
+        }
+
+        // ✅ Producto(s) encontrado(s)
+        if (response.data) {
+          if (Array.isArray(response.data)) {
+            this.productosFiltrados = response.data
+          } else {
+            this.productosFiltrados = [response.data]
+          }
+          this.mostrarMensaje(`✅ Producto${Array.isArray(response.data) && response.data.length > 1 ? 's' : ''} encontrado${Array.isArray(response.data) && response.data.length > 1 ? 's' : ''} correctamente.`, 'success')
+          return
+        }
+
+        // ⚠️ Caso defensivo (nunca debería entrar aquí)
+        this.productosFiltrados = []
+        this.mostrarMensaje(`❌ No se encontró producto con ${this.tipoBusqueda}: ${termino}`, 'warning')
+
+      } catch (error) {
+        this.manejarErrorApiProductos(error, 'filtrar productos')
+      }
+    },
+
+    // 🔹 Método auxiliar para filtro de productos
+    async obtenerProductosSegunTipo(termino) {
+      switch (this.tipoBusqueda) {
+        case 'codigo':
+          return await buscarProductoPorCodigo(termino)
+        case 'nombre':
+          return await buscarProductoPorNombre(termino)
+        case 'descripcion':
+          return await buscarProductoPorDescripcion(termino)
+        case 'cantidad':
+          return await buscarProductoPorCantidad(termino)
+        case 'precio':
+          return await buscarProductoPorPrecio(termino)
+        case 'proveedor':
+          return await buscarProductoPorProveedorName(termino)
+        default:
+          this.mostrarMensaje('⚠️ Tipo de búsqueda no válido.', 'error')
+          return
+      }
+    },
+
+    // 🔹 Método para abrir modal en vez de window.confirm
+    confirmarEliminar(idx) {
+      this.modalEliminar.idx = idx
+      this.modalEliminar.producto = this.productos[idx]
+      this.modalEliminar.visible = true
+    },
+
+    // 🔹 Método para saber si hay datos en el cuadro de filtro
+    hayDatosFiltro() {
+      return this.busqueda.trim().length > 0
     },
 
     // 🔹 Método para saber si hay datos en el formulario
@@ -249,133 +365,6 @@ export default {
       }
     },
 
-    // 🔹 Método para saber si hay datos en el cuadro de filtro
-    hayDatosFiltro() {
-      return this.busqueda.trim().length > 0
-    },
-
-    // 🔹 Método para abrir modal en vez de window.confirm
-    confirmarEliminar(idx) {
-      this.modalEliminar.idx = idx
-      this.modalEliminar.producto = this.productos[idx]
-      this.modalEliminar.visible = true
-    },
-
-    // 🔹 Método para eliminar producto
-    async eliminarProducto(idx) {
-      const producto = this.productos[idx]
-      try {
-        await eliminarProductoPorCodigo(producto.codigo)
-
-        // ✅ Eliminamos solo si backend respondió bien
-        this.productos.splice(idx, 1)
-        this.productosFiltrados = [...this.productos]
-
-        this.mostrarMensaje(`🗑️ Producto ${producto.nombre} eliminado.`, 'success')
-
-      } catch (error) {
-        console.error('❌ Error al eliminar producto:', error)
-        if (error.response && error.response.status === 404) {
-          this.mostrarMensaje(`⚠️ Producto ${producto.nombre} con código ${producto.codigo} no encontrado en el servidor.`, 'error')
-        } else if (error.response && error.response.data) {
-          this.mostrarMensaje(`Error: ${error.response.data}`, 'error')
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
-        }
-      } finally {
-        this.modalEliminar.visible = false
-      }
-    },
-
-    // 🔹 Método para llamar al componente de agregar producto
-    agregarProducto(producto) {
-      this.$router.push({
-        name: 'RegistroProductosView',
-        state: { producto }
-      })
-    },
-
-    // 🔹 Método para llamar al componente de actualizar producto
-    abrirActualizarProducto(producto) {
-      this.$router.push({
-        name: 'ActualizarProductosView',
-        params: {
-          codigo: producto.codigo
-        }
-      })
-    },
-
-    // 🔹 Método para filtrar productos según el tipo de búsqueda
-    async filtrarProductos() {
-      if (!this.busqueda.trim()) {
-        this.limpiarBusqueda()
-        return
-      }
-
-      const texto = this.busqueda.trim()
-
-      try {
-        let response
-        switch (this.tipoBusqueda) {
-          case 'codigo':
-            response = await buscarProductoPorCodigo(Number(texto))
-            break
-          case 'nombre':
-            response = await buscarProductoPorNombre(texto)
-            break
-          case 'descripcion':
-            response = await buscarProductoPorDescripcion(texto)
-            break
-          case 'cantidad':
-            response = await buscarProductoPorCantidad(texto)
-            break
-          case 'precio':
-            response = await buscarProductoPorPrecio(texto)
-            break
-          case 'proveedor':
-            if (!isNaN(texto)) {
-              response = await buscarProductoPorProveedorId(Number(texto))
-            } else {
-              response = await buscarProductoPorProveedorName(texto)
-            }
-            break
-          default:
-            this.mostrarMensaje('Seleccione un tipo de búsqueda válido.', 'error')
-            return
-        }
-
-        const data = response.data
-
-        if (Array.isArray(data)) {
-          this.productosFiltrados = data
-        } else if (data) {
-          // backend puede devolver objeto simple
-          this.productosFiltrados = [data]
-        } else {
-          this.productosFiltrados = []
-        }
-
-        if (this.productosFiltrados.length === 0) {
-          this.mostrarMensaje('No se encontraron productos.', 'error')
-        }
-      } catch (error) {
-        console.error('❌ Error al filtrar productos:', error)
-
-        // Si es un Error construido en el interceptor lo mostramos con detalle
-        if (error.mensaje) {
-          if(error.mensaje.includes('404')) {
-            this.productosFiltrados = []
-            this.mostrarMensaje('No se encontró producto', 'error')
-          } else {
-            // Intenta mostrar el mensaje del backend si vino
-            this.mostrarMensaje(error.mensaje, 'error')
-          }
-        } else {
-          this.mostrarMensaje('Error al conectarse con el servidor de productos.', 'error')
-        }
-      }
-    },
-
     // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
       this.busqueda = ''
@@ -397,10 +386,52 @@ export default {
           this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
         }
       }
+    },
+
+    // 🔹 Método para manejar errores de API
+    manejarErrorApiProductos(error, contexto = '') {
+      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+
+      // 🔴 Caso 1: Error con respuesta del servidor
+      if (error.response) {
+        const status = error.response.status
+
+        switch (status) {
+          case 400:
+            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
+            break
+          case 401:
+            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
+            break
+          case 403:
+            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
+            break
+          case 404:
+            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
+            break
+          case 409:
+            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
+            break
+          case 500:
+            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
+            break
+          default:
+            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+        }
+
+      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+      } else if (error.request) {
+        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+
+      // ⚙️ Caso 3: Error inesperado en frontend
+      } else {
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .registro-producto-wrapper {
@@ -450,7 +481,7 @@ export default {
 
 .mensaje.success {
   background: #2ecc71;
-  color: white;
+  color: #0b2e13;
 }
 
 .mensaje.warning {
@@ -460,17 +491,17 @@ export default {
 
 .mensaje.error {
   background: #e74c3c;
-  color: white;
+  color: #2b0500;
 }
 
 .form-filtro {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 20px;
-  margin-bottom: 12px;
+  align-items: center;      /* o center según prefieras */
+  gap: 4px;                 /* espacio entre el texto y los inputs/botones */
+  margin-top: 20px;         /* espacio arriba del bloque */
+  margin-bottom: 12px;      /* espacio debajo del bloque */
 }
 
 input {
@@ -485,65 +516,95 @@ select {
   border-radius: 4px;
 }
 
-.agregar-btn {
+.buscar-btn {
+  padding: 6px 12px;
   border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 8px 12px;        /* De aqui al final del boton era otro */
   background: #0077b6;
   color: white;
-  margin-left: auto;        /* empuja el botón a la derecha */
-  display: block;           /* asegura que se respete el auto margin */
-}
-
-.update-btn {
-  border-radius: 6px;
   border: none;
   cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px;         /* De aqui al final del boton era otro */
-  background: #f4a261;
-  color: white;
-  margin-right: 4px;
-}
-
-.delete-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 8px;         /* De aqui al final del boton era otro */
-  background: #e63946;
-  color: white;
-}
-
-.buscar-btn {
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 12px;        /* De aqui al final del boton era otro */
-  background: #06d6a0;
-  color: white;
   margin-left: 4px;
+  font-weight: 600;
 }
 
-.agregar-btn:hover {
+.buscar-btn:hover {
+  background: #049670;
+}
+
+.buscar-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.buscar-btn:not(:disabled):hover {
   background: #005f8a;
 }
 
-.agregar-btn:disabled {
+.limpiar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: #1a1a1a;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.limpiar-btn:hover {
+  background: #049670;
+}
+
+.limpiar-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.limpiar-btn:not(:disabled):hover {
+  background: #e76f51;
+}
+
+.registrar-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.registrar-btn:hover {
+  background: #005f8a;
+}
+
+.update-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f4a261;
+  color: #2b2b2b;
+  border: none;
+  cursor: pointer;
+  margin-right: 4px;
 }
 
 .update-btn:hover {
   background: #e76f51;
 }
 
+.delete-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #e63946;
+  color: #0a0a0a;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .delete-btn:hover {
-  background: #b52a33;
+  background: #c5303b;
 }
 
 .productos-table {
@@ -552,14 +613,14 @@ select {
   margin: 20px 0;
 }
 
-.productos-table th {
+.productos-table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
   background: white;
 }
 
-.productos-table td {
+.productos-table th {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
@@ -570,15 +631,6 @@ select {
   text-align: center;
   padding: 18px;
   color: #666;
-}
-
-.buscar-btn:hover {
-  background: #049670;
-}
-
-.buscar-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }
 
 .modal-overlay {
@@ -612,18 +664,26 @@ select {
 
 .btn-yes {
   padding: 6px 12px;
-  background: #e63946;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #c92a2a;
   color: white;
 }
 
 .btn-yes:hover {
-  background: #b52a33;
+  background: #a12222;
 }
 
 .btn-no {
   padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
   background: #06d6a0;
-  color: white;
+  color: #1c1c1c;
 }
 
 .btn-no:hover {
