@@ -25,8 +25,17 @@
           <label for="nombre">Nombre</label>
           <input v-model="productoForm.nombre" type="text" />
 
+          <label for="referencia">Referencia</label>
+          <input v-model="productoForm.referencia" type="text" />
+
           <label for="descripción">Descripción</label>
           <input v-model="productoForm.descripcion" type="text" />
+
+          <label for="marca">Marca</label>
+          <input v-model="productoForm.marca" type="text" />
+
+          <label for="unidadMedida">U. de Medida</label>
+          <input v-model="productoForm.unidadMedida" type="text" />
 
           <label for="cantidad">Cantidad</label>
           <input v-model="productoForm.cantidad" type="number" />
@@ -45,23 +54,20 @@
           </div>
 
           <!-- 💾 Botón de actualizar -->
-          <button type="button"
-                  class="actualizar-btn"
-                  @click="actualizarProductoEnServidor">
-                  💾 Actualizar
+          <button type="button" class="actualizar-btn" @click="actualizarProductoEnServidor">
+            💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
-          <button type="button"
-                  class="volver-btn"
-                  @click="volverProductos">
-                  ↩️ Volver
+          <button type="button" class="volver-btn" @click="volverProductos">
+            ↩️ Volver
           </button>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
@@ -78,7 +84,10 @@ export default {
       productoForm: {
         codigo: '',
         nombre: '',
+        referencia: '',
         descripcion: '',
+        marca: '',
+        unidadMedida: '',
         cantidad: 0,
         precio: 0,
         proveedorId: null,
@@ -100,7 +109,7 @@ export default {
 
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -228,11 +237,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }
@@ -270,7 +279,8 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: 1px;    /* espacio desde arriba */
+  /* espacio desde arriba */
+  margin-top: 1px;
 }
 
 .mensaje {
@@ -279,7 +289,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {

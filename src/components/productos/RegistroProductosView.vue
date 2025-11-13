@@ -25,8 +25,17 @@
           <label for="nombre">Nombre</label>
           <input v-model="productoForm.nombre" type="text" />
 
+          <label for="referencia">Referencia</label>
+          <input v-model="productoForm.referencia" type="text" />
+
           <label for="descripción">Descripción</label>
           <input v-model="productoForm.descripcion" type="text" />
+
+          <label for="marca">Marca</label>
+          <input v-model="productoForm.marca" type="text" />
+
+          <label for="unidadMedida">U. de Medida</label>
+          <input v-model="productoForm.unidadMedida" type="text" />
 
           <label for="cantidad">Cantidad</label>
           <input v-model="productoForm.cantidad" type="number" />
@@ -46,32 +55,25 @@
           </select>
 
           <!-- ➕ Botón de registrar -->
-          <button type="button"
-                  class="agregar-btn"
-                  :disabled="!hayDatos()"
-                  @click="agregarProducto">
-                  ➕ Registrar
+          <button type="button" class="agregar-btn" :disabled="!hayDatos()" @click="agregarProducto">
+            ➕ Registrar
           </button>
 
           <!-- 🧹 Botón de limpiar campos -->
-          <button type="button"
-                  class="limpiar-campos-btn"
-                  :disabled="!hayDatos()"
-                  @click="limpiarCampos">
-                  🧹 Limpiar campos
+          <button type="button" class="limpiar-campos-btn" :disabled="!hayDatos()" @click="limpiarCampos">
+            🧹 Limpiar campos
           </button>
 
           <!-- ↩️ Botón de volver -->
-          <button type="button"
-                  class="volver-btn"
-                  @click="volverProductos">
-                  ↩️ Volver
+          <button type="button" class="volver-btn" @click="volverProductos">
+            ↩️ Volver
           </button>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
@@ -87,7 +89,10 @@ export default {
       productoForm: {
         codigo: '',
         nombre: '',
+        referencia: '',
         descripcion: '',
+        marca: '',
+        unidadMedida: '',
         cantidad: 0,
         precio: 0,
         proveedorId: '',
@@ -116,7 +121,7 @@ export default {
 
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -145,8 +150,23 @@ export default {
         return
       }
 
+      if (!this.productoForm.referencia) {
+        this.mostrarMensaje('Ingrese la referencia del producto.', 'error')
+        return
+      }
+
       if (!this.productoForm.descripcion) {
         this.mostrarMensaje('Ingrese la descripción del producto.', 'error')
+        return
+      }
+
+      if (!this.productoForm.marca) {
+        this.mostrarMensaje('Ingrese la marca del producto.', 'error')
+        return
+      }
+
+      if (!this.productoForm.unidadMedida) {
+        this.mostrarMensaje('Ingrese la unidad de medida del producto.', 'error')
         return
       }
 
@@ -211,11 +231,14 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.productoForm.codigo ||
-             this.productoForm.nombre ||
-             this.productoForm.descripcion ||
-             this.productoForm.cantidad ||
-             this.productoForm.precio ||
-             this.productoForm.proveedorName;
+        this.productoForm.nombre ||
+        this.productoForm.referencia ||
+        this.productoForm.descripcion ||
+        this.productoForm.marca ||
+        this.productoForm.unidadMedida ||
+        this.productoForm.cantidad ||
+        this.productoForm.precio ||
+        this.productoForm.proveedorName;
     },
 
     // 🔹 Método para limpiar campos del formulario
@@ -223,7 +246,10 @@ export default {
       this.productoForm = {
         codigo: '',
         nombre: '',
+        referencia: '',
         descripcion: '',
+        marca: '',
+        unidadMedida: '',
         cantidad: 0,
         precio: 0,
         proveedorId: '',
@@ -278,11 +304,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }
@@ -320,7 +346,8 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: 1px;    /* espacio desde arriba */
+  /* espacio desde arriba */
+  margin-top: 1px;
 }
 
 .mensaje {
@@ -329,7 +356,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {

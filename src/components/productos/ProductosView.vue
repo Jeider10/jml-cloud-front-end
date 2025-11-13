@@ -24,16 +24,16 @@
               ⚠️ ¿Está seguro de eliminar el producto
               {{ modalEliminar.producto.nombre }}?
             </p>
+
             <div class="modal-buttons">
               <!-- ✅ Botón de si -->
-              <button class="btn-yes"
-                      @click="eliminarProducto(modalEliminar.idx)">
-                      Sí
+              <button class="btn-yes" @click="eliminarProducto(modalEliminar.idx)">
+                Sí
               </button>
+
               <!-- ❌️ Botón de no -->
-              <button class="btn-no"
-                      @click="modalEliminar.visible = false">
-                      No
+              <button class="btn-no" @click="modalEliminar.visible = false">
+                No
               </button>
             </div>
           </div>
@@ -52,39 +52,33 @@
             <option disabled value="">Seleccione</option>
             <option value="codigo">Código</option>
             <option value="nombre">Nombre</option>
+            <option value="referencia">Referencia</option>
             <option value="descripcion">Descripción</option>
+            <option value="marca">Marca</option>
+            <option value="unidadMedida">Unidad de Medida</option>
             <option value="cantidad">Cantidad</option>
             <option value="precio">Precio</option>
             <option value="proveedor">Proveedor</option>
           </select>
 
           <!-- 🔍 Termino de búsqueda -->
-          <input v-model="busqueda"
-                 type="text"
-                 placeholder="Ingrese término de búsqueda"
-                 :disabled="!tipoBusqueda" />
+          <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" :disabled="!tipoBusqueda" />
 
           <!-- 🔍 Botón de búsqueda -->
-          <button type="button"
-                  class="buscar-btn"
-                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                  @click="filtrarProductos">
-                  🔍 Buscar
+          <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro() || !tipoBusqueda"
+            @click="filtrarProductos">
+            🔍 Buscar
           </button>
 
           <!-- 🧹 Botón de limpiar búsqueda -->
-          <button type="button"
-                  class="limpiar-btn"
-                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
-                  @click="limpiarBusqueda">
-                  🧹 Limpiar
+          <button type="button" class="limpiar-btn" :disabled="!hayDatosFiltro() || !tipoBusqueda"
+            @click="limpiarBusqueda">
+            🧹 Limpiar
           </button>
 
           <!-- ➕ Botón de registrar producto -->
-          <button type="button"
-                  class="registrar-btn"
-                  @click="agregarProducto">
-                  ➕ Registrar Producto
+          <button type="button" class="registrar-btn" @click="agregarProducto">
+            ➕ Registrar Producto
           </button>
         </div>
       </div>
@@ -96,12 +90,15 @@
             <th>ID</th>
             <th>CÓDIGO</th>
             <th>NOMBRE</th>
+            <th>REFERENCIA</th>
             <th>DESCRIPCIÓN</th>
+            <th>MARCA</th>
+            <th>U. DE MEDIDA</th>
             <th>CANTIDAD</th>
-            <th>PRECIO U.</th>
-            <th>NOMBRE PROVEEDOR</th>
-            <th>FECHA REGISTRO</th>
-            <th>FECHA ACTUALIZACIÓN</th>
+            <th>PRECIO</th>
+            <th>PROVEEDOR</th>
+            <th>REGISTRO</th>
+            <th>ACTUALIZACIÓN</th>
             <th>ACCIONES</th>
           </tr>
         </thead>
@@ -110,28 +107,33 @@
             <td>{{ idx + 1 }}</td>
             <td>{{ prod.codigo }}</td>
             <td>{{ prod.nombre }}</td>
+            <td>{{ prod.referencia }}</td>
             <td>{{ prod.descripcion }}</td>
+            <td>{{ prod.marca }}</td>
+            <td>{{ prod.unidadMedida }}</td>
             <td>{{ prod.cantidad }}</td>
             <td>{{ prod.precio }}</td>
             <td>{{ prod.proveedorName }}</td>
-            <td>{{ prod.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
-            <td>{{ prod.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
+            <td>{{ prod.fechaCreacion }}</td>
+            <td>{{ prod.fechaActualizacion }}</td>
             <td>
+
               <!-- ✏️ Botón de editar -->
-              <button class="update-btn"
-                      @click="abrirActualizarProducto(prod)">
-                      ✏️
+              <button class="update-btn" @click="abrirActualizarProducto(prod)">
+                ✏️
               </button>
+
               <!-- 🗑️️ Botón de eliminar -->
-              <button class="delete-btn"
-                      @click="confirmarEliminar(idx)">
-                      🗑️
+              <button class="delete-btn" @click="confirmarEliminar(idx)">
+                🗑️
               </button>
             </td>
           </tr>
+
           <tr v-if="productosFiltrados.length === 0">
-            <td colspan="10" class="empty-row">No hay productos registrados.</td>
+            <td colspan="13" class="empty-row">No hay productos registrados.</td>
           </tr>
+
         </tbody>
       </table>
     </div>
@@ -141,11 +143,15 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+
 import {
   listarProductos,
   buscarProductoPorCodigo,
   buscarProductoPorNombre,
+  buscarProductoPorReferencia,
   buscarProductoPorDescripcion,
+  buscarProductoPorMarca,
+  buscarProductoPorUnidadDeMedida,
   buscarProductoPorCantidad,
   buscarProductoPorPrecio,
   buscarProductoPorProveedorName,
@@ -163,7 +169,10 @@ export default {
       productoForm: {
         codigo: '',
         nombre: '',
+        referencia: '',
         descripcion: '',
+        marca: '',
+        unidadMedida: '',
         cantidad: 0,
         precio: 0,
         proveedorId: '',
@@ -195,7 +204,7 @@ export default {
 
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -316,8 +325,14 @@ export default {
           return await buscarProductoPorCodigo(termino)
         case 'nombre':
           return await buscarProductoPorNombre(termino)
+        case 'referencia':
+          return await buscarProductoPorReferencia(termino)
         case 'descripcion':
           return await buscarProductoPorDescripcion(termino)
+        case 'marca':
+          return await buscarProductoPorMarca(termino)
+        case 'unidadMedida':
+          return await buscarProductoPorUnidadDeMedida(termino)
         case 'cantidad':
           return await buscarProductoPorCantidad(termino)
         case 'precio':
@@ -345,11 +360,14 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.productoForm.codigo ||
-             this.productoForm.nombre ||
-             this.productoForm.descripcion ||
-             this.productoForm.cantidad ||
-             this.productoForm.precio ||
-             this.productoForm.proveedorName;
+        this.productoForm.nombre ||
+        this.productoForm.referencia ||
+        this.productoForm.descripcion ||
+        this.productoForm.marca ||
+        this.productoForm.unidadMedida ||
+        this.productoForm.cantidad ||
+        this.productoForm.precio ||
+        this.productoForm.proveedorName;
     },
 
     // 🔹 Método de limpiar campos del formulario
@@ -357,7 +375,10 @@ export default {
       this.productoForm = {
         codigo: '',
         nombre: '',
+        referencia: '',
         descripcion: '',
+        marca: '',
+        unidadMedida: '',
         cantidad: 0,
         precio: 0,
         proveedorId: '',
@@ -419,11 +440,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }
@@ -461,12 +482,15 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: -10px;    /* espacio desde arriba */
+  /* espacio desde arriba */
+  margin-top: -10px;
 }
 
 .buscar-label {
-  display: block;       /* para que respete el margen como línea */
-  margin-top: -20px;    /* sube el texto hacia arriba */
+  /* para que respete el margen como línea */
+  display: block;
+  /* sube el texto hacia arriba */
+  margin-top: -20px;
   font-weight: bold;
 }
 
@@ -476,7 +500,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {
@@ -498,10 +522,14 @@ export default {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  align-items: center;      /* o center según prefieras */
-  gap: 4px;                 /* espacio entre el texto y los inputs/botones */
-  margin-top: 20px;         /* espacio arriba del bloque */
-  margin-bottom: 12px;      /* espacio debajo del bloque */
+  /* o center según prefieras */
+  align-items: center;
+  /* espacio entre el texto y los inputs/botones */
+  gap: 4px;
+  /* espacio arriba del bloque */
+  margin-top: 20px;
+  /* espacio debajo del bloque */
+  margin-bottom: 12px;
 }
 
 input {
@@ -639,7 +667,7 @@ select {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -652,7 +680,7 @@ select {
   border-radius: 8px;
   text-align: center;
   min-width: 300px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 .modal-buttons {
