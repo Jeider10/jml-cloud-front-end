@@ -89,18 +89,18 @@
             <td>
               <ul>
                 <li v-for="(prod, i) in venta.productos" :key="i">
-                  {{ prod.precio }}
+                  {{ formatPrecioCOP(prod.precio) }}
                 </li>
               </ul>
             </td>
             <td>
               <ul>
                 <li v-for="(prod, i) in venta.productos" :key="i">
-                  {{ (prod.precio * prod.cantidad).toFixed(2) }}
+                  {{ formatPrecioCOP(subtotalProducto(prod)) }}
                 </li>
               </ul>
             </td>
-            <td>{{ venta.total }}</td>
+            <td>{{ formatPrecioCOP(totalVenta(venta)) }}</td>
             <td>{{ venta.vendedor }}</td>
             <td>{{ venta.identificacionVendedor }}</td>
             <td>{{ venta.numeroFactura }}</td>
@@ -139,6 +139,16 @@ export default {
     }
   },
 
+  // 🔹 Calcula el total general de todas las ventas filtradas
+  computed: {
+    totalGeneral() {
+      const total = this.ventasFiltradas
+        .reduce((acc, v) => acc + this.totalVenta(v), 0)
+
+      return this.formatPrecioCOP(total)
+    }
+  },
+
   async mounted() {
     await this.buscarTodasLasOrdenes()
   },
@@ -162,7 +172,7 @@ export default {
           })),
           vendedor: o.nombreEmpleado,
           identificacionVendedor: o.identificacionEmpleado,
-          total: o.totalCompra,
+          total: this.calcularTotalDetalles(o.detalles),
           numeroFactura: o.numeroFactura,
           fecha: o.fechaCreacion
         }))
@@ -231,21 +241,43 @@ export default {
       this.ventasFiltradas = [...this.ventas]
     },
 
+    // 🔹 Método para manejar formato de precios
+    formatPrecioCOP(valor) {
+      if (valor === null || valor === undefined) return '$0'
+
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0
+      }).format(valor)
+    },
+
+    // 🔹 Método para subtotal por producto
+    subtotalProducto(prod) {
+      return Number(prod.precio) * Number(prod.cantidad)
+    },
+
+    // 🔹 Método para total por venta (por orden)
+    totalVenta(venta) {
+      return (venta.productos || [])
+        .reduce((sum, p) => sum + (p.precio * p.cantidad), 0)
+    },
+
+    // 🔹 Calcula el total de una orden a partir de sus detalles
+    calcularTotalDetalles(detalles = []) {
+      return detalles.reduce(
+        (sum, d) => sum + (Number(d.precio) * Number(d.cantidad)),
+        0
+      )
+    },
+
     imprimirHistorial() {
       window.print()
-    }
-  },
-
-  // 🔹 Calcula el total general de todas las ventas filtradas
-  computed: {
-    totalGeneral() {
-      return this.ventasFiltradas
-        .reduce((acc, v) => acc + parseFloat(v.total || 0), 0)
-        .toFixed(2)
     }
   }
 }
 </script>
+
 
 
 <style scoped>
