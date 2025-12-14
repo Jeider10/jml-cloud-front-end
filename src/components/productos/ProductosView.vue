@@ -112,7 +112,7 @@
             <td>{{ prod.marca }}</td>
             <td>{{ prod.unidadMedida }}</td>
             <td>{{ prod.cantidad }}</td>
-            <td>{{ prod.precio }}</td>
+            <td>{{ formatPrecioCOP(prod.precio) }}</td>
             <td>{{ prod.proveedorName }}</td>
             <td>{{ prod.fechaCreacion }}</td>
             <td>{{ prod.fechaActualizacion }}</td>
@@ -407,6 +407,17 @@ export default {
           this.mostrarMensaje('Error al conectarse con el servidor de proveedores.', 'error')
         }
       }
+    },
+
+    // 🔹 Método para manejar formato de precios
+    formatPrecioCOP(valor) {
+      if (valor === null || valor === undefined) return '$0'
+
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0
+      }).format(valor)
     },
 
     // 🔹 Método para manejar errores de API
