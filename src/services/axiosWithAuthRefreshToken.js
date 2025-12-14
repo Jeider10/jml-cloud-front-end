@@ -21,17 +21,35 @@ export const createAxiosWithAuth = (baseURL) => {
 
   // Interceptor de Response
   let isRefreshing = false
+  let refreshAttempts = 0 // 🔹 Contador global de intentos de refresh
 
   instance.interceptors.response.use(
     response => response,
     async (error) => {
       const { response, config } = error
 
-      if ((response && (response.status === 401 || response.status === 403)) && sessionData.refreshToken) {
-        console.log('🔑 Token expirado. Intentando refrescar...')
+      // ⚠️ Si no hay respuesta (network error, CORS, etc.)
+      if (!response) {
+        console.error('🚫 Error sin respuesta del servidor:', error)
+        throw error;
+      }
+
+      // 🔹 Solo intentar refrescar si es 401 y hay refresh token
+      if (response.status === 401 && sessionData?.refreshToken) {
+        console.warn('🔑 Token expirado. Intentando refrescar...')
+
+        // ⚠️ Evitar bucles infinitos
+        if (refreshAttempts >= 1) {
+          console.error('🚫 Se ha intentado refrescar el token más de una vez. Abortando.')
+          clearSession()
+          router.push('/login')
+          throw error;
+        }
 
         if (!isRefreshing) {
           isRefreshing = true
+          refreshAttempts++
+
           try {
             console.warn('♻️ Intentando refrescar token...')
 
@@ -43,6 +61,7 @@ export const createAxiosWithAuth = (baseURL) => {
 
             console.log('✅ Token refrescado exitosamente.')
 
+            // 🔹 Reintentamos la petición original con el nuevo token
             return instance.request(config)
           } catch (refreshError) {
             console.error('❌ Error al refrescar token:', refreshError)
@@ -54,7 +73,7 @@ export const createAxiosWithAuth = (baseURL) => {
         }
       }
 
-      return Promise.reject(error)
+      throw error;
     }
   )
 
