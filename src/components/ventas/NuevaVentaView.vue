@@ -101,7 +101,7 @@
           <select v-model="ordenSeleccionada" id="ordenSeleccionada" @change="cargarItemsOrdenSeleccionada">
             <option disabled value="">Seleccione una orden</option>
             <option v-for="orden in ordenesFiltradas" :key="orden.numeroOrden" :value="orden.numeroOrden">
-              Orden {{ orden.numeroOrden }} - Estado: {{ orden.estadoOrden }} - Total: {{ formatNumber(orden.detalles.reduce((sum, d) => sum + d.cantidad * d.precio, 0)) }}
+              Orden {{ orden.numeroOrden }} - Estado: {{ orden.estadoOrden }} - Total: {{ formatPrecioCOP(totalOrden(orden)) }}
             </option>
           </select>
 
@@ -155,11 +155,11 @@
               </div>
             </td>
 
-            <td>{{ item.precio }}</td>
+            <td>{{ formatPrecioCOP(item.precio) }}</td>
             <td>{{ item.fechaCreacion }}</td>
             <td class="no-print">{{ item.fechaActualizacion }}</td>
             <td class="precio-total-cell">
-              {{ item.cantidad * item.precio }}
+              {{ formatPrecioCOP(item.cantidad * item.precio) }}
             </td>
           </tr>
 
@@ -211,7 +211,7 @@
                   ✅ Cerrar Venta
           </button>
 
-          <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
+          <span class="total">💰 Total a Pagar: {{ formatPrecioCOP(calcularTotal) }}</span>
         </div>
 
         <!-- ✅ Datos cliente y total SOLO impresión en una sola línea -->
@@ -220,7 +220,7 @@
           <span><strong>Nombre Cliente:</strong> {{ cliente.nombres }}</span>
           <span><strong>Identificación Empleado:</strong> {{ empleado.identificacion }}</span>
           <span><strong>Nombre Empleado:</strong> {{ empleado.nombres }}</span>
-          <span class="total">💰 Total a Pagar: {{ formatNumber(calcularTotal) }}</span>
+          <span class="total">💰 Total a Pagar: {{ formatPrecioCOP(calcularTotal) }}</span>
         </div>
       </div>
     </div>
@@ -320,8 +320,8 @@ export default {
       return (
         this.items.length > 0 &&
         this.clienteEncontrado &&
-        this.empleado.identificacion.trim() !== '' &&
-        this.empleado.nombres.trim() !== ''
+        String(this.empleado.identificacion || '').trim() !== '' &&
+        String(this.empleado.nombres || '').trim() !== ''
       )
     }
   },
@@ -350,7 +350,7 @@ export default {
       const orden = this.ordenesFiltradas.find(o => o.numeroOrden === this.ordenSeleccionada)
       if (orden) {
         // Cargar items de la orden
-        this.items = orden.detalles.map(d => ({
+        this.items = (orden.detalles || []).map(d => ({
           codigo: d.codigo,
           producto: d.producto,
           descripcion: d.descripcion,
@@ -869,7 +869,7 @@ export default {
       };
       this.empleado = {
         identificacion: '',
-        nombres: ''   // ✅ corregido
+        nombres: ''
       };
       this.venta = {
         codigo: '',
@@ -949,18 +949,25 @@ export default {
       this.empleadoEncontrado = false
     },
 
+    // 🔹 Método para manejar formato de precios
+    formatPrecioCOP(valor) {
+      if (valor === null || valor === undefined) return '$0'
+
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0
+      }).format(valor)
+    },
+
+    // 🔹 Método para el cálculo del total de la órden
+    totalOrden(orden) {
+      return (orden.detalles || []).reduce((sum, d) => sum + d.cantidad * d.precio, 0)
+    },
+
     // ✅ Logica para imprimir
     imprimirFactura() {
       window.print()
-    },
-
-    // Formato numérico simple (2 decimales)
-    formatNumber(value) {
-      const n = Number(value) || 0
-      return n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
     }
   }
 }
