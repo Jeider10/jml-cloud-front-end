@@ -400,35 +400,46 @@ export default {
 
     cargarItemsOrdenSeleccionada() {
       const orden = this.ordenesFiltradas.find(o => o.numeroOrden === this.ordenSeleccionada)
+
       if (orden) {
-        // Cargar items de la orden
-        this.items = (orden.detalles || []).map(d => ({
-          codigo: d.codigo,
-          producto: d.producto,
-          descripcion: d.descripcion,
-          cantidad: d.cantidad,
-          precio: d.precio,
-          fechaCreacion: d.fechaCreacion,
-          fechaActualizacion: d.fechaActualizacion,
-          removeQty: null
-        }))
-
-        // Llenar datos del cliente
-        this.cliente.identificacion = orden.identificacionCliente || ''
-        this.cliente.nombres = orden.nombreCliente || ''
-        this.clienteEncontrado = true
-
-        // Guardar ordenId para operaciones futuras
-        this.ordenId = orden.numeroOrden
-        this.ordenEstado = orden.estadoOrden || 'ABIERTA'
-        // Activar campos y tabla
-        this.ordenCargada = true
+        this.setOrdenSeleccionada(orden)
       } else {
         this.items = []
         this.ordenId = null
         this.clienteEncontrado = false
         this.ordenCargada = false
       }
+    },
+
+    setOrdenSeleccionada(orden) {
+      // Cargar items de la orden
+      this.items = (orden.detalles || []).map(d => ({
+        codigo: d.codigo,
+        producto: d.producto,
+        descripcion: d.descripcion,
+        cantidad: d.cantidad,
+        precio: d.precio,
+        fechaCreacion: d.fechaCreacion,
+        fechaActualizacion: d.fechaActualizacion,
+        removeQty: null
+      }))
+
+      // 👤 Llenar datos del cliente
+      this.cliente.identificacion = orden.identificacionCliente || ''
+      this.cliente.nombres = orden.nombreCliente || ''
+      this.clienteEncontrado = true
+
+      // 👨‍💼 Empleado
+      this.empleado.identificacion = orden.identificacionEmpleado || ''
+      this.empleado.nombres = orden.nombreEmpleado || ''
+      this.empleadoEncontrado = !!(
+        orden.identificacionEmpleado || orden.nombreEmpleado
+      )
+
+      // Orden
+      this.ordenId = orden.numeroOrden
+      this.ordenEstado = orden.estadoOrden || 'ABIERTA'
+      this.ordenCargada = true
     },
 
     async cargarOrdenesFiltradas() {
