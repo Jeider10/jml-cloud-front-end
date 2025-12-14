@@ -17,6 +17,34 @@
         </div>
       </transition>
 
+      <!-- 🗑️ Modal confirmación eliminar orden -->
+      <transition name="fade">
+        <div v-if="modalEliminarOrden.visible" class="modal-overlay">
+          <div class="modal-content">
+            <p>
+              ⚠️ ¿Está seguro de eliminar la orden del cliente
+              <strong>{{ modalEliminarOrden.cliente.nombres }}</strong>?
+              <br />
+              <small>Los productos serán devueltos al inventario.</small>
+            </p>
+
+            <div class="modal-buttons">
+              <!-- ✅ Sí -->
+              <button class="btn-yes"
+                      @click="confirmarEliminarOrden">
+                Sí
+              </button>
+
+              <!-- ❌ No -->
+              <button class="btn-no"
+                      @click="modalEliminarOrden.visible = false">
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
       <!-- Formulario principal (oculto en impresión) -->
       <div class="form-container no-print">
         <div class="form-row">
@@ -195,6 +223,13 @@
                   🖨️ Imprimir
           </button>
 
+          <button type="button"
+                  class="eliminar-orden-btn"
+                  :disabled="!ordenId || ordenEstado === 'CERRADA'"
+                  @click="abrirModalEliminarOrden">
+                  ❌🗑️ Eliminar Orden
+          </button>
+
           <!-- 🧹 Botón de limpiar -->
           <button type="button"
                   class="limpiar-campos-btn"
@@ -227,6 +262,8 @@
   </div>
 </template>
 
+
+
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import {
@@ -237,7 +274,14 @@ import {
   buscarProductoPorPrecio,
   restarStockProducto
 } from '@/services/apiProductsService.js'
-import { agregarProducto, restarCantidadProducto, cerrarOrdenPorCliente, listarOrdenesPorEstado, listarOrdenesPorClienteYEstado } from '@/services/apiOrdersService.js'
+import {
+  agregarProducto,
+  restarCantidadProducto,
+  cerrarOrdenPorCliente,
+  listarOrdenesPorEstado,
+  listarOrdenesPorClienteYEstado,
+  eliminarOrdenCliente
+} from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 import { buscarEmpleadoPorIdentificacion, buscarEmpleadoPorNombres } from '@/services/apiEmployeesService.js'
 
@@ -281,6 +325,14 @@ export default {
       clienteEncontrado: false, // ✅ habilita los campos producto solo si cliente válido
       empleadoEncontrado: false,  // ✅ agregado para consistencia
       empleadosFiltrados: [],
+      modalEliminarOrden: {
+        visible: false,
+        ordenId: null,
+        cliente: {
+          identificacion: null,
+          nombres: ''
+        }
+      }
     }
   },
 
@@ -925,11 +977,11 @@ export default {
     resetVenta() {
       this.cliente = {
         identificacion: '',
-        nombres: ''   // ✅ corregido
+        nombres: ''
       }
       this.empleado = {
         identificacion: '',
-        nombres: ''   // ✅ agregado
+        nombres: ''
       }
       this.venta = {
         codigo: '',
@@ -963,6 +1015,58 @@ export default {
     // 🔹 Método para el cálculo del total de la órden
     totalOrden(orden) {
       return (orden.detalles || []).reduce((sum, d) => sum + d.cantidad * d.precio, 0)
+    },
+
+    async confirmarEliminarOrden() {
+      try {
+        // cerrar modal
+        this.modalEliminarOrden.visible = false
+
+        // 1️⃣ DEVOLVER STOCK
+        for (const item of this.items) {
+          await restarStockProducto(item.codigo, -item.cantidad)
+        }
+
+        // 2️⃣ ELIMINAR ORDEN
+        await eliminarOrdenCliente(
+          this.modalEliminarOrden.ordenId,
+          this.modalEliminarOrden.cliente.identificacion
+        )
+
+        // 3️⃣ LIMPIAR UI
+        this.items = []
+        this.ordenId = null
+        this.ordenEstado = 'ABIERTA'
+        this.ordenSeleccionada = null
+        this.ordenCargada = false
+
+        this.mostrarMensaje('🗑️ Orden eliminada correctamente.', 'success')
+
+        await this.cargarOrdenesFiltradas()
+
+      } catch (error) {
+        console.error('❌ Error al eliminar orden:', error)
+        this.mostrarMensaje(
+          error.message || 'Error al eliminar la orden.',
+          'error'
+        )
+      }
+    },
+
+    abrirModalEliminarOrden() {
+      if (!this.ordenId || !this.cliente.identificacion) {
+        this.mostrarMensaje('⚠️ No hay una orden válida para eliminar.', 'warning')
+        return
+      }
+
+      this.modalEliminarOrden = {
+        visible: true,
+        ordenId: this.ordenId,
+        cliente: {
+          identificacion: this.cliente.identificacion,
+          nombres: this.cliente.nombres
+        }
+      }
     },
 
     // ✅ Logica para imprimir
@@ -1259,5 +1363,62 @@ button:disabled {
 
 .print-only {
   display: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 300px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
+}
+
+.modal-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-yes {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #c92a2a;
+  color: white;
+}
+
+.btn-yes:hover {
+  background: #a12222;
+}
+
+.btn-no {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #06d6a0;
+  color: #1c1c1c;
+}
+
+.btn-no:hover {
+  background: #049670;
 }
 </style>

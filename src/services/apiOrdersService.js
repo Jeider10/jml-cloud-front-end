@@ -35,3 +35,9 @@ export const listarOrdenesPorClienteYEstado = (identificacionCliente, estado) =>
 
 // Listar todas las órdenes (sin filtros)
 export const listarTodasLasOrdenes = () => apiOrders.get('/ordenes-ventas/list/all')
+
+export const eliminarOrdenCliente = (numeroOrden, cliente) =>
+  apiOrders.delete(`/ordenes-ventas/delete/${numeroOrden}`, {
+    params: { cliente }
+  })
+
