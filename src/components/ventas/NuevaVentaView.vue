@@ -259,13 +259,20 @@
         </div>
       </div>
     </div>
+
+    <!-- 🧾 Ticket SOLO para impresión -->
+    <div class="print-only">
+      <TicketFactura
+        :empresa="empresa"
+        :factura="facturaTicket"
+      />
+    </div>
   </div>
 </template>
 
-
-
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import TicketFactura from '@/components/ticket/TicketFactura.vue'
 import {
   buscarProductoPorCodigo,
   buscarProductoPorNombre,
@@ -287,7 +294,11 @@ import { buscarEmpleadoPorIdentificacion, buscarEmpleadoPorNombres } from '@/ser
 
 export default {
   name: 'NuevaVentaView',
-  components: { DashboardSideMenu },
+  components: {
+    DashboardSideMenu,
+    TicketFactura
+  },
+
   data() {
     return {
       menuOpen: true, // Siempre arranca expandido y false arranca oculto
@@ -375,6 +386,29 @@ export default {
         String(this.empleado.identificacion || '').trim() !== '' &&
         String(this.empleado.nombres || '').trim() !== ''
       )
+    },
+
+    facturaTicket() {
+      return {
+        numero: this.ordenId || 'N/A',
+        fecha: new Date().toLocaleString('es-CO'),
+        cliente: this.cliente.nombres || 'CONSUMIDOR FINAL',
+        productos: this.items.map(i => ({
+          nombre: i.producto,
+          cantidad: i.cantidad,
+          precio: i.precio
+        })),
+        total: this.calcularTotal
+      }
+    },
+
+    empresa() {
+      return {
+        nombre: 'MI TIENDA',
+        nit: '900123456-7',
+        direccion: 'Calle 123 #45-67',
+        telefono: '300 123 4567'
+      }
     }
   },
 
@@ -1431,5 +1465,23 @@ button:disabled {
 
 .btn-no:hover {
   background: #049670;
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  body {
+    margin: 0;
+  }
 }
 </style>
