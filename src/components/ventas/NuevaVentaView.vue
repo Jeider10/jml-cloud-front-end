@@ -224,10 +224,10 @@
           </button>
 
           <button type="button"
-                  class="eliminar-orden-btn"
+                  class="delete-btn"
                   :disabled="!ordenId || ordenEstado === 'CERRADA'"
                   @click="abrirModalEliminarOrden">
-                  ❌🗑️ Eliminar Orden
+                  🗑️ Eliminar Orden
           </button>
 
           <!-- 🧹 Botón de limpiar -->
@@ -235,7 +235,7 @@
                   class="limpiar-campos-btn"
                   :disabled="!hayDatosCliente() || ordenCerrada"
                   @click="limpiarCamposCliente">
-                  🧹 Limpiar
+                  🧹 Limpiar Cliente
           </button>
 
           <!-- ✅ Botón de cerrar venta -->
