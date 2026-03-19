@@ -225,7 +225,7 @@
 
           <button type="button"
                   class="delete-btn"
-                  :disabled="!ordenId || ordenEstado === 'CERRADA'"
+                  :disabled="!numeroOrden || ordenEstado === 'CERRADA'"
                   @click="abrirModalEliminarOrden">
                   🗑️ Eliminar Orden
           </button>
@@ -246,25 +246,33 @@
                   ✅ Cerrar Venta
           </button>
 
-          <span class="total">💰 Total a Pagar: {{ formatPrecioCOP(calcularTotal) }}</span>
-        </div>
+          <!-- 💵 Botón de recibido del cliente -->
+          <div class="pago-container">
+            <label>💵 Recibido </label>
+            <input
+              v-model.number="valorPagado"
+              type="number"
+              min="0"
+              placeholder="Ingrese valor recibido"
+            />
+          </div>
 
-        <!-- ✅ Datos cliente y total SOLO impresión en una sola línea -->
-        <div class="print-only datos-linea">
-          <span><strong>Identificación Cliente:</strong> {{ cliente.identificacion }}</span>
-          <span><strong>Nombre Cliente:</strong> {{ cliente.nombres }}</span>
-          <span><strong>Identificación Empleado:</strong> {{ empleado.identificacion }}</span>
-          <span><strong>Nombre Empleado:</strong> {{ empleado.nombres }}</span>
-          <span class="total">💰 Total a Pagar: {{ formatPrecioCOP(calcularTotal) }}</span>
+          <div class="total">
+            <div>💰 Subtotal: {{ formatPrecioCOP(calcularSubtotal) }}</div>
+            <div>💵 IVA (19%): {{ formatPrecioCOP(calcularIVA) }}</div>
+            <div><strong>💰 Total a Pagar: {{ formatPrecioCOP(calcularTotalFinal) }}</strong></div>
+            <div>💰 Cambio: {{ formatPrecioCOP(Math.max(valorPagado - calcularTotalFinal, 0)) }}</div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 🧾 Ticket SOLO para impresión -->
-    <div class="print-only">
+    <div id="ticket-print">
       <TicketFactura
         :empresa="empresa"
         :factura="facturaTicket"
+        :recibido="valorPagado"
       />
     </div>
   </div>
@@ -291,6 +299,7 @@ import {
 } from '@/services/apiOrdersService.js'
 import { buscarClientePorIdentificacion, buscarClientePorNombres } from '@/services/apiCustomerService.js'
 import { buscarEmpleadoPorIdentificacion, buscarEmpleadoPorNombres } from '@/services/apiEmployeesService.js'
+import { obtenerPrimeraEmpresa } from '@/services/apiConfigEmpresaService'
 
 export default {
   name: 'NuevaVentaView',
@@ -312,18 +321,28 @@ export default {
       },
       cliente: {
         identificacion: '',
-        nombres: ''
+        nombres: '',
+        apellidos: ''
       },
       empleado: {
         identificacion: '',
-        nombres: ''
+        nombres: '',
+        apellidos: ''
       },
       producto: {
         proveedorId: null,
         proveedorName: ''
       },
+      empresaData: {
+        nombre: '',
+        nit: '',
+        direccion: '',
+        telefono: ''
+      },
       items: [],
-      ordenId: null, // 🔹 numeroOrden (UUID) de la orden actual
+      valorPagado: 0,
+      numeroOrden: null, // 🔹 numeroOrden (UUID) de la orden actual
+      numeroFactura: null,
       ordenEstado: 'ABIERTA', // 🔹 Estado de la orden (ABIERTA o CERRADA)
       // 🔔 mensajes en pantalla
       mensaje: '',
@@ -338,10 +357,11 @@ export default {
       empleadosFiltrados: [],
       modalEliminarOrden: {
         visible: false,
-        ordenId: null,
+        numeroOrden: null,
         cliente: {
           identificacion: null,
-          nombres: ''
+          nombres: '',
+          apellidos: ''
         }
       }
     }
@@ -352,9 +372,11 @@ export default {
       return (
         (this.cliente.identificacion && this.cliente.identificacion !== null) ||
         (this.cliente.nombres && this.cliente.nombres.trim() !== "") ||
+        (this.cliente.apellidos && this.cliente.apellidos.trim() !== "") ||
         (this.filtroBusqueda && this.filtroBusqueda.trim() !== "") ||
         (this.empleado.identificacion && this.empleado.identificacion.trim() !== "") ||
         (this.empleado.nombres && this.empleado.nombres.trim() !== "") ||
+        (this.empleado.apellidos && this.empleado.apellidos.trim() !== "") ||
         (this.producto.codigo && this.producto.codigo.trim() !== "") ||
         (this.producto.nombre && this.producto.nombre.trim() !== "")
       )
@@ -367,6 +389,7 @@ export default {
     calcularTotal() {
       return this.items.reduce((acc, i) => acc + (Number(i.precio) * Number(i.cantidad)), 0)
     },
+
     // ✅ Validación para habilitar botón "Agregar"
     formValido() {
       return (
@@ -378,6 +401,7 @@ export default {
         this.venta.precio >= 1
       )
     },
+
     // ✅ Validación para habilitar botón "Imprimir"
     puedeImprimir() {
       return (
@@ -390,32 +414,46 @@ export default {
 
     facturaTicket() {
       return {
-        numero: this.ordenId || 'N/A',
+        numero: this.numeroFactura || 'N/A',
         fecha: new Date().toLocaleString('es-CO'),
-        cliente: this.cliente.nombres || 'CONSUMIDOR FINAL',
+        cliente: `${this.cliente.nombres || 'CONSUMIDOR FINAL'} ${this.cliente.apellidos || ''} - C.C: ${this.cliente.identificacion || 'N/A'}`,
         productos: this.items.map(i => ({
           nombre: i.producto,
+          descripcion: i.descripcion,
           cantidad: i.cantidad,
           precio: i.precio
         })),
-        total: this.calcularTotal
+        total: this.calcularSubtotal
       }
     },
 
     empresa() {
-      return {
-        nombre: 'MI TIENDA',
-        nit: '900123456-7',
-        direccion: 'Calle 123 #45-67',
-        telefono: '300 123 4567'
-      }
+      return this.empresaData
+    },
+
+    calcularSubtotal() {
+      return this.items.reduce(
+        (acc, i) => acc + (Number(i.precio) * Number(i.cantidad)),
+        0
+      )
+    },
+
+    calcularIVA() {
+      return this.calcularSubtotal * 0.19
+    },
+
+    calcularTotalFinal() {
+      return this.calcularSubtotal + this.calcularIVA
     }
   },
 
-  mounted() {
+  async mounted() {
     // 🔹 Cargar todas las ordenes abiertas desde backend al iniciar
     this.filtroEstado = 'ABIERTA'
     this.cargarOrdenesFiltradas()
+
+    // 🔹 Cargar empresa
+    await this.cargarDatosEmpresa()
   },
 
   methods: {
@@ -432,6 +470,40 @@ export default {
       }, 3000)
     },
 
+    // 🔹 Valores por defecto de empresa
+    setEmpresaDefault() {
+      this.empresaData = {
+        nombre: 'MI NEGOCIO',
+        nit: '',
+        direccion: '',
+        telefono: ''
+      }
+    },
+
+    async cargarDatosEmpresa() {
+      try {
+        const response = await obtenerPrimeraEmpresa()
+
+        if (response?.data?.length > 0) {
+          const empresa = response.data[0]
+
+          this.empresaData = {
+            nombre: empresa.nombreEmpresa || 'MI NEGOCIO',
+            nit: empresa.nit || '',
+            direccion: empresa.direccion || '',
+            telefono: empresa.telefono || ''
+          }
+
+        } else {
+          this.setEmpresaDefault()
+        }
+
+      } catch (error) {
+        console.error('❌ Error cargando empresa:', error)
+        this.setEmpresaDefault()
+      }
+    },
+
     cargarItemsOrdenSeleccionada() {
       const orden = this.ordenesFiltradas.find(o => o.numeroOrden === this.ordenSeleccionada)
 
@@ -439,7 +511,7 @@ export default {
         this.setOrdenSeleccionada(orden)
       } else {
         this.items = []
-        this.ordenId = null
+        this.numeroOrden = null
         this.clienteEncontrado = false
         this.ordenCargada = false
       }
@@ -461,18 +533,21 @@ export default {
       // 👤 Llenar datos del cliente
       this.cliente.identificacion = orden.identificacionCliente || ''
       this.cliente.nombres = orden.nombreCliente || ''
+      this.cliente.apellidos = orden.apellidoCliente || ''
       this.clienteEncontrado = true
 
       // 👨‍💼 Empleado
       this.empleado.identificacion = orden.identificacionEmpleado || ''
       this.empleado.nombres = orden.nombreEmpleado || ''
+      this.empleado.apellidos = orden.apellidoEmpleado || ''
       this.empleadoEncontrado = !!(
         orden.identificacionEmpleado || orden.nombreEmpleado
       )
 
       // Orden
-      this.ordenId = orden.numeroOrden
+      this.numeroOrden = orden.numeroOrden
       this.ordenEstado = orden.estadoOrden || 'ABIERTA'
+      this.numeroFactura = orden.numeroFactura
       this.ordenCargada = true
     },
 
@@ -515,30 +590,6 @@ export default {
       }
     },
 
-    // async cargarOrdenesFiltradas() {
-      // try {
-        // const response = await listarOrdenesPorEstado(this.filtroEstado)
-
-        // this.ordenesFiltradas = response.data || []
-        // this.mostrarMensaje(`✅ ${this.ordenesFiltradas.length} órdenes cargadas.`, 'success')
-
-        // if (this.ordenesFiltradas.length === 1) {
-          // this.ordenSeleccionada = this.ordenesFiltradas[0].numeroOrden
-          // this.cargarItemsOrdenSeleccionada()
-        // } else {
-          // this.ordenSeleccionada = null
-          // this.items = []
-          // this.ordenCargada = false
-        // }
-
-      // } catch (error) {
-        // console.error('❌ Error al cargar órdenes filtradas:', error)
-        // this.mostrarMensaje('Error al obtener órdenes filtradas.', 'error')
-        // this.ordenesFiltradas = []
-        // this.ordenCargada = false
-      // }
-    // },
-
     // 🔹 Buscar cliente por identificación
     async buscarClientePorIdentificacionHandler() {
       if (!this.cliente.identificacion || this.cliente.identificacion === null) {
@@ -550,6 +601,7 @@ export default {
         const cliente = response.data
         if (cliente) {
           this.cliente.nombres = cliente.nombres || ''
+          this.cliente.apellidos = cliente.apellidos || ''
           this.clienteEncontrado = true
           this.ordenEstado = 'ABIERTA'   // 👈 Reiniciamos estado al abrir nueva orden
           this.mostrarMensaje(`✅ Cliente encontrado: ${cliente.nombres}`, 'success')
@@ -577,6 +629,8 @@ export default {
           // Tomamos el primero por simplicidad
           const cliente = clientes[0]
           this.cliente.identificacion = cliente.identificacion || ''
+          this.cliente.nombres = cliente.nombres || ''
+          this.cliente.apellidos = cliente.apellidos || ''
           this.clienteEncontrado = true
           this.ordenEstado = 'ABIERTA'   // 👈 Reiniciamos estado al abrir nueva orden
           this.mostrarMensaje(`✅ Cliente encontrado: ${cliente.nombres}`, 'success')
@@ -797,8 +851,12 @@ export default {
       const payload = {
         identificacionCliente: Number(this.cliente.identificacion),
         nombreCliente: this.cliente.nombres,
+        apellidoCliente: this.cliente.apellidos,
+
         identificacionEmpleado: Number(this.empleado.identificacion),
         nombreEmpleado: this.empleado.nombres,
+        apellidoEmpleado: this.empleado.apellidos,
+
         identificacionProveedor: this.producto.proveedorId,
         nombreProveedor: this.producto.proveedorName,
         detalles: [
@@ -818,7 +876,8 @@ export default {
         const ordenActualizada = response.data
 
         // guardar el numeroOrden (UUID) para futuras operaciones (restar)
-        this.ordenId = ordenActualizada.numeroOrden
+        this.numeroOrden = ordenActualizada.numeroOrden
+        this.numeroFactura = ordenActualizada.numeroFactura
 
         // Construir/actualizar la tabla local con la respuesta completa (detalles)
         if (ordenActualizada.detalles && ordenActualizada.detalles.length > 0) {
@@ -869,14 +928,14 @@ export default {
         const cantidadARestar = !qtyToRemove || qtyToRemove <= 0 || qtyToRemove >= item.cantidad
           ? item.cantidad : qtyToRemove
 
-        if (!this.ordenId) {
+        if (!this.numeroOrden) {
           this.mostrarMensaje('⚠️ No hay orden abierta asociada. Vuelve a agregar el producto.', 'error')
           return
         }
 
         try {
           // 1️⃣ Actualizar en órdenes (pass numeroOrden, codigoProducto, cantidad)
-          const response = await restarCantidadProducto(this.ordenId, item.codigo, cantidadARestar)
+          const response = await restarCantidadProducto(this.numeroOrden, item.codigo, cantidadARestar)
           const ordenActualizada = response.data
 
           // 2️⃣ Actualizar en productos (stock global)
@@ -949,15 +1008,6 @@ export default {
         this.items = [];
     },
 
-    // limpiarFiltro() {
-      // this.filtroEstado = ''       // Reinicia select de estado
-      // this.ordenesFiltradas = []   // Limpia lista de órdenes
-      // this.ordenSeleccionada = null
-      // this.items = []
-      // this.ordenCargada = false
-      // this.mostrarMensaje('✅ Filtro limpiado. Seleccione un estado para buscar.', 'success')
-    // },
-
     // 🔹 Método para limpiar campos del formulario
     limpiarCamposCliente() {
       this.cliente = {
@@ -981,7 +1031,7 @@ export default {
       // 👇 Deshabilitar de nuevo los campos de producto
       this.clienteEncontrado = false
       this.empleadoEncontrado = false
-      this.ordenId = null
+      this.numeroOrden = null
       this.filtroEstado = ''   // Reinicia select
       this.ordenesFiltradas = [] // Opcional: limpiar resultados de la tabla
     },
@@ -1000,12 +1050,15 @@ export default {
         return
       }
       try {
-        await cerrarOrdenPorCliente(this.cliente.identificacion)
+        const response = await cerrarOrdenPorCliente(this.cliente.identificacion)
+
+        // 🔥 Guardar número de factura para el ticket
+        this.numeroFactura = response.data.numeroFactura
 
         // Marcar la orden como cerrada
         this.ordenEstado = 'CERRADA'
-        // opcional: limpiar ordenId si ya cerraste
-        this.ordenId = null
+        // opcional: limpiar numeroOrden si ya cerraste
+        this.numeroOrden = null
 
         this.mostrarMensaje('✅ Venta cerrada correctamente.', 'success')
 
@@ -1074,13 +1127,13 @@ export default {
 
         // 2️⃣ ELIMINAR ORDEN
         await eliminarOrdenCliente(
-          this.modalEliminarOrden.ordenId,
+          this.modalEliminarOrden.numeroOrden,
           this.modalEliminarOrden.cliente.identificacion
         )
 
         // 3️⃣ LIMPIAR UI
         this.items = []
-        this.ordenId = null
+        this.numeroOrden = null
         this.ordenEstado = 'ABIERTA'
         this.ordenSeleccionada = null
         this.ordenCargada = false
@@ -1099,14 +1152,14 @@ export default {
     },
 
     abrirModalEliminarOrden() {
-      if (!this.ordenId || !this.cliente.identificacion) {
+      if (!this.numeroOrden || !this.cliente.identificacion) {
         this.mostrarMensaje('⚠️ No hay una orden válida para eliminar.', 'warning')
         return
       }
 
       this.modalEliminarOrden = {
         visible: true,
-        ordenId: this.ordenId,
+        numeroOrden: this.numeroOrden,
         cliente: {
           identificacion: this.cliente.identificacion,
           nombres: this.cliente.nombres
@@ -1115,7 +1168,15 @@ export default {
     },
 
     // ✅ Logica para imprimir
-    imprimirFactura() {
+    async imprimirFactura() {
+      if (!this.numeroFactura) {
+        // generar número provisional (solo para mostrar)
+        this.numeroFactura = `TMP-${Date.now()}`
+      }
+
+      // 👇 Espera a que Vue actualice el DOM
+      await this.$nextTick()
+
       window.print()
     }
   }
@@ -1124,7 +1185,7 @@ export default {
 
 
 
-<style scoped>
+<style>
 .nueva-venta-wrapper {
   display: flex;
 }
@@ -1364,50 +1425,9 @@ button:disabled {
 .total {
   font-size: 1.2rem;
   font-weight: bold;
-}
-
-/* 🔹 Estilos para impresión */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-
-  .print-only {
-    display: inline-block !important;
-  }
-
-  .venta-container {
-    position: relative !important;
-    left: 0 !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-  }
-
-  .footer-venta {
-    margin-top: auto !important;
-    page-break-inside: avoid;
-  }
-
-  /* ✅ Una sola línea fija al pie de la hoja */
-  .print-only.datos-linea {
-    display: flex !important;
-    justify-content: space-between;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border-top: 2px solid #000;
-    padding-top: 10px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
-}
-
-.print-only {
-  display: none;
+  display: flex;
+  flex-direction: column; /* 👈 clave */
+  gap: 4px; /* opcional, espacio entre líneas */
 }
 
 .modal-overlay {
@@ -1467,21 +1487,75 @@ button:disabled {
   background: #049670;
 }
 
-.print-only {
-  display: none;
-}
-
+/* ============================= */
+/* 🖨️ IMPRESIÓN SOLO TICKET POS */
+/* ============================= */
 @media print {
-  .no-print {
-    display: none !important;
+  .venta-container {
+    position: static;
+    left: 0;
+    padding: 0;
+    background: white;
   }
 
-  .print-only {
-    display: block;
+  /* Ocultar absolutamente todo */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Mostrar SOLO el ticket */
+  #ticket-print,
+  #ticket-print * {
+    visibility: visible !important;
+  }
+
+  /* Posicionar ticket como raíz */
+  #ticket-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm; /* 👈 Papel térmico D1 / Ara */
+    padding: 0;
+    margin: 0;
   }
 
   body {
     margin: 0;
+    padding: 0;
   }
+}
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  .productos-table {
+    page-break-inside: auto;
+    font-size: 12pt;
+  }
+  .productos-table th, .productos-table td {
+    border: 1px solid #000;
+    padding: 4px;
+  }
+}
+
+@media print {
+  .venta-container {
+    display: block;
+  }
+}
+
+.pago-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.pago-container input {
+  width: 140px;
 }
 </style>
