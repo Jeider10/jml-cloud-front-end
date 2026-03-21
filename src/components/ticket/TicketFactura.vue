@@ -12,10 +12,30 @@
     <hr />
 
     <!-- 📄 Datos de factura -->
-    <p>Factura #: {{ factura.numero }}</p>
-    <p>Generacion: {{ factura.fecha }}</p>
-    <p>Validacion Dian: {{ factura.fecha }}</p>
-    <p>Cliente: {{ factura.cliente }}</p>
+    <div class="line">
+      <span>Factura #:</span>
+      <span>{{ factura.numero }}</span>
+    </div>
+
+    <div class="line">
+      <span>Generacion:</span>
+      <span>{{ factura.fecha }}</span>
+    </div>
+
+    <div class="line">
+      <span>Validacion Dian:</span>
+      <span>{{ factura.fecha }}</span>
+    </div>
+
+    <div class="line">
+      <span>Cliente:</span>
+      <span>{{ factura.cliente }}</span>
+    </div>
+
+    <div class="line">
+      <span>Atendido Por:</span>
+      <span>{{ factura.vendedor || 'N/A' }}</span>
+    </div>
 
     <hr />
 
@@ -76,6 +96,22 @@
 
     <hr />
 
+    <!-- 🧾 Factura electrónica -->
+    <hr />
+
+    <div class="factura-electronica center">
+      <p class="titulo-fe">Factura Electronica de Venta</p>
+      <p class="codigo-fe">{{ factura.numero }}</p>
+
+      <div class="qr-container">
+        <qrcode-vue
+          :value="`${empresa.nit}|${factura.numero}|${factura.fecha}|${totalFinal}`"
+          :size="90"
+          level="M"
+        />
+      </div>
+    </div>
+
     <!-- 🙏 Pie -->
     <p class="center">Gracias por su compra</p>
     <p class="center">No válido como título valor</p>
@@ -84,8 +120,15 @@
 
 
 <script>
+import QrcodeVue from 'qrcode.vue'
+
 export default {
   name: 'TicketFactura',
+
+  components: {
+    QrcodeVue
+  },
+
   props: {
     empresa: {
       type: Object,
@@ -199,10 +242,17 @@ export default {
 .line {
   display: flex;
   justify-content: space-between;
+  gap: 5px;
 }
 
 .line span:first-child {
   white-space: nowrap;
+  /* min-width: 50px; /* 🔥 Ancho fijo en etiqueta */
+}
+
+.line span:last-child {
+  text-align: right;
+  word-break: break-word; /* 🔥 por si el valor es largo */
 }
 
 .bold {
@@ -261,5 +311,25 @@ hr {
     width: 48mm !important; /* ancho real de impresión */
     margin: 0 auto; /* centra correctamente */
   }
+}
+
+.factura-electronica {
+  margin-top: 6px;
+}
+
+.titulo-fe {
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.codigo-fe {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.qr-container {
+  margin-top: 4px;
+  display: flex;
+  justify-content: center;
 }
 </style>

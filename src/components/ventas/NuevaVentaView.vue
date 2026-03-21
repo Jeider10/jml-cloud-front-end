@@ -416,7 +416,11 @@ export default {
       return {
         numero: this.numeroFactura || 'N/A',
         fecha: new Date().toLocaleString('es-CO'),
-        cliente: `${this.cliente.nombres || 'CONSUMIDOR FINAL'} ${this.cliente.apellidos || ''} - C.C: ${this.cliente.identificacion || 'N/A'}`,
+
+        cliente: `${this.cliente.nombres || 'CONSUMIDOR FINAL'} ${this.cliente.apellidos || 'N/A'} - C.C: ${this.cliente.identificacion || 'N/A'}`,
+
+        vendedor: `${this.empleado.nombres || 'N/A'} ${this.empleado.apellidos}`,
+
         productos: this.items.map(i => ({
           nombre: i.producto,
           descripcion: i.descripcion,
