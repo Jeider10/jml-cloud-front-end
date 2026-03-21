@@ -13,7 +13,8 @@
 
     <!-- 📄 Datos de factura -->
     <p>Factura #: {{ factura.numero }}</p>
-    <p>Fecha: {{ factura.fecha }}</p>
+    <p>Generacion: {{ factura.fecha }}</p>
+    <p>Validacion Dian: {{ factura.fecha }}</p>
     <p>Cliente: {{ factura.cliente }}</p>
 
     <hr />
@@ -46,17 +47,17 @@
 
     <!-- 💰 Totales -->
     <div class="line">
-      <span>SUBTOTAL</span>
+      <span>SUBTOTAL ===></span>
       <span>{{ precio(subtotal) }}</span>
     </div>
 
     <div class="line">
-      <span>IVA (19%)</span>
+      <span>IVA (19%) ===></span>
       <span>{{ precio(iva) }}</span>
     </div>
 
     <div class="line bold">
-      <span>TOTAL A PAGAR</span>
+      <span>TOTAL A PAGAR   ===></span>
       <span>{{ precio(totalFinal) }}</span>
     </div>
 
@@ -152,6 +153,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 2px; /* 🔥 evita que todo se pegue demasiado */
 }
 
 .table-header {
@@ -169,7 +171,7 @@ export default {
 .col-desc {
   width: 32%;
   text-align: left;
-  font-size: 10px;
+  font-size: 8px;
   white-space: normal; /* 🔥 permite salto de línea */
   word-break: break-word; /* 🔥 rompe palabras largas */
 }
@@ -185,9 +187,9 @@ export default {
 }
 
 .ticket {
-  width: 58mm;
+  width: 58mm; /* Ancho del Ticket */
   font-family: monospace;
-  font-size: 11px;
+  font-size: 8px;
 }
 
 .center {
@@ -197,6 +199,10 @@ export default {
 .line {
   display: flex;
   justify-content: space-between;
+}
+
+.line span:first-child {
+  white-space: nowrap;
 }
 
 .bold {
@@ -209,9 +215,51 @@ hr {
   margin: 4px 0;
 }
 
+.ticket h2 {
+  margin: 0;
+  padding: 0;
+  line-height: 1.2; /* controla qué tan pegado queda */
+}
+
+.ticket p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.2; /* controla qué tan pegado queda */
+}
+
+.center h2 {
+  margin-bottom: 2px;
+}
+
+.center p {
+  margin: 0;
+  font-size: 8px;
+}
+
+/* 🔥 TODO el print en un solo bloque */
 @media print {
-  body {
+
+  /* 🔥 Quita márgenes de la hoja */
+  @page {
+    size: auto;
     margin: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block;
+  }
+
+  html {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block;
+  }
+
+  .ticket {
+    width: 48mm !important; /* ancho real de impresión */
+    margin: 0 auto; /* centra correctamente */
   }
 }
 </style>
