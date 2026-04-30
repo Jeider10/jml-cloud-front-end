@@ -193,6 +193,12 @@ export default {
       this.$router.push({ name: 'ProductosView' })
     },
 
+    // Metodo para actualizar el nombre del proveedor al cambiar el select
+    actualizarProveedorName() {
+      const seleccionado = this.proveedores.find(p => p.codigoSucursal === this.productoForm.proveedorId)
+      this.productoForm.proveedorName = seleccionado ? seleccionado.nombre : ''
+    },
+
     // 🔹 Método para cargar lista de proveedores
     async cargarProveedores() {
       try {

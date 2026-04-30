@@ -142,8 +142,8 @@ export default {
       this.$router.push({ name: 'ClientesView' })
     },
 
-    // 🔹 Método para manejar errores de API
-    manejarErrorApiClienteActualizar(error, contexto = '') {
+    // 🔹 Metodo para manejar errores de API
+    manejarErrorApiCliente(error, contexto = '') {
       console.error(`❌ Error en ${contexto || 'operación'}:`, error)
 
       // 🔴 Caso 1: Error con respuesta del servidor

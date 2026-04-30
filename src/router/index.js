@@ -172,6 +172,10 @@ const routes = [
     props: true,   // 👈 Esto hace que "identificacion" llegue como prop
     meta: { requiresAuth: true } // ✅ protegida
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login'
+  },
 ]
 
 const router = createRouter({

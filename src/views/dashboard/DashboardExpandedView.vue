@@ -49,7 +49,9 @@ export default {
     return {
       mensajeEmpresa: '',
       logoEmpresa: null,
-      loading: true
+      loading: true,
+      mensajeNotificacion: '',
+      mensajeNotificacionTipo: ''
     }
   },
   async mounted() {
@@ -130,7 +132,17 @@ export default {
       return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`
     },
 
-    // 🔹 Método para manejar errores de API
+    // Metodo para mostrar mensajes en pantalla
+    mostrarMensaje(texto, tipo = 'success') {
+      this.mensajeNotificacion = texto
+      this.mensajeNotificacionTipo = tipo
+      console.warn(`[${tipo}] ${texto}`)
+      setTimeout(() => {
+        this.mensajeNotificacion = ''
+      }, 3000)
+    },
+
+    // 🔹 Metodo para manejar errores de API
     manejarErrorDashboard(error, contexto = '') {
       console.error(`❌ Error en ${contexto || 'operación'}:`, error)
 

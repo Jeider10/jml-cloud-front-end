@@ -1189,7 +1189,7 @@ export default {
 
 
 
-<style>
+<style scoped>
 .nueva-venta-wrapper {
   display: flex;
 }
@@ -1197,7 +1197,7 @@ export default {
 .venta-container {
   position: absolute;
   top: 0;
-  left: 60px; /* ancho colapsado del menú */
+  left: 60px; /* ancho colapsado del menu */
   right: 0;
   bottom: 0;
   padding: 20px;
@@ -1210,7 +1210,7 @@ export default {
 }
 
 .venta-container.expanded {
-  left: 220px; /* menú desplegable */
+  left: 220px; /* menu desplegable */
 }
 
 .titulo {
@@ -1358,7 +1358,7 @@ input {
 
 .mini-controls {
   display: flex;
-  gap: 4px; /* espacio entre input y botón */
+  gap: 4px; /* espacio entre input y boton */
   align-items: center;
 }
 
@@ -1407,7 +1407,7 @@ input {
   margin-top: 20px;
 }
 
-button {
+.acciones-footer button {
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
@@ -1417,11 +1417,30 @@ button {
   font-weight: bold;
 }
 
-button:hover {
+.acciones-footer button:hover {
   background: #004466;
 }
 
-button:disabled {
+.acciones-footer button:disabled {
+  background: #a0c4d6;
+  cursor: not-allowed;
+}
+
+.cerrar-venta-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #28a745;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cerrar-venta-btn:hover {
+  background: #1e7e34;
+}
+
+.cerrar-venta-btn:disabled {
   background: #a0c4d6;
   cursor: not-allowed;
 }
@@ -1430,8 +1449,8 @@ button:disabled {
   font-size: 1.2rem;
   font-weight: bold;
   display: flex;
-  flex-direction: column; /* 👈 clave */
-  gap: 4px; /* opcional, espacio entre líneas */
+  flex-direction: column; /* clave */
+  gap: 4px; /* opcional, espacio entre lineas */
 }
 
 .modal-overlay {
@@ -1491,67 +1510,6 @@ button:disabled {
   background: #049670;
 }
 
-/* ============================= */
-/* 🖨️ IMPRESIÓN SOLO TICKET POS */
-/* ============================= */
-@media print {
-  .venta-container {
-    position: static;
-    left: 0;
-    padding: 0;
-    background: white;
-  }
-
-  /* Ocultar absolutamente todo */
-  body * {
-    visibility: hidden !important;
-  }
-
-  /* Mostrar SOLO el ticket */
-  #ticket-print,
-  #ticket-print * {
-    visibility: visible !important;
-  }
-
-  /* Posicionar ticket como raíz */
-  #ticket-print {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 58mm; /* 👈 Papel térmico D1 / Ara */
-    padding: 0;
-    margin: 0;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-  }
-}
-
-@media screen {
-  .print-only {
-    display: none;
-  }
-}
-
-@media print {
-  .productos-table {
-    page-break-inside: auto;
-    font-size: 12pt;
-  }
-  .productos-table th, .productos-table td {
-    border: 1px solid #000;
-    padding: 4px;
-  }
-}
-
-@media print {
-  .venta-container {
-    display: block;
-  }
-}
-
 .pago-container {
   display: flex;
   flex-direction: column;
@@ -1561,5 +1519,45 @@ button:disabled {
 
 .pago-container input {
   width: 140px;
+}
+
+/* Ticket oculto en pantalla, visible solo al imprimir */
+#ticket-print {
+  display: none;
+}
+</style>
+
+<!-- Estilos globales de impresion (sin scoped para controlar body) -->
+<style>
+@media print {
+  /* Ocultar todo excepto el ticket */
+  body * {
+    visibility: hidden !important;
+  }
+
+  #ticket-print,
+  #ticket-print * {
+    visibility: visible !important;
+  }
+
+  #ticket-print {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    padding: 0;
+    margin: 0;
+  }
+
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }
 </style>

@@ -145,7 +145,7 @@ import {
 } from '@/services/apiCustomerService.js'
 
 export default {
-  name: 'RegistroClienteView',
+  name: 'ClientesView',
   components: { DashboardSideMenu },
   data() {
     return {

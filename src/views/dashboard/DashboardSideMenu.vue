@@ -89,8 +89,7 @@
 </template>
 
 <script>
-import { getSession } from '@/services/apiAuthService'
-import { clearSession } from '@/services/sessionService'
+import { getSession, logoutBackend } from '@/services/apiAuthService'
 
 export default {
   name: 'DashboardSideMenu',
@@ -157,10 +156,10 @@ export default {
     onConfiguracionUsuarioClick() {
       this.$router.push('/configuracion-usuario')
     },
-    logout() {
-      // 🧹 Limpieza completa de sesión centralizada
-      clearSession()
-      console.log('🚪 Sesión cerrada correctamente.')
+    async logout() {
+      // Limpieza completa de sesion con llamada al backend
+      await logoutBackend()
+      console.log('Sesion cerrada correctamente.')
       this.$router.push('/login')
     }
   }
