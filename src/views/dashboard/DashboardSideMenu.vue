@@ -2,11 +2,18 @@
 
 <template>
   <div class="side-menu-wrapper">
+    <!-- 🔹 Overlay invisible para detectar clic fuera del menú -->
+    <!-- <div v-if="menuOpen && pinned" class="menu-overlay" @click="collapseMenu"></div> -->
+
     <!-- Panel lateral fijo (colapsable/expandible) -->
-    <div :class="['side-panel', { expanded: menuOpen }]">
+    <div
+        :class="['side-panel', { expanded: menuOpen }]"
+        @mouseenter="onMouseEnter"
+        @mouseleave="onMouseLeave"
+    >
       <!-- Sección superior (logo + botón menú + nueva venta + clientes + proveedores + productos + ventas + configuracion + usuario + botón salir) -->
       <div class="top-section">
-        <!-- Logo -->
+        <!-- Logo — clic aquí colapsa/oculta el menú -->
         <div class="logo-icon nav-row" @click="onLogoClick">
           <img src="@/assets/img/LogoVue.png" alt="Logo" class="logo" />
           <!-- etiqueta solo visible si expanded -->
@@ -31,14 +38,14 @@
           <span class="label">Clientes</span>
         </div>
 
-        <!-- Botón de proveedores -->
-        <div class="proveedores-icon nav-row" @click="onProveedoresClick">
+        <!-- Botón de proveedores (solo ADMIN) -->
+        <div v-if="isAdmin" class="proveedores-icon nav-row" @click="onProveedoresClick">
           <img src="@/assets/img/Proveedores.png" alt="Proveedores" />
           <span class="label">Proveedores</span>
         </div>
 
-        <!-- Botón de productos -->
-        <div class="productos-icon nav-row" @click="onProductosClick">
+        <!-- Botón de productos (solo ADMIN) -->
+        <div v-if="isAdmin" class="productos-icon nav-row" @click="onProductosClick">
           <img src="@/assets/img/Productos.png" alt="Productos" />
           <span class="label">Productos</span>
         </div>
@@ -94,8 +101,12 @@ import { getSession, logoutBackend } from '@/services/apiAuthService'
 export default {
   name: 'DashboardSideMenu',
   data() {
+    // Recuperar estado del menú desde localStorage
+    const savedPinned = localStorage.getItem('menuPinned') === 'true'
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: savedPinned,   // Si estaba pinned, arranca expandido
+      pinned: savedPinned,     // Si está "pinned" se queda fijo expandido
+      hoverOpen: false,        // Si se abrió por hover
       roleName: ''
     }
   },
@@ -109,56 +120,112 @@ export default {
       console.error('⚠️ Error al obtener el rol desde sesión:', error)
       this.roleName = ''
     }
+    // Emitir estado inicial para que el contenido se posicione correctamente
+    this.$emit('menu-toggle', this.menuOpen)
   },
   computed: {
     isAdmin() {
-      // 👑 Control centralizado: si roleName === 'ADMIN'
-      return this.roleName?.toUpperCase() === 'ADMIN'
+      // 👑 Control centralizado: ADMIN, ADMINISTRADOR o SUPERADMIN
+      const role = (this.roleName || '').toUpperCase().trim()
+      return ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN'].includes(role)
     },
 
     isUser() {
-      // 👑 Control centralizado: si roleName === 'USER'
-      return this.roleName?.toUpperCase() === 'USER'
+      // 👑 Control centralizado: USER, USUARIO o CAJERO
+      const role = (this.roleName || '').toUpperCase().trim()
+      return ['USER', 'USUARIO', 'CAJERO'].includes(role)
     }
   },
   methods: {
+    // 🔹 Hover: expande temporalmente si no está pinned
+    onMouseEnter() {
+      if (!this.pinned && !this.menuOpen) {
+        this.menuOpen = true
+        this.hoverOpen = true
+        // NO emitimos menu-toggle para hover temporal (el contenido no se mueve)
+      }
+    },
+
+    // 🔹 Mouse sale: colapsa si solo fue hover (no pinned)
+    onMouseLeave() {
+      if (!this.pinned && this.hoverOpen) {
+        this.menuOpen = false
+        this.hoverOpen = false
+        // NO emitimos menu-toggle (el contenido no se movió)
+      }
+    },
+
+    // 🔹 Colapsar menú — SOLO se llama desde el logo
+    collapseMenu() {
+      this.menuOpen = false
+      this.pinned = false
+      this.hoverOpen = false
+      localStorage.setItem('menuPinned', 'false')
+      this.$emit('menu-toggle', false)
+    },
+
+    // 🔹 Pin: fijar el menú expandido
+    pinMenu() {
+      this.menuOpen = true
+      this.pinned = true
+      this.hoverOpen = false
+      localStorage.setItem('menuPinned', 'true')
+      this.$emit('menu-toggle', true)
+    },
+
+    // 🔹 Logo (Inicio) — navega al dashboard y fija el menú expandido
     onLogoClick() {
-      // Puedes redirigir a dashboard si lo deseas
+      this.pinMenu()
       this.$router.push('/dashboard')
     },
+
+    // 🔹 Menú — ÚNICA forma de colapsar/expandir el menú
     onMenuClick() {
-      // alterna el estado expandido/colapsado
-      // this.menuOpen = !this.menuOpen // Comentada siempre expandido, descomentada se oculta
-      this.$emit('menu-toggle', this.menuOpen)
+      if (this.pinned) {
+        this.collapseMenu()
+      } else {
+        this.pinMenu()
+      }
     },
+
+    // 🔹 Opciones de navegación — fijan el menú y navegan
     onNuevaVentaClick() {
+      this.pinMenu()
       this.$router.push('/nueva-venta')
     },
     onClientesClick() {
+      this.pinMenu()
       this.$router.push('/clientes')
     },
     onProveedoresClick() {
+      this.pinMenu()
       this.$router.push('/proveedores')
     },
     onProductosClick() {
+      this.pinMenu()
       this.$router.push('/productos')
     },
     onVentasClick() {
+      this.pinMenu()
       this.$router.push('/historial-ventas')
     },
     onConfiguracionClick() {
+      this.pinMenu()
       this.$router.push('/configuracion-empresa')
     },
     onUsuarioClick() {
+      this.pinMenu()
       this.$router.push('/configuracion-empresa-usuario')
     },
     // 🔹 Nueva ruta para configuración personal del usuario
     onConfiguracionUsuarioClick() {
+      this.pinMenu()
       this.$router.push('/configuracion-usuario')
     },
     async logout() {
       // Limpieza completa de sesion con llamada al backend
       await logoutBackend()
+      localStorage.removeItem('menuPinned')
       console.log('Sesion cerrada correctamente.')
       this.$router.push('/login')
     }
@@ -171,6 +238,17 @@ export default {
 .side-menu-wrapper {
   position: relative;
   display: flex;
+}
+
+/* 🔹 Overlay transparente para detectar clic fuera del menú */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 200px; /* empieza donde termina el menú expandido */
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  /* sin background visible, solo captura clics */
 }
 
 /* Panel lateral fijo (colapsado por defecto) */
@@ -205,6 +283,7 @@ export default {
   align-items: center; /* centrado en colapsado */
   gap: 8px;
   width: 100%;
+  overflow-y: auto; /* scroll cuando la pantalla es pequeña y no caben todos los items */
 }
 
 /* en expandido alineamos a la izquierda */
@@ -224,6 +303,7 @@ export default {
   cursor: pointer;
   border-radius: 8px;
   justify-content: center; /* centra iconos cuando colapsado */
+  transition: background 0.15s ease;
 }
 
 /* en expanded, icono + texto a la izquierda */
@@ -233,7 +313,7 @@ export default {
 
 /* hover ligero */
 .nav-row:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* label: oculto cuando colapsado (no ocupa espacio) */
@@ -259,6 +339,7 @@ export default {
 .productos-icon img,
 .ventas-icon img,
 .configuracion-icon img,
+.configuracion-usuario-icon img,
 .usuario-icon img,
 .logout-icon img {
   width: 26px;

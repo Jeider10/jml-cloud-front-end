@@ -38,14 +38,14 @@
           <button type="button"
                   class="actualizar-btn"
                   @click="actualizarProveedor">
-                  💾 Actualizar
+            💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverProveedores">
-                  ↩️ Volver
+            ↩️ Volver
           </button>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default {
   props: ['codigoSucursal'],
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       proveedorForm: {
         codigoSucursal: '',
         nombre: '',
@@ -83,7 +83,7 @@ export default {
 
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -118,11 +118,11 @@ export default {
     // 🔹 Método para actualizar proveedor en backend
     async actualizarProveedor() {
       if (
-        !this.proveedorForm.codigoSucursal ||
-        !this.proveedorForm.nombre ||
-        !this.proveedorForm.telefono ||
-        !this.proveedorForm.direccion ||
-        !this.proveedorForm.correo
+          !this.proveedorForm.codigoSucursal ||
+          !this.proveedorForm.nombre ||
+          !this.proveedorForm.telefono ||
+          !this.proveedorForm.direccion ||
+          !this.proveedorForm.correo
       ) {
         this.mostrarMensaje('Código sucursal, nombre, teléfono, dirección y correo son obligatorios.', 'error')
         return
@@ -175,11 +175,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }

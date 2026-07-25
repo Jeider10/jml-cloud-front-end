@@ -31,3 +31,6 @@ export const actualizarEmpleado = (empleado) => apiEmployees.put('/empleados/upd
 
 // Eliminar empleado por identificación
 export const eliminarEmpleadoPorIdentificacion = (identificacion) => apiEmployees.delete('/empleados/delete', { params: { identificacion } })
+
+// Busqueda por fecha de creacion (rango)
+export const buscarEmpleadoPorFechaCreacion = (fechaInicio, fechaFin) => apiEmployees.get('/empleados/fechaCreacion', { params: { fechaInicio, fechaFin } })

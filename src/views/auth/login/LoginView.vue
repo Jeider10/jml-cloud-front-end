@@ -23,14 +23,8 @@
       </div>
 
       <!-- 🔹 Enlaces adicionales -->
-      <div class="login-links">
-        <p>
-          <router-link to="/forgot-password">¿Olvidaste tu contraseña?</router-link>
-        </p>
-        <p>
-          <router-link to="/register-user">Registrar nuevo usuario</router-link>
-        </p>
-      </div>
+      <!-- Links removidos para produccion: solo el admin gestiona usuarios y contraseñas -->
+
     </div>
   </div>
 </template>

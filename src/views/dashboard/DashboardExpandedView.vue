@@ -23,28 +23,25 @@
 
       <!-- Imagen dinámica -->
       <img
-        :src="logoEmpresa"
-        alt="Logo Empresa"
-        class="logo-empresa"
+          :src="logoEmpresa"
+          alt="Logo Empresa"
+          class="logo-empresa"
       />
     </div>
 
     <!-- Footer -->
-    <footer class="page-footer">
-      <p>Copyright © 2025 Creative Tim</p>
-      <p>
-        Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok
-      </p>
-    </footer>
+    <FooterCredits />
   </div>
 </template>
 
 
 <script>
+import FooterCredits from '@/components/common/FooterCredits.vue'
 import { obtenerPrimeraEmpresa } from '@/services/apiConfigEmpresaService'
 
 export default {
   name: "dashboard-page",
+  components: { FooterCredits },
   data() {
     return {
       mensajeEmpresa: '',
@@ -173,11 +170,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }
@@ -189,7 +186,7 @@ export default {
 
 <style scoped>
 .dashboard-container {
-  min-height: 100vh; /* que ocupe mínimo el alto de la ventana */
+  min-height: 100%; /* ocupa el 100% del contenedor padre (que ya tiene top:0;bottom:0) */
   width: 100%;
   margin-left: 0px; /* Deja espacio fijo para el menú */
   overflow: auto; /* 🔹 Cambié de hidden a auto para permitir scroll e impresión */
@@ -228,9 +225,11 @@ export default {
 }
 
 .dashboard-content {
+  flex: 1; /* ocupa el espacio disponible para empujar el footer abajo */
   display: flex;
   flex-direction: column;
   align-items: center; /* Centra horizontalmente todo el contenido */
+  justify-content: center; /* Centra verticalmente el contenido */
   width: 100%;
 }
 

@@ -22,7 +22,7 @@ export default {
   },
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
     }
   }
 }
@@ -33,18 +33,18 @@ export default {
   display: flex;
 }
 
-/* Estilo base */
+/* Estilo base — contenido empieza después del menú colapsado */
 .main-content {
   position: absolute;
   top: 0;
-  left: 0px;
+  left: 60px;
   right: 0;
   bottom: 0;
   transition: left 0.5s ease;
 }
 
-/* Cuando el menú está abierto */
+/* Cuando el menú está abierto/pinned */
 .main-content.expanded {
-  left: 200px; /* 60px + 250px del menú desplegable */
+  left: 220px;
 }
 </style>

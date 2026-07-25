@@ -27,14 +27,23 @@
       <span>{{ factura.fecha }}</span>
     </div>
 
-    <div class="line">
-      <span>Cliente:</span>
-      <span>{{ factura.cliente }}</span>
-    </div>
+    <div class="separator"></div>
 
     <div class="line">
+      <span>Cliente:</span>
+      <span>{{ factura.clienteNombre }}</span>
+    </div>
+    <div class="line">
+      <span>C.C:</span>
+      <span>{{ factura.clienteCC }}</span>
+    </div>
+    <div class="line">
       <span>Atendido por:</span>
-      <span>{{ factura.vendedor || 'N/A' }}</span>
+      <span>{{ factura.vendedorNombre }}</span>
+    </div>
+    <div class="line">
+      <span>C.C:</span>
+      <span>{{ factura.vendedorCC }}</span>
     </div>
 
     <div class="separator"></div>
@@ -73,6 +82,11 @@
       <span>{{ precio(iva) }}</span>
     </div>
 
+    <div v-if="descuento > 0" class="line">
+      <span>DESCUENTO {{ descuentoInfo }}:</span>
+      <span>-{{ precio(descuento) }}</span>
+    </div>
+
     <div class="line bold total-line">
       <span>TOTAL A PAGAR:</span>
       <span>{{ precio(totalFinal) }}</span>
@@ -107,9 +121,9 @@
       <!-- QR -->
       <div class="qr-container">
         <qrcode-vue
-          :value="qrData"
-          :size="90"
-          level="M"
+            :value="qrData"
+            :size="90"
+            level="M"
         />
       </div>
 
@@ -153,6 +167,16 @@ export default {
     recibido: {
       type: Number,
       default: 0
+    },
+
+    descuento: {
+      type: Number,
+      default: 0
+    },
+
+    descuentoInfo: {
+      type: String,
+      default: ''
     }
   },
 
@@ -173,11 +197,17 @@ export default {
     },
 
     iva() {
-      return this.subtotal * 0.19
+      // IVA extraido del precio (ya incluido): IVA = total - (total / 1.19)
+      return Math.round(this.subtotal - (this.subtotal / 1.19))
     },
 
     totalFinal() {
-      return this.subtotal + this.iva
+      // Si la factura ya trae totalFinal calculado, usarlo directamente
+      if (this.factura.totalFinal !== undefined && this.factura.totalFinal !== null) {
+        return this.factura.totalFinal
+      }
+      // Fallback: el total a pagar es el subtotal menos el descuento
+      return Math.max(this.subtotal - this.descuento, 0)
     },
 
     cambio() {
@@ -187,7 +217,7 @@ export default {
     cufe() {
       try {
         return btoa(
-          `${this.empresa.nit || ''}|${this.factura.numero || ''}|${this.totalFinal}|${this.factura.fecha || ''}`
+            `${this.empresa.nit || ''}|${this.factura.numero || ''}|${this.totalFinal}|${this.factura.fecha || ''}`
         )
       } catch {
         return 'N/A'
@@ -200,8 +230,8 @@ export default {
         `FACTURA:${this.factura.numero || ''}`,
         `FECHA:${this.factura.fecha || ''}`,
         `TOTAL:${this.totalFinal}`,
-        `CLIENTE:${this.factura.cliente || ''}`,
-        `VENDEDOR:${this.factura.vendedor || 'N/A'}`,
+        `CLIENTE:${this.factura.clienteNombre || 'CONSUMIDOR FINAL'}`,
+        `VENDEDOR:${this.factura.vendedorNombre || 'CAJERO'}`,
         `CUFE:${this.cufe}`
       ].join('\n')
     }

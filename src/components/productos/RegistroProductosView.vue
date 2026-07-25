@@ -85,7 +85,7 @@ export default {
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       productoForm: {
         codigo: '',
         nombre: '',
@@ -231,14 +231,14 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.productoForm.codigo ||
-        this.productoForm.nombre ||
-        this.productoForm.referencia ||
-        this.productoForm.descripcion ||
-        this.productoForm.marca ||
-        this.productoForm.unidadMedida ||
-        this.productoForm.cantidad ||
-        this.productoForm.precio ||
-        this.productoForm.proveedorName;
+          this.productoForm.nombre ||
+          this.productoForm.referencia ||
+          this.productoForm.descripcion ||
+          this.productoForm.marca ||
+          this.productoForm.unidadMedida ||
+          this.productoForm.cantidad ||
+          this.productoForm.precio ||
+          this.productoForm.proveedorName;
     },
 
     // 🔹 Método para limpiar campos del formulario

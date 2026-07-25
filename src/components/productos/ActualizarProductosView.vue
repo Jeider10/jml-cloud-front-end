@@ -80,7 +80,7 @@ export default {
   props: ['codigo'],
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       productoForm: {
         codigo: '',
         nombre: '',
@@ -158,16 +158,16 @@ export default {
     // 🔹 Método para actualizar producto en backend
     async actualizarProductoEnServidor() {
       if (
-        !this.productoForm.codigo ||
-        !this.productoForm.nombre ||
-        !this.productoForm.descripcion
+          !this.productoForm.codigo ||
+          !this.productoForm.nombre ||
+          !this.productoForm.descripcion
       ) {
         this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
         return
       }
 
       if (
-        !this.productoForm.proveedorId
+          !this.productoForm.proveedorId
       ) {
         this.mostrarMensaje('Seleccione un proveedor.', 'error')
         return

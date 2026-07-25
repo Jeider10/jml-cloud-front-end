@@ -56,5 +56,5 @@ export const eliminarProductoPorCodigo = (codigo) => apiProducts.delete('/produc
 // Restar stock de un producto por código
 export const restarStockProducto = (codigo, cantidad) => apiProducts.put(`/productos/restar-stock/${codigo}`, null, { params: { cantidad } })
 
-// Búsqueda por fecha de creación
-export const buscarProductoPorFechaCreacion = (fechaCreacion) => apiProducts.get('/productos/fechaCreacion', { params: { fechaCreacion } })
+// Busqueda por fecha de creacion (rango)
+export const buscarProductoPorFechaCreacion = (fechaInicio, fechaFin) => apiProducts.get('/productos/fechaCreacion', { params: { fechaInicio, fechaFin } })

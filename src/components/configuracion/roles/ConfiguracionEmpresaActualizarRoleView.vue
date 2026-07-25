@@ -53,7 +53,7 @@ export default {
   props: ['roleCode'],
   data() {
     return {
-      menuOpen: true,
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       rolForm: {
         roleCode: '',
         roleName: '',
@@ -67,7 +67,7 @@ export default {
 
   async mounted() {
     if (this.roleCode) {
-    await this.cargarRole()
+      await this.cargarRole()
     } else {
       this.mostrarMensaje('❌ No se proporcionó un código de rol válido.', 'error')
     }

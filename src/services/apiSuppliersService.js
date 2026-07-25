@@ -28,3 +28,6 @@ export const actualizarProveedor = (proveedor) => apiSuppliers.put('/proveedores
 
 // Eliminar proveedor por código de sucursal
 export const eliminarProveedorPorCodigoSucursal = (codigoSucursal) => apiSuppliers.delete('/proveedores/delete', { params: { codigoSucursal } })
+
+// Busqueda por fecha de creacion (rango)
+export const buscarProveedorPorFechaCreacion = (fechaInicio, fechaFin) => apiSuppliers.get('/proveedores/fechaCreacion', { params: { fechaInicio, fechaFin } })

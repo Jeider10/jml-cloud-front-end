@@ -14,7 +14,7 @@
       </div>
 
       <!-- 🔹 Datos de la empresa (solo se muestran cuando ya cargó) -->
-      <div v-else>
+      <div v-else class="content-area">
         <h1 class="titulo">Datos de la Empresa</h1>
 
         <!-- 🔔 Mensaje visual -->
@@ -72,7 +72,7 @@
                     type="button"
                     class="registrar-btn"
                     @click="activarEdicion">
-                    🆕 Registrar
+              🆕 Registrar
             </button>
 
             <!-- Si hay empresa, mostrar botón Actualizar -->
@@ -81,7 +81,7 @@
                     type="button"
                     class="actualizar-btn"
                     @click="activarEdicion">
-                    ✏️ Actualizar
+              ✏️ Actualizar
             </button>
 
             <!-- Modo edición: mostrar guardar/limpiar/volver -->
@@ -91,21 +91,21 @@
                       class="guardar-btn"
                       :disabled="!tieneTexto"
                       @click="mostrarConfirmacionGuardar = true">
-                      💾 Guardar
+                💾 Guardar
               </button>
 
               <!-- 🧹 Botón de Limpiar -->
               <button type="button"
                       class="limpiar-btn"
                       @click="limpiar">
-                      🧹 Limpiar
+                🧹 Limpiar
               </button>
 
               <!-- 🔙 Botón de Volver -->
               <button type="button"
                       class="volver-btn"
                       @click="cancelarEdicion">
-                      🔙 Volver
+                🔙 Volver
               </button>
 
               <!-- 🗑️ Botón de Eliminar -->
@@ -113,7 +113,7 @@
                       v-if="modoActualizar"
                       class="eliminar-btn"
                       @click="mostrarConfirmacionEliminar = true">
-                      🗑️ Eliminar
+                🗑️ Eliminar
               </button>
             </div>
           </div>
@@ -122,10 +122,10 @@
         <!-- Logo grande -->
         <div class="logo-container">
           <img
-            :src="getLogoUrl(empresa.logo)"
-            alt="Logo Empresa"
-            class="logo-empresa"
-            @error="onLogoError"
+              :src="getLogoUrl(empresa.logo)"
+              alt="Logo Empresa"
+              class="logo-empresa"
+              @error="onLogoError"
           />
         </div>
 
@@ -155,12 +155,7 @@
       </div>
 
       <!-- Footer -->
-      <footer class="page-footer">
-        <p>Copyright © 2025 Creative Tim</p>
-        <p>
-          Desarrollado por Ing. Jeider Montiel | Whatsapp | Facebook | TikTok
-        </p>
-      </footer>
+      <FooterCredits />
     </div>
   </div>
 </template>
@@ -168,15 +163,16 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import FooterCredits from '@/components/common/FooterCredits.vue'
 import { obtenerPrimeraEmpresa, registrarEmpresa, actualizarEmpresa, eliminarEmpresa } from '@/services/apiConfigEmpresaService'
 
 export default {
   name: 'ConfiguracionEmpresaView',
-  components: { DashboardSideMenu },
+  components: { DashboardSideMenu, FooterCredits },
 
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       modoRegistrar: false,
       modoActualizar: false,
       modoEdicion: false,
@@ -437,11 +433,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }
@@ -462,15 +458,13 @@ export default {
   left: 60px;
   right: 0;
   bottom: 0;
-  padding: 20px;
+  padding: 20px 20px 0 20px; /* sin padding abajo para que el footer quede pegado al borde */
   background-color: #6fffd4;
   overflow-y: auto;       /* scroll solo si el contenido lo necesita */
   transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
-
-  min-height: 100vh;   /* ocupa siempre toda la altura de la ventana */
-  align-items: center;  /* centra horizontalmente los hijos, pero sin recortar el fondo */
+  align-items: center;  /* centra horizontalmente los hijos */
   box-sizing: border-box; /* ✅ asegura que el padding no rompa el ancho */
 }
 
@@ -745,7 +739,7 @@ export default {
 .logo-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 .logo-empresa {
@@ -787,5 +781,12 @@ export default {
   font-size: 0.9rem;
   color: #333;
   opacity: 0.8;
+}
+
+.content-area {
+  flex: 1; /* ocupa el espacio disponible, empuja el footer al fondo */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

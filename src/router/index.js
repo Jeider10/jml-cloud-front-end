@@ -81,39 +81,39 @@ const routes = [
     path: '/registro-proveedor',
     name: 'RegistroProveedorView',
     component: RegistroProveedorView,
-    meta: { requiresAuth: true } // ✅ protegida
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/proveedores',
     name: 'ProveedoresView',
     component: ProveedoresView,
-    meta: { requiresAuth: true } // ✅ protegida
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/actualizar-proveedor/:codigoSucursal',
     name: 'ActualizarProveedorView',
     component: ActualizarProveedorView,
-    props: true,   // 👈 Esto hace que "codigoSucursal" llegue como prop
-    meta: { requiresAuth: true } // ✅ protegida
+    props: true,
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/registro-productos',
     name: 'RegistroProductosView',
     component: RegistroProductosView,
-    meta: { requiresAuth: true } // ✅ protegida
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/productos',
     name: 'ProductosView',
     component: ProductosView,
-    meta: { requiresAuth: true } // ✅ protegida
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/actualizar-productos/:codigo',
     name: 'ActualizarProductosView',
     component: ActualizarProductosView,
-    props: true,   // 👈 Esto hace que "codigo" llegue como prop
-    meta: { requiresAuth: true } // ✅ protegida
+    props: true,
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/historial-ventas',
@@ -125,13 +125,13 @@ const routes = [
     path: '/configuracion-empresa',
     name: 'ConfiguracionEmpresaView',
     component: ConfiguracionEmpresaView,
-    meta: { requiresAuth: true } // ✅ protegida
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/configuracion-empresa-usuario',
     name: 'ConfiguracionEmpresaUsuariosView',
     component: ConfiguracionEmpresaUsuariosView,
-    meta: { requiresAuth: true } // ✅ protegida
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/registro/roles',
@@ -187,13 +187,23 @@ const router = createRouter({
 // 🔒 Middleware global de autenticación
 // ==============================
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!sessionData.accessToken // ✅ verifica si hay sesión activa
+  const isAuthenticated = !!sessionData.accessToken
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    console.warn('🚫 Ruta protegida sin sesión activa → redirigiendo a login')
+    console.warn('🚫 Ruta protegida sin sesion activa → redirigiendo a login')
     next('/login')
+  } else if (to.meta.requiresAdmin) {
+    // Verificar que el usuario sea ADMIN, ADMINISTRADOR o SUPERADMIN
+    const roleName = (sessionData.user?.roleName || '').toUpperCase().trim()
+    const rolesAdmin = ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN']
+    if (!rolesAdmin.includes(roleName)) {
+      console.warn('🚫 Ruta solo para ADMIN → redirigiendo a dashboard')
+      next('/dashboard')
+    } else {
+      next()
+    }
   } else if (to.path === '/login' && isAuthenticated) {
-    next('/dashboard') // ✅ evita volver al login si ya está logueado
+    next('/dashboard')
   } else {
     next()
   }

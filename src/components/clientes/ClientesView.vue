@@ -29,12 +29,12 @@
               <!-- ✅ Botón de si -->
               <button class="btn-yes"
                       @click="eliminarCliente(modalEliminar.idx)">
-                      Sí
+                Sí
               </button>
               <!-- ❌️ Botón de no -->
               <button class="btn-no"
                       @click="modalEliminar.visible = false">
-                      No
+                No
               </button>
             </div>
           </div>
@@ -54,35 +54,41 @@
             <option value="identificacion">Identificación</option>
             <option value="nombres">Nombres</option>
             <option value="apellidos">Apellidos</option>
+            <option value="direccion">Dirección</option>
+            <option value="fechaCreacion">Fecha de Creación</option>
           </select>
 
           <!-- 🔍 Termino de búsqueda -->
-          <input v-model="busqueda"
+          <input v-if="tipoBusqueda !== 'fechaCreacion'"
+                 v-model="busqueda"
                  type="text"
                  placeholder="Ingrese término de búsqueda"
                  :disabled="!tipoBusqueda" />
 
+          <!-- 📅 Selector de rango de fecha estilo CloudWatch -->
+          <DateRangePicker v-if="tipoBusqueda === 'fechaCreacion'" @aplicar="onFechaRangoAplicar" />
+
           <!-- 🔍 Botón de búsqueda -->
           <button type="button"
                   class="buscar-btn"
-                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  :disabled="!puedeFiltrarse"
                   @click="filtrarClientes">
-                  🔍 Buscar
+            🔍 Buscar
           </button>
 
           <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
                   class="limpiar-btn"
-                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  :disabled="!puedeFiltrarse && tipoBusqueda !== 'fechaCreacion'"
                   @click="limpiarBusqueda">
-                  🧹 Limpiar
+            🧹 Limpiar
           </button>
 
           <!-- ➕ Botón de registrar producto -->
           <button type="button"
                   class="registrar-btn"
                   @click="agregarCliente">
-                  ➕ Registrar Cliente
+            ➕ Registrar Cliente
           </button>
         </div>
       </div>
@@ -90,44 +96,42 @@
       <!-- Tabla de clientes -->
       <table class="clientes-table">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>IDENTIFICACIÓN</th>
-            <th>NOMBRES</th>
-            <th>APELLIDOS</th>
-            <th>TELÉFONO</th>
-            <th>DIRECCIÓN</th>
-            <th>FECHA REGISTRO</th>
-            <th>FECHA ACTUALIZACIÓN</th>
-            <th>ACCIONES</th>
-          </tr>
+        <tr>
+          <th>ID</th>
+          <th>IDENTIFICACIÓN</th>
+          <th>NOMBRES</th>
+          <th>APELLIDOS</th>
+          <th>TELÉFONO</th>
+          <th>DIRECCIÓN</th>
+          <th>FECHA CREACIÓN</th>
+          <th>FECHA ACTUALIZACIÓN</th>
+          <th>ACCIONES</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="(c, idx) in clientesFiltrados" :key="idx">
-            <td>{{ idx + 1 }}</td>
-            <td>{{ c.identificacion }}</td>
-            <td>{{ c.nombres }}</td>
-            <td>{{ c.apellidos }}</td>
-            <td>{{ c.telefono }}</td>
-            <td>{{ c.direccion }}</td>
-            <td>{{ c.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
-            <td>{{ c.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
-            <td>
-              <!-- ✏️ Botón de editar -->
-              <button class="update-btn"
-                      @click="abrirActualizarCliente(c)">
-                      ✏️
-              </button>
-              <!-- 🗑️️ Botón de eliminar -->
-              <button class="delete-btn"
-                      @click="confirmarEliminar(idx)">
-                      🗑️
-              </button>
-            </td>
-          </tr>
-          <tr v-if="clientesFiltrados.length === 0">
-            <td colspan="9" class="empty-row">No hay clientes registrados.</td>
-          </tr>
+        <tr v-for="(c, idx) in clientesFiltrados" :key="idx">
+          <td>{{ idx + 1 }}</td>
+          <td>{{ c.identificacion }}</td>
+          <td>{{ c.nombres }}</td>
+          <td>{{ c.apellidos }}</td>
+          <td>{{ c.telefono }}</td>
+          <td>{{ c.direccion }}</td>
+          <td>{{ c.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
+          <td>{{ c.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
+          <td>
+            <!-- ✏️ Botón de editar -->
+            <button class="update-btn" title="Editar" @click="abrirActualizarCliente(c)">
+              ✏️
+            </button>
+            <!-- 🗑️️ Botón de eliminar -->
+            <button class="delete-btn" title="Eliminar" @click="confirmarEliminar(idx)">
+              🗑️
+            </button>
+          </td>
+        </tr>
+        <tr v-if="clientesFiltrados.length === 0">
+          <td colspan="9" class="empty-row">No hay clientes registrados.</td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -136,20 +140,23 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import {
   listarClientes,
   buscarClientePorIdentificacion,
   buscarClientePorNombres,
   buscarClientePorApellidos,
+  buscarClientePorFechaCreacion,
+  buscarClientePorDireccion,
   eliminarClientePorIdentificacion
 } from '@/services/apiCustomerService.js'
 
 export default {
   name: 'ClientesView',
-  components: { DashboardSideMenu },
+  components: { DashboardSideMenu, DateRangePicker },
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       clienteForm: {
         identificacion: '',
         nombres: '',
@@ -163,6 +170,7 @@ export default {
       mensajeTipo: '',
       busqueda: '',
       tipoBusqueda: '',
+      fechaRango: { fechaInicio: '', fechaFin: '' },
       modalEliminar: {
         visible: false,
         idx: null,
@@ -176,9 +184,19 @@ export default {
     this.cargarClientes()
   },
 
+  computed: {
+    puedeFiltrarse() {
+      if (!this.tipoBusqueda) return false
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.fechaRango.fechaInicio !== '' && this.fechaRango.fechaFin !== ''
+      }
+      return this.busqueda.trim().length > 0
+    }
+  },
+
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -255,6 +273,11 @@ export default {
 
     // 🔹 Método para filtrar clientes según el tipo de búsqueda
     async filtrarClientes() {
+      // Caso especial: busqueda por fecha
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.filtrarClientesPorFecha()
+      }
+
       const termino = this.busqueda.trim()
       if (!termino || !this.tipoBusqueda) {
         this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
@@ -273,6 +296,9 @@ export default {
             break
           case 'apellidos':
             response = await buscarClientePorApellidos(termino)
+            break
+          case 'direccion':
+            response = await buscarClientePorDireccion(termino)
             break
           default:
             this.mostrarMensaje('⚠️ Tipo de búsqueda no válido.', 'error')
@@ -323,10 +349,10 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.clienteForm.identificacion ||
-             this.clienteForm.nombres ||
-             this.clienteForm.apellidos ||
-             this.clienteForm.telefono ||
-             this.clienteForm.direccion;
+          this.clienteForm.nombres ||
+          this.clienteForm.apellidos ||
+          this.clienteForm.telefono ||
+          this.clienteForm.direccion;
     },
 
     // 🔹 Método de limpiar campos del formulario
@@ -344,7 +370,44 @@ export default {
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
+      this.fechaRango = { fechaInicio: '', fechaFin: '' }
       this.cargarClientes() // 🔹 Vuelve a cargar todos los clientes
+    },
+
+    // 🔹 Callback del DateRangePicker
+    onFechaRangoAplicar(rango) {
+      this.fechaRango = rango
+      // Auto-buscar al aplicar el rango
+      this.filtrarClientesPorFecha()
+    },
+
+    // 🔹 Metodo para filtrar clientes por rango de fecha de creacion
+    async filtrarClientesPorFecha() {
+      try {
+        const inicio = this.fechaRango.fechaInicio
+        const fin = this.fechaRango.fechaFin
+
+        if (!inicio || !fin) {
+          this.mostrarMensaje('⚠️ Seleccione un rango de fechas.', 'error')
+          return
+        }
+
+        const response = await buscarClientePorFechaCreacion(inicio, fin)
+
+        if (response.status === 204) {
+          this.clientesFiltrados = []
+          this.mostrarMensaje('❌ No se encontraron clientes en el rango de fechas seleccionado.', 'warning')
+          return
+        }
+
+        if (response.data) {
+          this.clientesFiltrados = Array.isArray(response.data) ? response.data : [response.data]
+          this.mostrarMensaje('✅ ' + this.clientesFiltrados.length + ' cliente(s) encontrado(s) en el rango de fechas.', 'success')
+        }
+
+      } catch (error) {
+        this.manejarErrorApiClientes(error, 'filtrar clientes por fecha')
+      }
     },
 
     // 🔹 Método para manejar errores de API
@@ -378,11 +441,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }

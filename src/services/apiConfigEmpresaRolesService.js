@@ -23,3 +23,7 @@ export const actualizarRole = (role) => apiConfigEmpresaRole.put('/roles/update'
 
 // Eliminar rol
 export const eliminarRole = (roleCode) => apiConfigEmpresaRole.delete('/roles/delete', { params: { roleCode } })
+
+// Busqueda por fecha de creacion (rango)
+export const buscarRolePorFechaCreacion = (fechaInicio, fechaFin) =>
+    apiConfigEmpresaRole.get('/roles/fechaCreacion', { params: { fechaInicio, fechaFin } })

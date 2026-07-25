@@ -25,9 +25,9 @@
           <div class="campo">
             <label for="nombreDeUsuario">Nombre de Usuario</label>
             <input
-              type="text"
-              :value="`${usuario.nombres} ${usuario.apellidos}`.trim() || usuario.userName"
-              readonly
+                type="text"
+                :value="`${usuario.nombres} ${usuario.apellidos}`.trim() || usuario.userName"
+                readonly
             />
           </div>
 
@@ -52,15 +52,18 @@
           </div>
 
           <div class="campo">
-            <label for="ultimaActualización">Última Actualización</label>
+            <label for="ultimaActualización">Ultima Actualizacion</label>
             <input type="text" v-model="usuario.fechaActualizacion" readonly />
           </div>
         </div>
 
-        <!-- 📘 Botón de actualización -->
+        <!-- Botones -->
         <div class="boton-container">
           <button class="btn-actualizar" @click="abrirConfirmacionActualizar">
             ✏️ Actualizar
+          </button>
+          <button class="btn-cambiar-password" @click="mostrarModalPassword = true">
+            🔑 Cambiar Contraseña
           </button>
         </div>
       </div>
@@ -68,11 +71,59 @@
       <!-- Modal de confirmación para actualización -->
       <div v-if="mostrarConfirmacionActualizar" class="modal-overlay">
         <div class="modal">
-          <h3>⚠️ Confirmación</h3>
+          <h3>⚠️ Confirmacion</h3>
           <p>¿Deseas actualizar los datos de tu usuario?</p>
           <div class="modal-buttons">
-            <button class="si-btn" @click="confirmarActualizar">Sí</button>
+            <button class="si-btn" @click="confirmarActualizar">Si</button>
             <button class="no-btn" @click="cerrarModalActualizar">No</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de cambio de contraseña -->
+      <div v-if="mostrarModalPassword" class="modal-overlay">
+        <div class="modal">
+          <h3>🔑 Cambiar Contraseña</h3>
+          <p style="font-size: 12px; color: #666;">Ingrese su nueva contraseña:</p>
+
+          <div class="modal-campo">
+            <label>Nueva Contraseña</label>
+            <div class="password-field">
+              <input
+                  :type="mostrarPassword ? 'text' : 'password'"
+                  v-model="nuevaPassword"
+                  placeholder="Ingrese nueva contraseña"
+              />
+              <button type="button" class="eye-btn" @click="mostrarPassword = !mostrarPassword">
+                {{ mostrarPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-campo">
+            <label>Confirmar Contraseña</label>
+            <div class="password-field">
+              <input
+                  :type="mostrarConfirmPassword ? 'text' : 'password'"
+                  v-model="confirmarPassword"
+                  placeholder="Confirme nueva contraseña"
+              />
+              <button type="button" class="eye-btn" @click="mostrarConfirmPassword = !mostrarConfirmPassword">
+                {{ mostrarConfirmPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+          <p v-if="nuevaPassword && confirmarPassword && nuevaPassword !== confirmarPassword" style="color: #e74c3c; font-size: 11px; margin-top: 5px;">
+            Las contraseñas no coinciden
+          </p>
+          <p v-else-if="nuevaPassword && nuevaPassword.length < 3" style="color: #e74c3c; font-size: 11px; margin-top: 5px;">
+            La contraseña no cumple con lo requerido (minimo 3 caracteres)
+          </p>
+
+          <div class="modal-buttons">
+            <button class="si-btn" @click="cambiarPassword" :disabled="!puedeGuardarPassword">Confirmar</button>
+            <button class="no-btn" @click="cerrarModalPassword">Cancelar</button>
           </div>
         </div>
       </div>
@@ -83,14 +134,14 @@
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
 import { buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
-import { getSession } from '@/services/apiAuthService'
+import { getSession, updateForgotPassword } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionUsuarioView',
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: true,
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       usuario: {
         identificacion: '',
         userName: '',
@@ -101,9 +152,14 @@ export default {
         fechaActualizacion: ''
       },
       mostrarConfirmacionActualizar: false,
+      mostrarModalPassword: false,
       mensaje: '',
       mensajeTipo: 'success',
-      userLogin: null
+      userLogin: null,
+      nuevaPassword: '',
+      confirmarPassword: '',
+      mostrarPassword: false,
+      mostrarConfirmPassword: false
     }
   },
 
@@ -159,8 +215,18 @@ export default {
     } catch (error) {
       console.error('❌ Error al cargar usuario:', error)
       this.mostrarMensaje(
-        error.response?.data?.message || `❌ Error al cargar datos del usuario: ${error.message}`,
-        'error'
+          error.response?.data?.message || `❌ Error al cargar datos del usuario: ${error.message}`,
+          'error'
+      )
+    }
+  },
+
+  computed: {
+    puedeGuardarPassword() {
+      return (
+          this.nuevaPassword.length >= 3 &&
+          this.confirmarPassword.length >= 3 &&
+          this.nuevaPassword === this.confirmarPassword
       )
     }
   },
@@ -181,6 +247,39 @@ export default {
 
     cerrarModalActualizar() {
       this.mostrarConfirmacionActualizar = false
+    },
+
+    async cambiarPassword() {
+      if (this.nuevaPassword !== this.confirmarPassword) {
+        this.mostrarMensaje('⚠️ Las contraseñas no coinciden.', 'error')
+        return
+      }
+
+      try {
+        await updateForgotPassword(this.usuario.userName, this.nuevaPassword)
+        this.mostrarMensaje('✅ Contraseña actualizada correctamente.', 'success')
+        this.cerrarModalPassword()
+
+        // Recargar datos del usuario para mostrar la nueva fecha de actualizacion
+        const { data } = await buscarUsuarioPorUserName(this.usuario.userName)
+        const usuarioData = Array.isArray(data) ? data[0] : data
+        if (usuarioData) {
+          this.usuario.fechaActualizacion = usuarioData.fechaActualizacion || ''
+        }
+      } catch (error) {
+        this.mostrarMensaje(
+            error.response?.data?.message || '❌ Error al cambiar la contraseña.',
+            'error'
+        )
+      }
+    },
+
+    cerrarModalPassword() {
+      this.mostrarModalPassword = false
+      this.nuevaPassword = ''
+      this.confirmarPassword = ''
+      this.mostrarPassword = false
+      this.mostrarConfirmPassword = false
     },
 
     confirmarActualizar() {
@@ -236,9 +335,9 @@ export default {
 
 .datos-container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
   margin-top: 20px;
 }
 
@@ -272,9 +371,8 @@ input {
 
 .boton-container {
   display: flex;
-  align-items: flex-start;
+  gap: 12px;
   justify-content: center;
-  margin-top: 5px;
 }
 
 .btn-actualizar {
@@ -359,6 +457,11 @@ input {
   cursor: pointer;
 }
 
+.si-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
 .no-btn {
   background-color: #c0392b;
   color: white;
@@ -374,6 +477,58 @@ input {
 
 .no-btn:hover {
   background-color: #922b21;
+}
+
+.modal-campo {
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.modal-campo label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 8px 35px 8px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-cambiar-password {
+  padding: 12px 18px;
+  background-color: #f4a261;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-cambiar-password:hover {
+  background-color: #e76f51;
 }
 
 </style>

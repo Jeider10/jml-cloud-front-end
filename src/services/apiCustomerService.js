@@ -31,3 +31,9 @@ export const actualizarCliente = (cliente) => apiCustomer.put('/clientes/update'
 
 // Eliminar cliente por identificación
 export const eliminarClientePorIdentificacion = (identificacion) => apiCustomer.delete('/clientes/delete', { params: { identificacion } })
+
+// Busqueda por fecha de creacion (rango)
+export const buscarClientePorFechaCreacion = (fechaInicio, fechaFin) => apiCustomer.get('/clientes/fechaCreacion', { params: { fechaInicio, fechaFin } })
+
+// Búsqueda por dirección
+export const buscarClientePorDireccion = (direccion) => apiCustomer.get('/clientes/direccion', { params: { direccion } })

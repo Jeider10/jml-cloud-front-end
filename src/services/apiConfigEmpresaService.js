@@ -40,4 +40,4 @@ export const actualizarEmpresa = (empresa, file) => {
 
 // Eliminar empresa por NIT
 export const eliminarEmpresa = (nit) =>
-  apiConfigEmpresa.delete('/empresa/delete', { params: { nit } })
+    apiConfigEmpresa.delete('/empresa/delete', { params: { nit } })

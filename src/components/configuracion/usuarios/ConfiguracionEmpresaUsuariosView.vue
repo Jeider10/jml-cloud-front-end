@@ -26,42 +26,48 @@
               <option value="apellidos">Apellidos</option>
               <option value="userName">Usuario</option>
               <option value="roleName">Rol</option>
+              <option value="fechaCreacion">Fecha de Creación</option>
             </template>
             <template v-else>
               <option value="roleCode">Código</option>
               <option value="roleName">Nombre</option>
               <option value="descripcion">Descripción</option>
+              <option value="fechaCreacion">Fecha de Creación</option>
             </template>
           </select>
 
           <!-- 🔍 Termino de búsqueda -->
-          <input v-model="busqueda"
+          <input v-if="tipoBusqueda !== 'fechaCreacion'"
+                 v-model="busqueda"
                  type="text"
                  placeholder="Ingrese término de búsqueda"
                  :disabled="!tipoBusqueda"
                  style="height: 30px; width: 200px; padding-left: 6px;" />
 
+          <!-- 📅 Selector de rango de fecha estilo CloudWatch -->
+          <DateRangePicker v-if="tipoBusqueda === 'fechaCreacion'" @aplicar="onFechaRangoAplicar" />
+
           <!-- 🔍 Botón de búsqueda -->
           <button type="button"
                   class="buscar-btn"
-                  :disabled="!busqueda || !tipoBusqueda"
+                  :disabled="!puedeFiltrarse"
                   @click="filtrarDatos">
-                  🔍 Buscar
+            🔍 Buscar
           </button>
 
           <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
                   class="buscar-btn"
-                  :disabled="!busqueda"
+                  :disabled="!puedeFiltrarse && tipoBusqueda !== 'fechaCreacion'"
                   @click="limpiarBusqueda">
-                  🧹 Limpiar
+            🧹 Limpiar
           </button>
 
           <!-- ➕ Botón de registro -->
           <button type="button"
                   class="agregar-btn"
                   @click="irARegistro">
-                  ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
+            ➕ Registrar {{ vistaActual === 'usuarios' ? 'Usuario' : 'Rol' }}
           </button>
         </div>
       </div>
@@ -76,72 +82,73 @@
       <!-- Tabla de Roles -->
       <table v-if="vistaActual === 'roles'" class="tabla">
         <thead>
-          <tr>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Fecha Creación</th>
-            <th>Fecha Actualización</th>
-            <th>Acciones</th>
-          </tr>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Fecha Creación</th>
+          <th>Fecha Actualización</th>
+          <th>Acciones</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="(r, idx) in roles" :key="r.roleCode">
-            <td>{{ r.roleCode }}</td>
-            <td>{{ r.roleName }}</td>
-            <td>{{ r.descripcion || '-' }}</td>
-            <td>{{ r.fechaCreacion || '-' }}</td>
-            <td>{{ r.fechaActualizacion || '-' }}</td>
-            <td>
-              <button class="update-btn" @click="abrirConfirmacionActualizarRol(r)">✏️</button>
-              <button class="delete-btn" @click="abrirConfirmacionEliminarRol(idx)">🗑️</button>
-            </td>
-          </tr>
-          <tr v-if="roles.length === 0">
-            <td colspan="6" class="empty-row">No hay roles registrados.</td>
-          </tr>
+        <tr v-for="(r, idx) in roles" :key="r.roleCode">
+          <td>{{ r.roleCode }}</td>
+          <td>{{ r.roleName }}</td>
+          <td>{{ r.descripcion || '-' }}</td>
+          <td>{{ r.fechaCreacion || '-' }}</td>
+          <td>{{ r.fechaActualizacion || '-' }}</td>
+          <td>
+            <button class="update-btn" title="Editar" @click="abrirConfirmacionActualizarRol(r)">✏️</button>
+            <button class="delete-btn" title="Eliminar" @click="abrirConfirmacionEliminarRol(idx)">🗑️</button>
+          </td>
+        </tr>
+        <tr v-if="roles.length === 0">
+          <td colspan="6" class="empty-row">No hay roles registrados.</td>
+        </tr>
         </tbody>
       </table>
 
       <!-- Tabla de Usuarios -->
       <table v-else class="tabla">
         <thead>
-          <tr>
-            <th>Identificación</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
-            <th>Usuario</th>
-            <th>Rol</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Dirección</th>
-            <th>Fecha Creación</th>
-            <th>Fecha Actualización</th>
-            <th>Historial de Actualización</th>
-            <th>Acciones</th>
-          </tr>
+        <tr>
+          <th>Identificación</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Fecha Creación</th>
+          <th>Fecha Actualización</th>
+          <th>Historial de Actualización</th>
+          <th>Acciones</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="(u, idx) in usuarios" :key="u.identificacion">
-            <td>{{ u.identificacion }}</td>
-            <td>{{ u.nombres }}</td>
-            <td>{{ u.apellidos }}</td>
-            <td>{{ u.userName }}</td>
-            <td>{{ u.roleName }}</td>
-            <td>{{ u.email }}</td>
-            <td>{{ u.telefono }}</td>
-            <td>{{ u.direccion }}</td>
-            <td>{{ u.fechaCreacion || '-' }}</td>
-            <td>{{ u.fechaActualizacion || '-' }}</td>
-            <td>{{ u.historialUltimoActualizado || '-' }}</td>
-            <td>
-              <button class="update-btn" @click="abrirConfirmacionActualizarUsuario(u)">✏️</button>
-              <button class="delete-btn" @click="abrirConfirmacionEliminarUsuario(idx)">🗑️</button>
-            </td>
-          </tr>
-          <tr v-if="usuarios.length === 0">
-            <td colspan="12" class="empty-row">No hay usuarios registrados.</td>
-          </tr>
+        <tr v-for="(u, idx) in usuarios" :key="u.identificacion">
+          <td>{{ u.identificacion }}</td>
+          <td>{{ u.nombres }}</td>
+          <td>{{ u.apellidos }}</td>
+          <td>{{ u.userName }}</td>
+          <td>{{ u.roleName }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.telefono }}</td>
+          <td>{{ u.direccion }}</td>
+          <td>{{ u.fechaCreacion || '-' }}</td>
+          <td>{{ u.fechaActualizacion || '-' }}</td>
+          <td>{{ u.historialUltimoActualizado || '-' }}</td>
+          <td>
+            <button class="update-btn" title="Editar" @click="abrirConfirmacionActualizarUsuario(u)">✏️</button>
+            <button class="delete-btn" title="Eliminar" @click="abrirConfirmacionEliminarUsuario(idx)">🗑️</button>
+            <button class="reset-pwd-btn" @click="abrirModalResetPassword(u)" title="Resetear contraseña">🔑</button>
+          </td>
+        </tr>
+        <tr v-if="usuarios.length === 0">
+          <td colspan="12" class="empty-row">No hay usuarios registrados.</td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -169,16 +176,50 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de resetear contraseña -->
+    <div v-if="modalResetPassword.visible" class="modal-overlay">
+      <div class="modal">
+        <h3>🔑 Resetear Contraseña</h3>
+        <p>Usuario: <strong>{{ modalResetPassword.userName }}</strong></p>
+        <p style="font-size: 12px; color: #666;">Ingrese la nueva contraseña temporal:</p>
+        <div style="position: relative; margin: 10px 0;">
+          <input
+              :type="mostrarPassword ? 'text' : 'password'"
+              v-model="modalResetPassword.nuevaPassword"
+              placeholder="Nueva contraseña"
+              style="width: 100%; padding: 8px 35px 8px 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;"
+          />
+          <button
+              type="button"
+              @click="mostrarPassword = !mostrarPassword"
+              style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 16px;">
+            {{ mostrarPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+
+        <p v-if="modalResetPassword.nuevaPassword && modalResetPassword.nuevaPassword.length < 3" style="color: #e74c3c; font-size: 11px; margin-top: 5px;">
+          La contraseña no cumple con lo requerido (minimo 3 caracteres)
+        </p>
+
+        <div class="modal-buttons">
+          <button class="si-btn" @click="confirmarResetPassword" :disabled="!modalResetPassword.nuevaPassword || modalResetPassword.nuevaPassword.length < 3">Confirmar</button>
+          <button class="no-btn" @click="modalResetPassword.visible = false">Cancelar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import {
   buscarRolePorRoleCode,
   listarRoles,
   eliminarRole,
-  buscarRolePorRoleName
+  buscarRolePorRoleName,
+  buscarRolePorFechaCreacion
 } from '@/services/apiConfigEmpresaRolesService'
 
 import {
@@ -188,17 +229,18 @@ import {
   buscarUsuarioPorUserName,
   buscarUsuarioPorNombres,
   buscarUsuarioPorApellidos,
-  buscarUsuarioPorRoleName
+  buscarUsuarioPorRoleName,
+  buscarUsuarioPorFechaCreacion
 } from '@/services/apiConfigEmpresaUsuariosService'
 
-import { getSession } from '@/services/apiAuthService'
+import { getSession, updateForgotPassword } from '@/services/apiAuthService'
 
 export default {
   name: 'ConfiguracionEmpresaUsuariosView',
-  components: { DashboardSideMenu },
+  components: { DashboardSideMenu, DateRangePicker },
   data() {
     return {
-      menuOpen: true,
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       vistaActual: 'usuarios',
       roles: [],
       usuarios: [],
@@ -206,6 +248,7 @@ export default {
       rolesOriginal: [],
       tipoBusqueda: '',
       busqueda: '',
+      fechaRango: { fechaInicio: '', fechaFin: '' },
       mostrarConfirmacionActualizar: false,
       mostrarConfirmacionEliminar: false,
       usuarioSeleccionado: null,
@@ -213,7 +256,23 @@ export default {
       indiceSeleccionado: null,
       mensaje: '',
       mensajeTipo: 'success',
-      userLogin: null
+      userLogin: null,
+      mostrarPassword: false,
+      modalResetPassword: {
+        visible: false,
+        userName: '',
+        nuevaPassword: ''
+      }
+    }
+  },
+
+  computed: {
+    puedeFiltrarse() {
+      if (!this.tipoBusqueda) return false
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.fechaRango.fechaInicio !== '' && this.fechaRango.fechaFin !== ''
+      }
+      return this.busqueda.trim().length > 0
     }
   },
 
@@ -297,6 +356,15 @@ export default {
 
     // 🔍 Filtrar según tipo y término
     async filtrarDatos() {
+      // Caso especial: busqueda por fecha (aplica a usuarios y roles)
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        if (this.vistaActual === 'usuarios') {
+          return this.filtrarUsuariosPorFecha()
+        } else {
+          return this.filtrarRolesPorFecha()
+        }
+      }
+
       const termino = this.busqueda.trim()
       if (!termino || !this.tipoBusqueda) {
         this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
@@ -406,8 +474,8 @@ export default {
       } catch (error) {
         // Si algo falla realmente (error HTTP, conexión, etc.)
         this.mostrarMensaje(
-          error.response?.data?.message || `❌ Error de conexión: ${error.message}`,
-          'error'
+            error.response?.data?.message || `❌ Error de conexión: ${error.message}`,
+            'error'
         )
       }
     },
@@ -416,10 +484,85 @@ export default {
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = ''
+      this.fechaRango = { fechaInicio: '', fechaFin: '' }
       if (this.vistaActual === 'usuarios') {
         this.usuarios = [...this.usuariosOriginal]
       } else {
         this.roles = [...this.rolesOriginal]
+      }
+    },
+
+    // 🔹 Callback del DateRangePicker
+    onFechaRangoAplicar(rango) {
+      this.fechaRango = rango
+      if (this.vistaActual === 'usuarios') {
+        this.filtrarUsuariosPorFecha()
+      } else {
+        this.filtrarRolesPorFecha()
+      }
+    },
+
+    // 🔹 Metodo para filtrar usuarios por rango de fecha de creacion
+    async filtrarUsuariosPorFecha() {
+      try {
+        const inicio = this.fechaRango.fechaInicio
+        const fin = this.fechaRango.fechaFin
+
+        if (!inicio || !fin) {
+          this.mostrarMensaje('⚠️ Seleccione un rango de fechas.', 'error')
+          return
+        }
+
+        const response = await buscarUsuarioPorFechaCreacion(inicio, fin)
+
+        if (response.status === 204) {
+          this.usuarios = []
+          this.mostrarMensaje('❌ No se encontraron usuarios en el rango de fechas seleccionado.', 'warning')
+          return
+        }
+
+        if (response.data) {
+          this.usuarios = Array.isArray(response.data) ? response.data : [response.data]
+          this.mostrarMensaje('✅ ' + this.usuarios.length + ' usuario(s) encontrado(s) en el rango de fechas.', 'success')
+        }
+
+      } catch (error) {
+        this.mostrarMensaje(
+            error.response?.data?.message || '❌ Error al filtrar usuarios por fecha.',
+            'error'
+        )
+      }
+    },
+
+    // 🔹 Metodo para filtrar roles por rango de fecha de creacion
+    async filtrarRolesPorFecha() {
+      try {
+        const inicio = this.fechaRango.fechaInicio
+        const fin = this.fechaRango.fechaFin
+
+        if (!inicio || !fin) {
+          this.mostrarMensaje('⚠️ Seleccione un rango de fechas.', 'error')
+          return
+        }
+
+        const response = await buscarRolePorFechaCreacion(inicio, fin)
+
+        if (response.status === 204) {
+          this.roles = []
+          this.mostrarMensaje('❌ No se encontraron roles en el rango de fechas seleccionado.', 'warning')
+          return
+        }
+
+        if (response.data) {
+          this.roles = Array.isArray(response.data) ? response.data : [response.data]
+          this.mostrarMensaje('✅ ' + this.roles.length + ' rol(es) encontrado(s) en el rango de fechas.', 'success')
+        }
+
+      } catch (error) {
+        this.mostrarMensaje(
+            error.response?.data?.message || '❌ Error al filtrar roles por fecha.',
+            'error'
+        )
       }
     },
 
@@ -501,6 +644,30 @@ export default {
     cerrarModalEliminar() {
       this.mostrarConfirmacionEliminar = false
       this.indiceSeleccionado = null
+    },
+
+    // 🔑 Abrir modal para resetear contraseña
+    abrirModalResetPassword(usuario) {
+      this.modalResetPassword = {
+        visible: true,
+        userName: usuario.userName,
+        nuevaPassword: ''
+      }
+      this.mostrarPassword = false
+    },
+
+    // 🔑 Confirmar reset de contraseña
+    async confirmarResetPassword() {
+      try {
+        await updateForgotPassword(this.modalResetPassword.userName, this.modalResetPassword.nuevaPassword)
+        this.mostrarMensaje('✅ Contraseña actualizada correctamente para ' + this.modalResetPassword.userName, 'success')
+        this.modalResetPassword.visible = false
+      } catch (error) {
+        this.mostrarMensaje(
+            error.response?.data?.message || '❌ Error al resetear la contraseña.',
+            'error'
+        )
+      }
     }
   }
 }
@@ -521,6 +688,7 @@ export default {
   padding: 20px;
   background-color: #d4f8e8;
   transition: left 0.5s ease;
+  overflow: auto; /* scroll solo cuando el contenido lo necesita */
 }
 
 .main-content.expanded {
@@ -619,7 +787,7 @@ th {
   background: #0056b3;
 }
 
-.update-btn, .delete-btn {
+.update-btn, .delete-btn, .reset-pwd-btn {
   border: none;
   cursor: pointer;
   font-size: 18px;
@@ -632,6 +800,10 @@ th {
 
 .delete-btn:hover {
   color: #e63946;
+}
+
+.reset-pwd-btn:hover {
+  color: #f4a261;
 }
 
 .empty-row {
@@ -649,7 +821,7 @@ th {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 99999;
 }
 
 .modal {
@@ -657,8 +829,10 @@ th {
   padding: 25px;
   border-radius: 10px;
   text-align: center;
-  width: 350px;
+  width: 380px;
+  max-width: 90vw;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
 }
 
 .modal h3 {

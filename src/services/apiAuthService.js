@@ -21,9 +21,9 @@ export const login = async (usuario, password) => {
 
 // Obtener usuario actual (usando token activo)
 export const obtenerUsuarioActual = async (token) =>
-  apiAuthentication.get('/authentication/obtener-usuario-actual', {
-    headers: { refreshToken: token }
-  })
+    apiAuthentication.get('/authentication/obtener-usuario-actual', {
+      headers: { refreshToken: token }
+    })
 
 // Refresh token
 //export const refreshToken = (refreshTokenValue, authorizationValue) =>
@@ -51,11 +51,11 @@ export const registerUser = (user) => apiAuthentication.post('/user/register', u
 
 // Buscar usuario
 export const searchUserByUsername = (userName) =>
-  apiAuthentication.post('/user/search-by-user-name', { userName })
+    apiAuthentication.post('/user/search-by-user-name', { userName })
 
 // Recuperar contraseña
 export const updateForgotPassword = (userName, password) =>
-  apiAuthentication.put('/user/forgot-password', { userName, password })
+    apiAuthentication.put('/usuario/forgot-password', { userName, password })
 
 // =======================
 // 🔸 Exportaciones de Autenticación para el resto del frontend

@@ -49,7 +49,7 @@
         <!-- Nuevo: selector + input + botones -->
         <div style="display: flex; gap: 4px;">
           <select v-model="tipoBusqueda">
-            <option disabled value="">Seleccione</option>
+            <option disabled value="">Seleccione una opción</option>
             <option value="codigo">Código</option>
             <option value="nombre">Nombre</option>
             <option value="referencia">Referencia</option>
@@ -59,20 +59,24 @@
             <option value="cantidad">Cantidad</option>
             <option value="precio">Precio</option>
             <option value="proveedor">Proveedor</option>
+            <option value="fechaCreacion">Fecha de Creación</option>
           </select>
 
-          <!-- 🔍 Termino de búsqueda -->
-          <input v-model="busqueda" type="text" placeholder="Ingrese término de búsqueda" :disabled="!tipoBusqueda" />
+          <!-- 🔍 Termino de busqueda (oculto cuando es fecha) -->
+          <input v-if="tipoBusqueda !== 'fechaCreacion'" v-model="busqueda" type="text" placeholder="Ingrese termino de busqueda" :disabled="!tipoBusqueda" />
 
-          <!-- 🔍 Botón de búsqueda -->
-          <button type="button" class="buscar-btn" :disabled="!hayDatosFiltro() || !tipoBusqueda"
-            @click="filtrarProductos">
+          <!-- 📅 Selector de rango de fecha estilo CloudWatch -->
+          <DateRangePicker v-if="tipoBusqueda === 'fechaCreacion'" @aplicar="onFechaRangoAplicar" />
+
+          <!-- 🔍 Boton de busqueda -->
+          <button type="button" class="buscar-btn" :disabled="!puedeFiltrarse"
+                  @click="filtrarProductos">
             🔍 Buscar
           </button>
 
-          <!-- 🧹 Botón de limpiar búsqueda -->
-          <button type="button" class="limpiar-btn" :disabled="!hayDatosFiltro() || !tipoBusqueda"
-            @click="limpiarBusqueda">
+          <!-- 🧹 Boton de limpiar busqueda -->
+          <button type="button" class="limpiar-btn" :disabled="!puedeFiltrarse && tipoBusqueda !== 'fechaCreacion'"
+                  @click="limpiarBusqueda">
             🧹 Limpiar
           </button>
 
@@ -86,53 +90,53 @@
       <!-- Tabla de productos -->
       <table class="productos-table">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>CÓDIGO</th>
-            <th>NOMBRE</th>
-            <th>REFERENCIA</th>
-            <th>DESCRIPCIÓN</th>
-            <th>MARCA</th>
-            <th>U. DE MEDIDA</th>
-            <th>CANTIDAD</th>
-            <th>PRECIO</th>
-            <th>PROVEEDOR</th>
-            <th>REGISTRO</th>
-            <th>ACTUALIZACIÓN</th>
-            <th>ACCIONES</th>
-          </tr>
+        <tr>
+          <th>ID</th>
+          <th>CÓDIGO</th>
+          <th>NOMBRE</th>
+          <th>REFERENCIA</th>
+          <th>DESCRIPCIÓN</th>
+          <th>MARCA</th>
+          <th>U. DE MEDIDA</th>
+          <th>CANTIDAD</th>
+          <th>PRECIO</th>
+          <th>PROVEEDOR</th>
+          <th>FECHA CREACIÓN</th>
+          <th>FECHA ACTUALIZACIÓN</th>
+          <th>ACCIONES</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="(prod, idx) in productosFiltrados" :key="idx">
-            <td>{{ idx + 1 }}</td>
-            <td>{{ prod.codigo }}</td>
-            <td>{{ prod.nombre }}</td>
-            <td>{{ prod.referencia }}</td>
-            <td>{{ prod.descripcion }}</td>
-            <td>{{ prod.marca }}</td>
-            <td>{{ prod.unidadMedida }}</td>
-            <td>{{ prod.cantidad }}</td>
-            <td>{{ formatPrecioCOP(prod.precio) }}</td>
-            <td>{{ prod.proveedorName }}</td>
-            <td>{{ prod.fechaCreacion }}</td>
-            <td>{{ prod.fechaActualizacion }}</td>
-            <td>
+        <tr v-for="(prod, idx) in productosFiltrados" :key="idx">
+          <td>{{ idx + 1 }}</td>
+          <td>{{ prod.codigo }}</td>
+          <td>{{ prod.nombre }}</td>
+          <td>{{ prod.referencia }}</td>
+          <td>{{ prod.descripcion }}</td>
+          <td>{{ prod.marca }}</td>
+          <td>{{ prod.unidadMedida }}</td>
+          <td>{{ prod.cantidad }}</td>
+          <td>{{ formatPrecioCOP(prod.precio) }}</td>
+          <td>{{ prod.proveedorName }}</td>
+          <td>{{ prod.fechaCreacion }}</td>
+          <td>{{ prod.fechaActualizacion }}</td>
+          <td>
 
-              <!-- ✏️ Botón de editar -->
-              <button class="update-btn" @click="abrirActualizarProducto(prod)">
-                ✏️
-              </button>
+            <!-- ✏️ Botón de editar -->
+            <button class="update-btn" title="Editar" @click="abrirActualizarProducto(prod)">
+              ✏️
+            </button>
 
-              <!-- 🗑️️ Botón de eliminar -->
-              <button class="delete-btn" @click="confirmarEliminar(idx)">
-                🗑️
-              </button>
-            </td>
-          </tr>
+            <!-- 🗑️️ Botón de eliminar -->
+            <button class="delete-btn" title="Eliminar" @click="confirmarEliminar(idx)">
+              🗑️
+            </button>
+          </td>
+        </tr>
 
-          <tr v-if="productosFiltrados.length === 0">
-            <td colspan="13" class="empty-row">No hay productos registrados.</td>
-          </tr>
+        <tr v-if="productosFiltrados.length === 0">
+          <td colspan="13" class="empty-row">No hay productos registrados.</td>
+        </tr>
 
         </tbody>
       </table>
@@ -143,6 +147,7 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import DateRangePicker from '@/components/common/DateRangePicker.vue'
 
 import {
   listarProductos,
@@ -155,6 +160,7 @@ import {
   buscarProductoPorCantidad,
   buscarProductoPorPrecio,
   buscarProductoPorProveedorName,
+  buscarProductoPorFechaCreacion,
   eliminarProductoPorCodigo
 } from '@/services/apiProductsService.js'
 
@@ -162,10 +168,10 @@ import { listarProveedores } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'ProductosView',
-  components: { DashboardSideMenu },
+  components: { DashboardSideMenu, DateRangePicker },
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       productoForm: {
         codigo: '',
         nombre: '',
@@ -186,11 +192,22 @@ export default {
       mensajeTipo: '',
       busqueda: '',
       tipoBusqueda: '',
+      fechaRango: { fechaInicio: '', fechaFin: '' },
       modalEliminar: {
         visible: false,
         idx: null,
         producto: {}
       }
+    }
+  },
+
+  computed: {
+    puedeFiltrarse() {
+      if (!this.tipoBusqueda) return false
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.fechaRango.fechaInicio !== '' && this.fechaRango.fechaFin !== ''
+      }
+      return this.busqueda.trim().length > 0
     }
   },
 
@@ -278,11 +295,16 @@ export default {
       }
     },
 
-    // 🔹 Método para filtrar productos según el tipo de búsqueda
+    // 🔹 Metodo para filtrar productos segun el tipo de busqueda
     async filtrarProductos() {
+      // Caso especial: busqueda por fecha
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.filtrarProductosPorFecha()
+      }
+
       const termino = this.busqueda.trim()
       if (!termino || !this.tipoBusqueda) {
-        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
+        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de busqueda y un termino.', 'error')
         return
       }
 
@@ -318,7 +340,7 @@ export default {
       }
     },
 
-    // 🔹 Método auxiliar para filtro de productos
+    // 🔹 Metodo auxiliar para filtro de productos
     async obtenerProductosSegunTipo(termino) {
       switch (this.tipoBusqueda) {
         case 'codigo':
@@ -340,8 +362,44 @@ export default {
         case 'proveedor':
           return await buscarProductoPorProveedorName(termino)
         default:
-          this.mostrarMensaje('⚠️ Tipo de búsqueda no válido.', 'error')
+          this.mostrarMensaje('⚠️ Tipo de busqueda no valido.', 'error')
           return
+      }
+    },
+
+    // 🔹 Callback del DateRangePicker
+    onFechaRangoAplicar(rango) {
+      this.fechaRango = rango
+      // Auto-buscar al aplicar el rango
+      this.filtrarProductosPorFecha()
+    },
+
+    // 🔹 Metodo para filtrar productos por rango de fecha de creacion
+    async filtrarProductosPorFecha() {
+      try {
+        const inicio = this.fechaRango.fechaInicio
+        const fin = this.fechaRango.fechaFin
+
+        if (!inicio || !fin) {
+          this.mostrarMensaje('⚠️ Seleccione un rango de fechas.', 'error')
+          return
+        }
+
+        const response = await buscarProductoPorFechaCreacion(inicio, fin)
+
+        if (response.status === 204) {
+          this.productosFiltrados = []
+          this.mostrarMensaje('❌ No se encontraron productos en el rango de fechas seleccionado.', 'warning')
+          return
+        }
+
+        if (response.data) {
+          this.productosFiltrados = Array.isArray(response.data) ? response.data : [response.data]
+          this.mostrarMensaje('✅ ' + this.productosFiltrados.length + ' producto(s) encontrado(s) en el rango de fechas.', 'success')
+        }
+
+      } catch (error) {
+        this.manejarErrorApiProductos(error, 'filtrar productos por fecha')
       }
     },
 
@@ -360,14 +418,14 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.productoForm.codigo ||
-        this.productoForm.nombre ||
-        this.productoForm.referencia ||
-        this.productoForm.descripcion ||
-        this.productoForm.marca ||
-        this.productoForm.unidadMedida ||
-        this.productoForm.cantidad ||
-        this.productoForm.precio ||
-        this.productoForm.proveedorName;
+          this.productoForm.nombre ||
+          this.productoForm.referencia ||
+          this.productoForm.descripcion ||
+          this.productoForm.marca ||
+          this.productoForm.unidadMedida ||
+          this.productoForm.cantidad ||
+          this.productoForm.precio ||
+          this.productoForm.proveedorName;
     },
 
     // 🔹 Método de limpiar campos del formulario
@@ -386,11 +444,12 @@ export default {
       }
     },
 
-    // 🔹 Método para limpiar búsqueda
+    // 🔹 Metodo para limpiar busqueda
     limpiarBusqueda() {
       this.busqueda = ''
-      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
-      this.cargarProductos() // 🔹 Vuelve a cargar todos los productos
+      this.tipoBusqueda = ''
+      this.fechaRango = { fechaInicio: '', fechaFin: '' }
+      this.cargarProductos()
     },
 
     // 🔹 Método para cargar proveedores

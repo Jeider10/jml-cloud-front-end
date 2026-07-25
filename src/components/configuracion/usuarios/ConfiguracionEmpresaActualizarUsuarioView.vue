@@ -75,7 +75,7 @@ export default {
 
   data() {
     return {
-      menuOpen: true,
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       roles: [],
 
       usuarioForm: {

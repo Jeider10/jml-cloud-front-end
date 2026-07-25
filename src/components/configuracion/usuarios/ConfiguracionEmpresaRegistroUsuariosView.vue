@@ -81,7 +81,7 @@ export default {
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: true,
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       usuarioForm: {
         identificacion: '',
         nombres: '',

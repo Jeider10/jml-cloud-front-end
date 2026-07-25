@@ -10,11 +10,11 @@
         <div class="form-group">
           <label for="username">Usuario:</label>
           <input
-            type="text"
-            id="username"
-            v-model="user.userName"
-            placeholder="Ingrese nombre de usuario"
-            required
+              type="text"
+              id="username"
+              v-model="user.userName"
+              placeholder="Ingrese nombre de usuario"
+              required
           />
         </div>
 
@@ -22,11 +22,11 @@
         <div class="form-group">
           <label for="password">Contraseña:</label>
           <input
-            type="password"
-            id="password"
-            v-model="user.password"
-            placeholder="Ingrese contraseña"
-            required
+              type="password"
+              id="password"
+              v-model="user.password"
+              placeholder="Ingrese contraseña"
+              required
           />
         </div>
 
@@ -34,13 +34,13 @@
         <div class="form-group">
           <label for="rolCode">Código de Rol:</label>
           <input
-            type="number"
-            id="rolCode"
-            v-model.number="user.rolCode"
-            min="1"
-            step="1"
-            placeholder="Ingrese código de rol"
-            required
+              type="number"
+              id="rolCode"
+              v-model.number="user.rolCode"
+              min="1"
+              step="1"
+              placeholder="Ingrese código de rol"
+              required
           />
         </div>
 
@@ -48,10 +48,10 @@
         <div class="form-group">
           <label for="email">Correo electrónico:</label>
           <input
-            type="email"
-            id="email"
-            v-model="user.email"
-            placeholder="Ingrese correo electrónico"
+              type="email"
+              id="email"
+              v-model="user.email"
+              placeholder="Ingrese correo electrónico"
           />
         </div>
 

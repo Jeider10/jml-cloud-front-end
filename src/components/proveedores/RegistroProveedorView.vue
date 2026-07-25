@@ -39,7 +39,7 @@
                   class="agregar-btn"
                   :disabled="!hayDatos()"
                   @click="agregarProveedor">
-                  ➕ Registrar
+            ➕ Registrar
           </button>
 
           <!-- 🧹 Botón de limpiar campos -->
@@ -47,14 +47,14 @@
                   class="limpiar-campos-btn"
                   :disabled="!hayDatos()"
                   @click="limpiarCampos">
-                  🧹 Limpiar campos
+            🧹 Limpiar campos
           </button>
 
           <!-- ↩️ Botón de volver -->
           <button type="button"
                   class="volver-btn"
                   @click="volverProveedores">
-                  ↩️ Volver
+            ↩️ Volver
           </button>
         </div>
       </div>
@@ -71,7 +71,7 @@ export default {
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       proveedorForm: {
         codigoSucursal: '',
         nombre: '',
@@ -101,7 +101,7 @@ export default {
 
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -173,10 +173,10 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.proveedorForm.codigoSucursal ||
-             this.proveedorForm.nombre ||
-             this.proveedorForm.telefono ||
-             this.proveedorForm.direccion ||
-             this.proveedorForm.correo;
+          this.proveedorForm.nombre ||
+          this.proveedorForm.telefono ||
+          this.proveedorForm.direccion ||
+          this.proveedorForm.correo;
     },
 
     // 🔹 Método de limpiar campos del formulario
@@ -226,11 +226,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }

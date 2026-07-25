@@ -41,38 +41,43 @@
         <!-- Nuevo: selector + input + botones -->
         <div style="display: flex; gap: 4px;">
           <select v-model="tipoBusqueda">
-            <option disabled value="">Seleccione</option>
+            <option disabled value="">Seleccione una opción</option>
             <option value="codigoSucursal">Código Sucursal</option>
             <option value="nombre">Nombre</option>
+            <option value="fechaCreacion">Fecha de Creación</option>
           </select>
 
           <!-- 🔍 Termino de búsqueda -->
-          <input v-model="busqueda"
+          <input v-if="tipoBusqueda !== 'fechaCreacion'"
+                 v-model="busqueda"
                  type="text"
                  placeholder="Ingrese término de búsqueda"
                  :disabled="!tipoBusqueda" />
 
+          <!-- 📅 Selector de rango de fecha estilo CloudWatch -->
+          <DateRangePicker v-if="tipoBusqueda === 'fechaCreacion'" @aplicar="onFechaRangoAplicar" />
+
           <!-- 🔍 Botón de búsqueda -->
           <button type="button"
                   class="buscar-btn"
-                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  :disabled="!puedeFiltrarse"
                   @click="filtrarProveedores">
-                  🔍 Buscar
+            🔍 Buscar
           </button>
 
           <!-- 🧹 Botón de limpiar búsqueda -->
           <button type="button"
                   class="limpiar-btn"
-                  :disabled="!hayDatosFiltro() || !tipoBusqueda"
+                  :disabled="!puedeFiltrarse && tipoBusqueda !== 'fechaCreacion'"
                   @click="limpiarBusqueda">
-                  🧹 Limpiar
+            🧹 Limpiar
           </button>
 
           <!-- ➕ Botón de registrar producto -->
           <button type="button"
                   class="registrar-btn"
                   @click="agregarProveedor">
-                  ➕ Registrar Proveedor
+            ➕ Registrar Proveedor
           </button>
         </div>
       </div>
@@ -80,44 +85,42 @@
       <!-- Tabla proveedores -->
       <table class="proveedores-table">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>CÓDIGO SUCURSAL</th>
-            <th>NOMBRE</th>
-            <th>TELÉFONO</th>
-            <th>DIRECCIÓN</th>
-            <th>CORREO</th>
-            <th>FECHA REGISTRO</th>
-            <th>FECHA ACTUALIZACIÓN</th>
-            <th>ACCIONES</th>
-          </tr>
+        <tr>
+          <th>ID</th>
+          <th>CÓDIGO SUCURSAL</th>
+          <th>NOMBRE</th>
+          <th>TELÉFONO</th>
+          <th>DIRECCIÓN</th>
+          <th>CORREO</th>
+          <th>FECHA CREACIÓN</th>
+          <th>FECHA ACTUALIZACIÓN</th>
+          <th>ACCIONES</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="(p, idx) in proveedoresFiltrados" :key="idx">
-            <td>{{ idx + 1 }}</td>
-            <td>{{ p.codigoSucursal }}</td>
-            <td>{{ p.nombre }}</td>
-            <td>{{ p.telefono }}</td>
-            <td>{{ p.direccion }}</td>
-            <td>{{ p.correo }}</td>
-            <td>{{ p.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
-            <td>{{ p.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
-            <td>
-              <!-- ✏️ Botón de editar -->
-              <button class="update-btn"
-                      @click="abrirActualizarProveedor(p)">
-                      ✏️
-              </button>
-              <!-- 🗑️️ Botón de eliminar -->
-              <button class="delete-btn"
-                      @click="confirmarEliminar(idx)">
-                      🗑️
-              </button>
-            </td>
-          </tr>
-          <tr v-if="proveedoresFiltrados.length === 0">
-            <td colspan="9" class="empty-row">No hay proveedores registrados.</td>
-          </tr>
+        <tr v-for="(p, idx) in proveedoresFiltrados" :key="idx">
+          <td>{{ idx + 1 }}</td>
+          <td>{{ p.codigoSucursal }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.telefono }}</td>
+          <td>{{ p.direccion }}</td>
+          <td>{{ p.correo }}</td>
+          <td>{{ p.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
+          <td>{{ p.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
+          <td>
+            <!-- ✏️ Botón de editar -->
+            <button class="update-btn" title="Editar" @click="abrirActualizarProveedor(p)">
+              ✏️
+            </button>
+            <!-- 🗑️️ Botón de eliminar -->
+            <button class="delete-btn" title="Eliminar" @click="confirmarEliminar(idx)">
+              🗑️
+            </button>
+          </td>
+        </tr>
+        <tr v-if="proveedoresFiltrados.length === 0">
+          <td colspan="9" class="empty-row">No hay proveedores registrados.</td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -126,19 +129,21 @@
 
 <script>
 import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
+import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import {
   listarProveedores,
   buscarProveedorPorCodigoSucursal,
   buscarProveedorPorNombre,
+  buscarProveedorPorFechaCreacion,
   eliminarProveedorPorCodigoSucursal
 } from '@/services/apiSuppliersService.js'
 
 export default {
   name: 'ProveedoresView',
-  components: { DashboardSideMenu },
+  components: { DashboardSideMenu, DateRangePicker },
   data() {
     return {
-      menuOpen: true, // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
       proveedorForm: {
         codigoSucursal: '',
         nombre: '',
@@ -152,6 +157,7 @@ export default {
       mensajeTipo: '',
       busqueda: '',
       tipoBusqueda: '',
+      fechaRango: { fechaInicio: '', fechaFin: '' },
       modalEliminar: {
         visible: false,
         idx: null,
@@ -164,9 +170,19 @@ export default {
     this.cargarProveedores()
   },
 
+  computed: {
+    puedeFiltrarse() {
+      if (!this.tipoBusqueda) return false
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.fechaRango.fechaInicio !== '' && this.fechaRango.fechaFin !== ''
+      }
+      return this.busqueda.trim().length > 0
+    }
+  },
+
   methods: {
     // handleMenuToggle(state) {
-      // this.menuOpen = state // Se descomenta cuando menuOpen: false
+    // this.menuOpen = state // Se descomenta cuando menuOpen: false
     // },
 
     // 🔹 Método de mostrar mensaje
@@ -243,6 +259,11 @@ export default {
 
     // 🔹 Método para filtrar proveedores según el tipo de búsqueda
     async filtrarProveedores() {
+      // Caso especial: busqueda por fecha
+      if (this.tipoBusqueda === 'fechaCreacion') {
+        return this.filtrarProveedoresPorFecha()
+      }
+
       const termino = this.busqueda.trim()
       if (!termino || !this.tipoBusqueda) {
         this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
@@ -308,10 +329,10 @@ export default {
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
       return this.proveedorForm.codigoSucursal ||
-             this.proveedorForm.nombre ||
-             this.proveedorForm.telefono ||
-             this.proveedorForm.direccion ||
-             this.proveedorForm.correo;
+          this.proveedorForm.nombre ||
+          this.proveedorForm.telefono ||
+          this.proveedorForm.direccion ||
+          this.proveedorForm.correo;
     },
 
     // 🔹 Método de limpiar campos del formulario
@@ -329,7 +350,44 @@ export default {
     limpiarBusqueda() {
       this.busqueda = ''
       this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
+      this.fechaRango = { fechaInicio: '', fechaFin: '' }
       this.cargarProveedores() // 🔹 Vuelve a cargar todos los proveedores
+    },
+
+    // 🔹 Callback del DateRangePicker
+    onFechaRangoAplicar(rango) {
+      this.fechaRango = rango
+      // Auto-buscar al aplicar el rango
+      this.filtrarProveedoresPorFecha()
+    },
+
+    // 🔹 Metodo para filtrar proveedores por rango de fecha de creacion
+    async filtrarProveedoresPorFecha() {
+      try {
+        const inicio = this.fechaRango.fechaInicio
+        const fin = this.fechaRango.fechaFin
+
+        if (!inicio || !fin) {
+          this.mostrarMensaje('⚠️ Seleccione un rango de fechas.', 'error')
+          return
+        }
+
+        const response = await buscarProveedorPorFechaCreacion(inicio, fin)
+
+        if (response.status === 204) {
+          this.proveedoresFiltrados = []
+          this.mostrarMensaje('❌ No se encontraron proveedores en el rango de fechas seleccionado.', 'warning')
+          return
+        }
+
+        if (response.data) {
+          this.proveedoresFiltrados = Array.isArray(response.data) ? response.data : [response.data]
+          this.mostrarMensaje('✅ ' + this.proveedoresFiltrados.length + ' proveedor(es) encontrado(s) en el rango de fechas.', 'success')
+        }
+
+      } catch (error) {
+        this.manejarErrorApiProveedores(error, 'filtrar proveedores por fecha')
+      }
     },
 
     // 🔹 Método para manejar errores de API
@@ -363,11 +421,11 @@ export default {
             this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
         }
 
-      // 🌐 Caso 2: No hay conexión o CORS bloqueado
+        // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
         this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
 
-      // ⚙️ Caso 3: Error inesperado en frontend
+        // ⚙️ Caso 3: Error inesperado en frontend
       } else {
         this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
       }
