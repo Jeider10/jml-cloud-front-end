@@ -30,27 +30,47 @@
           <div class="datos-empresa">
             <div class="dato-row">
               <label for="nit">NIT</label>
-              <input type="text" v-model="empresa.nit" :disabled="modoActualizar || !modoEdicion" />
+              <input
+                type="text"
+                v-model="empresa.nit"
+                :disabled="modoActualizar || !modoEdicion"
+              />
             </div>
 
             <div class="dato-row">
               <label for="nombre">Nombre</label>
-              <input type="text" v-model="empresa.nombreEmpresa" :disabled="!modoEdicion" />
+              <input
+                type="text"
+                v-model="empresa.nombreEmpresa"
+                :disabled="!modoEdicion"
+              />
             </div>
 
             <div class="dato-row">
               <label for="dirección">Dirección</label>
-              <input type="text" v-model="empresa.direccion" :disabled="!modoEdicion" />
+              <input
+                type="text"
+                v-model="empresa.direccion"
+                :disabled="!modoEdicion"
+              />
             </div>
 
             <div class="dato-row">
               <label for="teléfono">Teléfono</label>
-              <input type="text" v-model="empresa.telefono" :disabled="!modoEdicion" />
+              <input
+                type="text"
+                v-model="empresa.telefono"
+                :disabled="!modoEdicion"
+              />
             </div>
 
             <div class="dato-row">
               <label for="mensaje">Mensaje</label>
-              <input type="text" v-model="empresa.mensaje" :disabled="!modoEdicion" />
+              <input
+                type="text"
+                v-model="empresa.mensaje"
+                :disabled="!modoEdicion"
+              />
             </div>
 
             <div class="dato-row">
@@ -68,51 +88,55 @@
           <div class="acciones-lateral">
             <!-- Si no hay empresa, mostrar botón Registrar -->
             <!-- ✏️ Botón de Registrar -->
-            <button v-if="modoRegistrar && !modoEdicion"
-                    type="button"
-                    class="registrar-btn"
-                    @click="activarEdicion">
+            <button
+              v-if="modoRegistrar && !modoEdicion"
+              type="button"
+              class="registrar-btn"
+              @click="activarEdicion"
+            >
               🆕 Registrar
             </button>
 
             <!-- Si hay empresa, mostrar botón Actualizar -->
             <!-- ✏️ Botón de Actualizar -->
-            <button v-if="modoActualizar && !modoEdicion"
-                    type="button"
-                    class="actualizar-btn"
-                    @click="activarEdicion">
+            <button
+              v-if="modoActualizar && !modoEdicion"
+              type="button"
+              class="actualizar-btn"
+              @click="activarEdicion"
+            >
               ✏️ Actualizar
             </button>
 
             <!-- Modo edición: mostrar guardar/limpiar/volver -->
             <!-- 💾 Botón de Guardar -->
             <div v-if="modoEdicion" class="btn-group">
-              <button type="button"
-                      class="guardar-btn"
-                      :disabled="!tieneTexto"
-                      @click="mostrarConfirmacionGuardar = true">
+              <button
+                type="button"
+                class="guardar-btn"
+                :disabled="!tieneTexto"
+                @click="mostrarConfirmacionGuardar = true"
+              >
                 💾 Guardar
               </button>
 
               <!-- 🧹 Botón de Limpiar -->
-              <button type="button"
-                      class="limpiar-btn"
-                      @click="limpiar">
+              <button type="button" class="limpiar-btn" @click="limpiar">
                 🧹 Limpiar
               </button>
 
               <!-- 🔙 Botón de Volver -->
-              <button type="button"
-                      class="volver-btn"
-                      @click="cancelarEdicion">
+              <button type="button" class="volver-btn" @click="cancelarEdicion">
                 🔙 Volver
               </button>
 
               <!-- 🗑️ Botón de Eliminar -->
-              <button type="button"
-                      v-if="modoActualizar"
-                      class="eliminar-btn"
-                      @click="mostrarConfirmacionEliminar = true">
+              <button
+                type="button"
+                v-if="modoActualizar"
+                class="eliminar-btn"
+                @click="mostrarConfirmacionEliminar = true"
+              >
                 🗑️ Eliminar
               </button>
             </div>
@@ -122,10 +146,10 @@
         <!-- Logo grande -->
         <div class="logo-container">
           <img
-              :src="getLogoUrl(empresa.logo)"
-              alt="Logo Empresa"
-              class="logo-empresa"
-              @error="onLogoError"
+            :src="getLogoUrl(empresa.logo)"
+            alt="Logo Empresa"
+            class="logo-empresa"
+            @error="onLogoError"
           />
         </div>
 
@@ -136,7 +160,12 @@
             <p>¿Deseas guardar los datos de la empresa?</p>
             <div class="modal-buttons">
               <button class="si-btn" @click="confirmarGuardar">Sí</button>
-              <button class="no-btn" @click="mostrarConfirmacionGuardar = false">No</button>
+              <button
+                class="no-btn"
+                @click="mostrarConfirmacionGuardar = false"
+              >
+                No
+              </button>
             </div>
           </div>
         </div>
@@ -148,7 +177,12 @@
             <p>¿Seguro que deseas eliminar esta empresa?</p>
             <div class="modal-buttons">
               <button class="si-btn" @click="confirmarEliminar">Sí</button>
-              <button class="no-btn" @click="mostrarConfirmacionEliminar = false">No</button>
+              <button
+                class="no-btn"
+                @click="mostrarConfirmacionEliminar = false"
+              >
+                No
+              </button>
             </div>
           </div>
         </div>
@@ -160,211 +194,233 @@
   </div>
 </template>
 
-
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import FooterCredits from '@/components/common/FooterCredits.vue'
-import { obtenerPrimeraEmpresa, registrarEmpresa, actualizarEmpresa, eliminarEmpresa } from '@/services/apiConfigEmpresaService'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import FooterCredits from "@/components/common/FooterCredits.vue";
+import {
+  obtenerPrimeraEmpresa,
+  registrarEmpresa,
+  actualizarEmpresa,
+  eliminarEmpresa,
+} from "@/services/apiConfigEmpresaService";
 
 export default {
-  name: 'ConfiguracionEmpresaView',
+  name: "ConfiguracionEmpresaView",
   components: { DashboardSideMenu, FooterCredits },
 
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       modoRegistrar: false,
       modoActualizar: false,
       modoEdicion: false,
       mostrarConfirmacionGuardar: false,
       mostrarConfirmacionEliminar: false,
       empresa: {
-        nit: '',
-        nombreEmpresa: '',
-        direccion: '',
-        telefono: '',
-        mensaje: '',
-        logo: ''
+        nit: "",
+        nombreEmpresa: "",
+        direccion: "",
+        telefono: "",
+        mensaje: "",
+        logo: "",
       },
       archivoLogo: null,
-      mensaje: '',
-      mensajeTipo: '',
-      loading: true
-    }
+      mensaje: "",
+      mensajeTipo: "",
+      loading: true,
+    };
   },
 
   computed: {
     tieneTexto() {
-      return Object.values(this.empresa).some(v => v && v.toString().trim() !== '')
-    }
+      return Object.values(this.empresa).some(
+        (v) => v && v.toString().trim() !== "",
+      );
+    },
   },
 
   async mounted() {
-    this.loading = true
-    await this.cargarEmpresa()
-    this.loading = false
+    this.loading = true;
+    await this.cargarEmpresa();
+    this.loading = false;
   },
 
   methods: {
     // 🔹 Método de mostrar mensaje
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-      }, 3000)
+        this.mensaje = "";
+      }, 3000);
     },
 
     // 🔹 Método para cargar la empresa registrada.
     async cargarEmpresa() {
       try {
-        console.log('🔍 Solicitando empresa registrada (desde la base de datos)...')
-        const response = await obtenerPrimeraEmpresa()
-        console.log('🔍 Respuesta de la base de datos:', response)
+        console.log(
+          "🔍 Solicitando empresa registrada (desde la base de datos)...",
+        );
+        const response = await obtenerPrimeraEmpresa();
+        console.log("🔍 Respuesta de la base de datos:", response);
 
         // Validar si la respuesta viene vacía o no contiene elementos
         if (!response || !response.data || response.data.length === 0) {
-          console.warn('⚠️ No hay empresa registrada.')
+          console.warn("⚠️ No hay empresa registrada.");
 
-          this.modoRegistrar = true
-          this.modoActualizar = false
+          this.modoRegistrar = true;
+          this.modoActualizar = false;
           this.empresa = {
-            nit: '',
-            nombreEmpresa: '',
-            direccion: '',
-            telefono: '',
-            mensaje: '',
-            logo: ''
-          }
-          return
+            nit: "",
+            nombreEmpresa: "",
+            direccion: "",
+            telefono: "",
+            mensaje: "",
+            logo: "",
+          };
+          return;
         }
 
         // ✅ Tomar la empresa y asignarla al modelo
-        const empresaData = response.data[0]
+        const empresaData = response.data[0];
 
         // Asignar datos al modelo de Vue
         this.empresa = {
-          nit: empresaData.nit ?? '',
-          nombreEmpresa: empresaData.nombreEmpresa ?? '',
-          direccion: empresaData.direccion ?? '',
-          telefono: empresaData.telefono ?? '',
-          mensaje: empresaData.mensaje ?? '',
-          logo: empresaData.logo ?? ''
-        }
+          nit: empresaData.nit ?? "",
+          nombreEmpresa: empresaData.nombreEmpresa ?? "",
+          direccion: empresaData.direccion ?? "",
+          telefono: empresaData.telefono ?? "",
+          mensaje: empresaData.mensaje ?? "",
+          logo: empresaData.logo ?? "",
+        };
 
-        console.log('✅ Empresa cargada correctamente desde base:', empresaData)
+        console.log(
+          "✅ Empresa cargada correctamente desde base:",
+          empresaData,
+        );
 
         // Ajustar modos
-        this.modoRegistrar = false
-        this.modoActualizar = true
-
+        this.modoRegistrar = false;
+        this.modoActualizar = true;
       } catch (error) {
-        this.manejarErrorConfigEmpresa(error, `Cargar empresa`)
-        this.modoRegistrar = true
-        this.modoActualizar = false
+        this.manejarErrorConfigEmpresa(error, `Cargar empresa`);
+        this.modoRegistrar = true;
+        this.modoActualizar = false;
       }
     },
 
     async confirmarGuardar() {
       try {
         if (this.modoRegistrar) {
-          console.log('🆕 Registrando empresa:', this.empresa)
-          await registrarEmpresa(this.empresa, this.archivoLogo)
+          console.log("🆕 Registrando empresa:", this.empresa);
+          await registrarEmpresa(this.empresa, this.archivoLogo);
           // alert('✅ Empresa registrada correctamente.')
-          this.mostrarMensaje(`✅ Empresa registrada correctamente.`, 'success')
+          this.mostrarMensaje(
+            `✅ Empresa registrada correctamente.`,
+            "success",
+          );
         } else {
-          console.log('✏️ Actualizando empresa:', this.empresa)
-          await actualizarEmpresa(this.empresa, this.archivoLogo)
+          console.log("✏️ Actualizando empresa:", this.empresa);
+          await actualizarEmpresa(this.empresa, this.archivoLogo);
           // alert('✅ Empresa actualizada correctamente.')
-          this.mostrarMensaje(`✅ Empresa actualizada correctamente.`, 'success')
+          this.mostrarMensaje(
+            `✅ Empresa actualizada correctamente.`,
+            "success",
+          );
         }
 
-        this.mostrarConfirmacionGuardar = false
-        this.modoEdicion = false
-        this.archivoLogo = null
+        this.mostrarConfirmacionGuardar = false;
+        this.modoEdicion = false;
+        this.archivoLogo = null;
 
         // 🔄 Recargar datos actualizados desde backend
-        await this.cargarEmpresa()
+        await this.cargarEmpresa();
 
         // 📢 Nuevo: emitir evento global con la empresa actualizada
-        globalThis.dispatchEvent(new CustomEvent('empresaUpdated', { detail: this.empresa }))
+        globalThis.dispatchEvent(
+          new CustomEvent("empresaUpdated", { detail: this.empresa }),
+        );
 
-        this.modoRegistrar = false
-        this.modoActualizar = true
-
+        this.modoRegistrar = false;
+        this.modoActualizar = true;
       } catch (error) {
-        this.manejarErrorConfigEmpresa(error, `Guardar empresa`)
-        this.mostrarConfirmacionGuardar = false
+        this.manejarErrorConfigEmpresa(error, `Guardar empresa`);
+        this.mostrarConfirmacionGuardar = false;
       }
     },
 
     async confirmarEliminar() {
       try {
-        console.log('🗑️ Eliminando empresa con NIT:', this.empresa.nit)
-        await eliminarEmpresa(this.empresa.nit)
-        this.mostrarMensaje('✅ Empresa eliminada correctamente.', 'success')
+        console.log("🗑️ Eliminando empresa con NIT:", this.empresa.nit);
+        await eliminarEmpresa(this.empresa.nit);
+        this.mostrarMensaje("✅ Empresa eliminada correctamente.", "success");
 
         // Reset de datos y estados
-        this.mostrarConfirmacionEliminar = false
-        this.modoActualizar = false
-        this.modoRegistrar = true
-        this.modoEdicion = false
-        this.limpiar()
+        this.mostrarConfirmacionEliminar = false;
+        this.modoActualizar = false;
+        this.modoRegistrar = true;
+        this.modoEdicion = false;
+        this.limpiar();
 
         // Actualizar vista y emitir evento global
-        globalThis.dispatchEvent(new CustomEvent('empresaUpdated', { detail: null }))
+        globalThis.dispatchEvent(
+          new CustomEvent("empresaUpdated", { detail: null }),
+        );
       } catch (error) {
-        this.manejarErrorConfigEmpresa(error, `Eliminar empresa`)
-        this.mostrarConfirmacionEliminar = false
+        this.manejarErrorConfigEmpresa(error, `Eliminar empresa`);
+        this.mostrarConfirmacionEliminar = false;
       }
     },
 
     activarEdicion() {
-      this.modoEdicion = true
+      this.modoEdicion = true;
     },
 
     limpiar() {
       this.empresa = {
-        nit: '',
-        nombreEmpresa: '',
-        direccion: '',
-        telefono: '',
-        mensaje: '',
-        logo: ''
-      }
-      this.archivoLogo = null
+        nit: "",
+        nombreEmpresa: "",
+        direccion: "",
+        telefono: "",
+        mensaje: "",
+        logo: "",
+      };
+      this.archivoLogo = null;
     },
 
     cancelarEdicion() {
-      this.modoEdicion = false
-      this.cargarEmpresa()
+      this.modoEdicion = false;
+      this.cargarEmpresa();
     },
 
     onImageChange(event) {
-      const file = event.target.files[0]
+      const file = event.target.files[0];
       if (file) {
         // 🔹 Tamaño máximo permitido (10 MB, igual que en backend)
-        const MAX_SIZE_BYTES = 10 * 1024 * 1024
+        const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
         if (file.size > MAX_SIZE_BYTES) {
-          const sizeMB = (file.size / (1024 * 1024)).toFixed(2)
-          const maxMB = (MAX_SIZE_BYTES / (1024 * 1024)).toFixed(2)
-          this.mostrarMensaje(`❌ La imagen supera el tamaño permitido (${sizeMB} MB > ${maxMB} MB)`, 'error')
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          const maxMB = (MAX_SIZE_BYTES / (1024 * 1024)).toFixed(2);
+          this.mostrarMensaje(
+            `❌ La imagen supera el tamaño permitido (${sizeMB} MB > ${maxMB} MB)`,
+            "error",
+          );
 
           // Limpiar archivo seleccionado para evitar envío
-          this.archivoLogo = null
-          this.empresa.logo = ''
+          this.archivoLogo = null;
+          this.empresa.logo = "";
 
-          return
+          return;
         }
 
-        this.archivoLogo = file
-        const reader = new FileReader()
-        reader.onload = e => {
+        this.archivoLogo = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
           // Mostrar vista previa del logo nuevo (base64)
-          this.empresa.logo = e.target.result
-        }
-        reader.readAsDataURL(file)
+          this.empresa.logo = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
     },
 
@@ -372,80 +428,106 @@ export default {
     getLogoUrl(path) {
       if (!path) {
         // Si no hay logo, muestra imagen por defecto
-        return require('@/assets/img/Empresa.png')
+        return require("@/assets/img/Empresa.png");
       }
 
       // 🔹 Limpiar comillas o espacios
-      const cleanPath = path.toString().trim().replaceAll(/(^"|"$)/g, '')
+      const cleanPath = path
+        .toString()
+        .trim()
+        .replaceAll(/(^"|"$)/g, "");
 
       // 🔹 Si es una URL completa (S3 u otra), úsala directamente
-      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
-        return cleanPath
+      if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+        return cleanPath;
       }
 
       // 🔹 Si ya viene con formato data:image/... (Base64 con prefijo)
-      if (cleanPath.startsWith('data:image')) {
-        return cleanPath
+      if (cleanPath.startsWith("data:image")) {
+        return cleanPath;
       }
 
       // 🔹 Si es Base64 puro (sin prefijo), agregamos el tipo MIME más común (png)
       if (/^[A-Za-z0-9+/=]+$/.test(cleanPath)) {
-        return `data:image/png;base64,${cleanPath}`
+        return `data:image/png;base64,${cleanPath}`;
       }
 
       // 🔹 Si es una ruta relativa (casos antiguos o locales)
-      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`;
     },
 
     onLogoError(event) {
       // Si falla la carga, mostrar imagen por defecto
-      event.target.src = require('@/assets/img/Empresa.png')
+      event.target.src = require("@/assets/img/Empresa.png");
     },
 
     // 🔹 Método para manejar errores de API
-    manejarErrorConfigEmpresa(error, contexto = '') {
-      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+    manejarErrorConfigEmpresa(error, contexto = "") {
+      console.error(`❌ Error en ${contexto || "operación"}:`, error);
 
       // 🔴 Caso 1: Error con respuesta del servidor
       if (error.response) {
-        const status = error.response.status
+        const status = error.response.status;
 
         switch (status) {
           case 400:
-            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Solicitud incorrecta. Revisa los parámetros enviados.",
+              "warning",
+            );
+            break;
           case 401:
-            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
-            break
+            this.mostrarMensaje(
+              "🚫 No autorizado. Inicia sesión nuevamente.",
+              "error",
+            );
+            break;
           case 403:
-            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
-            break
+            this.mostrarMensaje(
+              "🔒 Acceso denegado. No tienes permisos para esta acción.",
+              "error",
+            );
+            break;
           case 404:
-            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Recurso no encontrado en el servidor.",
+              "warning",
+            );
+            break;
           case 409:
-            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Conflicto con el recurso. Puede estar siendo utilizado.",
+              "warning",
+            );
+            break;
           case 500:
-            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
-            break
+            this.mostrarMensaje(
+              "💥 Error interno en el servidor. Inténtalo más tarde.",
+              "error",
+            );
+            break;
           default:
-            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+            this.mostrarMensaje(
+              `⚠️ ${error.response?.data?.message || "Error desconocido en el servidor."}`,
+              "error",
+            );
         }
 
         // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
-        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+        this.mostrarMensaje(
+          "🌐 No se pudo conectar con el servidor. Verifica tu conexión.",
+          "error",
+        );
 
         // ⚙️ Caso 3: Error inesperado en frontend
       } else {
-        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, "error");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .configuracion-empresa-wrapper {
@@ -460,11 +542,11 @@ export default {
   bottom: 0;
   padding: 20px 20px 0 20px; /* sin padding abajo para que el footer quede pegado al borde */
   background-color: #6fffd4;
-  overflow-y: auto;       /* scroll solo si el contenido lo necesita */
+  overflow-y: auto; /* scroll solo si el contenido lo necesita */
   transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
-  align-items: center;  /* centra horizontalmente los hijos */
+  align-items: center; /* centra horizontalmente los hijos */
   box-sizing: border-box; /* ✅ asegura que el padding no rompa el ancho */
 }
 
@@ -477,7 +559,7 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: -10px;    /* espacio desde arriba */
+  margin-top: -10px; /* espacio desde arriba */
 }
 
 .mensaje {
@@ -486,7 +568,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
   position: sticky;
   top: 10px;
   z-index: 1000;
@@ -701,7 +783,7 @@ export default {
   background: #fff;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -754,7 +836,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -765,7 +847,7 @@ export default {
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.25);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
   width: 400px;
   text-align: center;
 }

@@ -12,23 +12,28 @@
 
 <script>
 export default {
-  name: 'FooterCredits',
+  name: "FooterCredits",
   data() {
     return {
       anioActual: new Date().getFullYear(),
       // Cambia estos valores por tus datos reales
-      telefono: '573212365871',
-      mensajeWhatsapp: 'Hola, me interesa obtener mas informacion.',
-      facebookLink: 'https://www.facebook.com/jeider.montiel',
-      tiktokLink: 'https://www.tiktok.com/@jeider.montiel'
-    }
+      telefono: "573212365871",
+      mensajeWhatsapp: "Hola, me interesa obtener mas informacion.",
+      facebookLink: "https://www.facebook.com/jeider.montiel",
+      tiktokLink: "https://www.tiktok.com/@jeider.montiel",
+    };
   },
   computed: {
     whatsappLink() {
-      return 'https://wa.me/' + this.telefono + '?text=' + encodeURIComponent(this.mensajeWhatsapp)
-    }
-  }
-}
+      return (
+        "https://wa.me/" +
+        this.telefono +
+        "?text=" +
+        encodeURIComponent(this.mensajeWhatsapp)
+      );
+    },
+  },
+};
 </script>
 
 <style scoped>

@@ -7,9 +7,9 @@
 
     <!-- Panel lateral fijo (colapsable/expandible) -->
     <div
-        :class="['side-panel', { expanded: menuOpen }]"
-        @mouseenter="onMouseEnter"
-        @mouseleave="onMouseLeave"
+      :class="['side-panel', { expanded: menuOpen }]"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
     >
       <!-- Sección superior (logo + botón menú + nueva venta + clientes + proveedores + productos + ventas + configuracion + usuario + botón salir) -->
       <div class="top-section">
@@ -39,13 +39,21 @@
         </div>
 
         <!-- Botón de proveedores (solo ADMIN) -->
-        <div v-if="isAdmin" class="proveedores-icon nav-row" @click="onProveedoresClick">
+        <div
+          v-if="isAdmin"
+          class="proveedores-icon nav-row"
+          @click="onProveedoresClick"
+        >
           <img src="@/assets/img/Proveedores.png" alt="Proveedores" />
           <span class="label">Proveedores</span>
         </div>
 
         <!-- Botón de productos (solo ADMIN) -->
-        <div v-if="isAdmin" class="productos-icon nav-row" @click="onProductosClick">
+        <div
+          v-if="isAdmin"
+          class="productos-icon nav-row"
+          @click="onProductosClick"
+        >
           <img src="@/assets/img/Productos.png" alt="Productos" />
           <span class="label">Productos</span>
         </div>
@@ -57,20 +65,35 @@
         </div>
 
         <!-- 🔹 Solo visible para ADMIN -->
-        <div v-if="isAdmin" class="usuario-icon nav-row" @click="onUsuarioClick">
+        <div
+          v-if="isAdmin"
+          class="usuario-icon nav-row"
+          @click="onUsuarioClick"
+        >
           <img src="@/assets/img/Usuario.png" alt="Usuario" />
           <span class="label">Usuarios Empresa</span>
         </div>
 
         <!-- 🔹 Solo visible para ADMIN -->
-        <div v-if="isAdmin" class="configuracion-icon nav-row" @click="onConfiguracionClick">
+        <div
+          v-if="isAdmin"
+          class="configuracion-icon nav-row"
+          @click="onConfiguracionClick"
+        >
           <img src="@/assets/img/Configuracion.png" alt="Configuracion" />
           <span class="label">Configuración Empresa</span>
         </div>
 
         <!-- 🔹 Solo visible para USER -->
-        <div v-if="isUser" class="configuracion-usuario-icon nav-row" @click="onConfiguracionUsuarioClick">
-          <img src="@/assets/img/Configuracion.png" alt="ConfiguracionUsuario" />
+        <div
+          v-if="isUser"
+          class="configuracion-usuario-icon nav-row"
+          @click="onConfiguracionUsuarioClick"
+        >
+          <img
+            src="@/assets/img/Configuracion.png"
+            alt="ConfiguracionUsuario"
+          />
           <span class="label">Configuración Usuario</span>
         </div>
       </div>
@@ -85,7 +108,10 @@
     </div>
 
     <!-- Menú desplegable original (lo dejamos, oculto para no romper nada) -->
-    <div :class="['side-menu', { 'menu-open': menuOpen }]" style="display: none;">
+    <div
+      :class="['side-menu', { 'menu-open': menuOpen }]"
+      style="display: none"
+    >
       <div class="menu-items">
         <div v-for="(item, index) in menuItems" :key="index" class="menu-item">
           {{ item }}
@@ -96,52 +122,52 @@
 </template>
 
 <script>
-import { getSession, logoutBackend } from '@/services/apiAuthService'
+import { getSession, logoutBackend } from "@/services/apiAuthService";
 
 export default {
-  name: 'DashboardSideMenu',
+  name: "DashboardSideMenu",
   data() {
     // Recuperar estado del menú desde localStorage
-    const savedPinned = localStorage.getItem('menuPinned') === 'true'
+    const savedPinned = localStorage.getItem("menuPinned") === "true";
     return {
-      menuOpen: savedPinned,   // Si estaba pinned, arranca expandido
-      pinned: savedPinned,     // Si está "pinned" se queda fijo expandido
-      hoverOpen: false,        // Si se abrió por hover
-      roleName: ''
-    }
+      menuOpen: savedPinned, // Si estaba pinned, arranca expandido
+      pinned: savedPinned, // Si está "pinned" se queda fijo expandido
+      hoverOpen: false, // Si se abrió por hover
+      roleName: "",
+    };
   },
   async created() {
     // ✅ Cargamos el roleName desde la sesión activa
     try {
-      const session = getSession()
-      this.roleName = session?.user?.roleName || ''
-      console.log('🎭 Rol detectado en sesión:', this.roleName)
+      const session = getSession();
+      this.roleName = session?.user?.roleName || "";
+      console.log("🎭 Rol detectado en sesión:", this.roleName);
     } catch (error) {
-      console.error('⚠️ Error al obtener el rol desde sesión:', error)
-      this.roleName = ''
+      console.error("⚠️ Error al obtener el rol desde sesión:", error);
+      this.roleName = "";
     }
     // Emitir estado inicial para que el contenido se posicione correctamente
-    this.$emit('menu-toggle', this.menuOpen)
+    this.$emit("menu-toggle", this.menuOpen);
   },
   computed: {
     isAdmin() {
       // 👑 Control centralizado: ADMIN, ADMINISTRADOR o SUPERADMIN
-      const role = (this.roleName || '').toUpperCase().trim()
-      return ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN'].includes(role)
+      const role = (this.roleName || "").toUpperCase().trim();
+      return ["ADMIN", "ADMINISTRADOR", "SUPERADMIN"].includes(role);
     },
 
     isUser() {
       // 👑 Control centralizado: USER, USUARIO o CAJERO
-      const role = (this.roleName || '').toUpperCase().trim()
-      return ['USER', 'USUARIO', 'CAJERO'].includes(role)
-    }
+      const role = (this.roleName || "").toUpperCase().trim();
+      return ["USER", "USUARIO", "CAJERO"].includes(role);
+    },
   },
   methods: {
     // 🔹 Hover: expande temporalmente si no está pinned
     onMouseEnter() {
       if (!this.pinned && !this.menuOpen) {
-        this.menuOpen = true
-        this.hoverOpen = true
+        this.menuOpen = true;
+        this.hoverOpen = true;
         // NO emitimos menu-toggle para hover temporal (el contenido no se mueve)
       }
     },
@@ -149,90 +175,89 @@ export default {
     // 🔹 Mouse sale: colapsa si solo fue hover (no pinned)
     onMouseLeave() {
       if (!this.pinned && this.hoverOpen) {
-        this.menuOpen = false
-        this.hoverOpen = false
+        this.menuOpen = false;
+        this.hoverOpen = false;
         // NO emitimos menu-toggle (el contenido no se movió)
       }
     },
 
     // 🔹 Colapsar menú — SOLO se llama desde el logo
     collapseMenu() {
-      this.menuOpen = false
-      this.pinned = false
-      this.hoverOpen = false
-      localStorage.setItem('menuPinned', 'false')
-      this.$emit('menu-toggle', false)
+      this.menuOpen = false;
+      this.pinned = false;
+      this.hoverOpen = false;
+      localStorage.setItem("menuPinned", "false");
+      this.$emit("menu-toggle", false);
     },
 
     // 🔹 Pin: fijar el menú expandido
     pinMenu() {
-      this.menuOpen = true
-      this.pinned = true
-      this.hoverOpen = false
-      localStorage.setItem('menuPinned', 'true')
-      this.$emit('menu-toggle', true)
+      this.menuOpen = true;
+      this.pinned = true;
+      this.hoverOpen = false;
+      localStorage.setItem("menuPinned", "true");
+      this.$emit("menu-toggle", true);
     },
 
     // 🔹 Logo (Inicio) — navega al dashboard y fija el menú expandido
     onLogoClick() {
-      this.pinMenu()
-      this.$router.push('/dashboard')
+      this.pinMenu();
+      this.$router.push("/dashboard");
     },
 
     // 🔹 Menú — ÚNICA forma de colapsar/expandir el menú
     onMenuClick() {
       if (this.pinned) {
-        this.collapseMenu()
+        this.collapseMenu();
       } else {
-        this.pinMenu()
+        this.pinMenu();
       }
     },
 
     // 🔹 Opciones de navegación — fijan el menú y navegan
     onNuevaVentaClick() {
-      this.pinMenu()
-      this.$router.push('/nueva-venta')
+      this.pinMenu();
+      this.$router.push("/nueva-venta");
     },
     onClientesClick() {
-      this.pinMenu()
-      this.$router.push('/clientes')
+      this.pinMenu();
+      this.$router.push("/clientes");
     },
     onProveedoresClick() {
-      this.pinMenu()
-      this.$router.push('/proveedores')
+      this.pinMenu();
+      this.$router.push("/proveedores");
     },
     onProductosClick() {
-      this.pinMenu()
-      this.$router.push('/productos')
+      this.pinMenu();
+      this.$router.push("/productos");
     },
     onVentasClick() {
-      this.pinMenu()
-      this.$router.push('/historial-ventas')
+      this.pinMenu();
+      this.$router.push("/historial-ventas");
     },
     onConfiguracionClick() {
-      this.pinMenu()
-      this.$router.push('/configuracion-empresa')
+      this.pinMenu();
+      this.$router.push("/configuracion-empresa");
     },
     onUsuarioClick() {
-      this.pinMenu()
-      this.$router.push('/configuracion-empresa-usuario')
+      this.pinMenu();
+      this.$router.push("/configuracion-empresa-usuario");
     },
     // 🔹 Nueva ruta para configuración personal del usuario
     onConfiguracionUsuarioClick() {
-      this.pinMenu()
-      this.$router.push('/configuracion-usuario')
+      this.pinMenu();
+      this.$router.push("/configuracion-usuario");
     },
     async logout() {
       // Limpieza completa de sesion con llamada al backend
-      await logoutBackend()
-      localStorage.removeItem('menuPinned')
-      console.log('Sesion cerrada correctamente.')
-      this.$router.push('/login')
-    }
-  }
-}
+      await logoutBackend();
+      localStorage.removeItem("menuPinned");
+      console.log("Sesion cerrada correctamente.");
+      this.$router.push("/login");
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .side-menu-wrapper {
@@ -265,7 +290,9 @@ export default {
   align-items: center; /* iconos centrados cuando colapsado */
   z-index: 20;
   padding: 8px 6px;
-  transition: width 0.22s ease, padding 0.22s ease;
+  transition:
+    width 0.22s ease,
+    padding 0.22s ease;
   overflow: hidden;
 }
 

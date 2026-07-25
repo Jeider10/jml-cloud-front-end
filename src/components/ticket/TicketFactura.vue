@@ -4,7 +4,7 @@
   <div class="ticket">
     <!-- Encabezado empresa -->
     <div class="center">
-      <h2>{{ empresa.nombre || 'MI NEGOCIO' }}</h2>
+      <h2>{{ empresa.nombre || "MI NEGOCIO" }}</h2>
       <p v-if="empresa.nit">NIT: {{ empresa.nit }}</p>
       <p>{{ empresaInfo }}</p>
     </div>
@@ -63,7 +63,7 @@
       <!-- Filas -->
       <div class="table-row" v-for="(p, i) in factura.productos" :key="i">
         <span class="col-nombre">{{ p.nombre }}</span>
-        <span class="col-desc">{{ p.descripcion || '-' }}</span>
+        <span class="col-desc">{{ p.descripcion || "-" }}</span>
         <span class="col-cant">x{{ p.cantidad }}</span>
         <span class="col-precio">{{ precio(p.cantidad * p.precio) }}</span>
       </div>
@@ -120,11 +120,7 @@
 
       <!-- QR -->
       <div class="qr-container">
-        <qrcode-vue
-            :value="qrData"
-            :size="90"
-            level="M"
-        />
+        <qrcode-vue :value="qrData" :size="90" level="M" />
       </div>
 
       <!-- Texto DIAN -->
@@ -142,114 +138,115 @@
   </div>
 </template>
 
-
 <script>
-import QrcodeVue from 'qrcode.vue'
+import QrcodeVue from "qrcode.vue";
 
 export default {
-  name: 'TicketFactura',
+  name: "TicketFactura",
 
   components: {
-    QrcodeVue
+    QrcodeVue,
   },
 
   props: {
     empresa: {
       type: Object,
-      required: true
+      required: true,
     },
 
     factura: {
       type: Object,
-      required: true
+      required: true,
     },
 
     recibido: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     descuento: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     descuentoInfo: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
 
   data() {
-    return {}
+    return {};
   },
 
   computed: {
     empresaInfo() {
-      const parts = []
-      if (this.empresa.direccion) parts.push(`Dir: ${this.empresa.direccion}`)
-      if (this.empresa.telefono) parts.push(`Tel: ${this.empresa.telefono}`)
-      return parts.join(' | ') || ''
+      const parts = [];
+      if (this.empresa.direccion) parts.push(`Dir: ${this.empresa.direccion}`);
+      if (this.empresa.telefono) parts.push(`Tel: ${this.empresa.telefono}`);
+      return parts.join(" | ") || "";
     },
 
     subtotal() {
-      return this.factura.total || 0
+      return this.factura.total || 0;
     },
 
     iva() {
       // IVA extraido del precio (ya incluido): IVA = total - (total / 1.19)
-      return Math.round(this.subtotal - (this.subtotal / 1.19))
+      return Math.round(this.subtotal - this.subtotal / 1.19);
     },
 
     totalFinal() {
       // Si la factura ya trae totalFinal calculado, usarlo directamente
-      if (this.factura.totalFinal !== undefined && this.factura.totalFinal !== null) {
-        return this.factura.totalFinal
+      if (
+        this.factura.totalFinal !== undefined &&
+        this.factura.totalFinal !== null
+      ) {
+        return this.factura.totalFinal;
       }
       // Fallback: el total a pagar es el subtotal menos el descuento
-      return Math.max(this.subtotal - this.descuento, 0)
+      return Math.max(this.subtotal - this.descuento, 0);
     },
 
     cambio() {
-      return Math.max(this.recibido - this.totalFinal, 0)
+      return Math.max(this.recibido - this.totalFinal, 0);
     },
 
     cufe() {
       try {
         return btoa(
-            `${this.empresa.nit || ''}|${this.factura.numero || ''}|${this.totalFinal}|${this.factura.fecha || ''}`
-        )
+          `${this.empresa.nit || ""}|${this.factura.numero || ""}|${this.totalFinal}|${this.factura.fecha || ""}`,
+        );
       } catch {
-        return 'N/A'
+        return "N/A";
       }
     },
 
     qrData() {
       return [
-        `NIT:${this.empresa.nit || ''}`,
-        `FACTURA:${this.factura.numero || ''}`,
-        `FECHA:${this.factura.fecha || ''}`,
+        `NIT:${this.empresa.nit || ""}`,
+        `FACTURA:${this.factura.numero || ""}`,
+        `FECHA:${this.factura.fecha || ""}`,
         `TOTAL:${this.totalFinal}`,
-        `CLIENTE:${this.factura.clienteNombre || 'CONSUMIDOR FINAL'}`,
-        `VENDEDOR:${this.factura.vendedorNombre || 'CAJERO'}`,
-        `CUFE:${this.cufe}`
-      ].join('\n')
-    }
+        `CLIENTE:${this.factura.clienteNombre || "CONSUMIDOR FINAL"}`,
+        `VENDEDOR:${this.factura.vendedorNombre || "CAJERO"}`,
+        `CUFE:${this.cufe}`,
+      ].join("\n");
+    },
   },
 
   methods: {
     precio(valor) {
-      if (valor === null || valor === undefined || isNaN(valor)) return '$0'
-      return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0
-      }).format(valor)
-    }
-  }
-}
+      if (valor === null || valor === undefined || isNaN(valor)) return "$0";
+      return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 0,
+      }).format(valor);
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 /* ============================== */
@@ -258,7 +255,7 @@ export default {
 
 .ticket {
   width: 58mm;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 9px;
   color: #000;
   line-height: 1.4;
@@ -428,7 +425,8 @@ export default {
     margin: 0;
   }
 
-  html, body {
+  html,
+  body {
     margin: 0 !important;
     padding: 0 !important;
   }

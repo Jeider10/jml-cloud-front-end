@@ -25,9 +25,12 @@
           <div class="campo">
             <label for="nombreDeUsuario">Nombre de Usuario</label>
             <input
-                type="text"
-                :value="`${usuario.nombres} ${usuario.apellidos}`.trim() || usuario.userName"
-                readonly
+              type="text"
+              :value="
+                `${usuario.nombres} ${usuario.apellidos}`.trim() ||
+                usuario.userName
+              "
+              readonly
             />
           </div>
 
@@ -62,7 +65,10 @@
           <button class="btn-actualizar" @click="abrirConfirmacionActualizar">
             ✏️ Actualizar
           </button>
-          <button class="btn-cambiar-password" @click="mostrarModalPassword = true">
+          <button
+            class="btn-cambiar-password"
+            @click="mostrarModalPassword = true"
+          >
             🔑 Cambiar Contraseña
           </button>
         </div>
@@ -84,18 +90,24 @@
       <div v-if="mostrarModalPassword" class="modal-overlay">
         <div class="modal">
           <h3>🔑 Cambiar Contraseña</h3>
-          <p style="font-size: 12px; color: #666;">Ingrese su nueva contraseña:</p>
+          <p style="font-size: 12px; color: #666">
+            Ingrese su nueva contraseña:
+          </p>
 
           <div class="modal-campo">
             <label>Nueva Contraseña</label>
             <div class="password-field">
               <input
-                  :type="mostrarPassword ? 'text' : 'password'"
-                  v-model="nuevaPassword"
-                  placeholder="Ingrese nueva contraseña"
+                :type="mostrarPassword ? 'text' : 'password'"
+                v-model="nuevaPassword"
+                placeholder="Ingrese nueva contraseña"
               />
-              <button type="button" class="eye-btn" @click="mostrarPassword = !mostrarPassword">
-                {{ mostrarPassword ? '🙈' : '👁️' }}
+              <button
+                type="button"
+                class="eye-btn"
+                @click="mostrarPassword = !mostrarPassword"
+              >
+                {{ mostrarPassword ? "🙈" : "👁️" }}
               </button>
             </div>
           </div>
@@ -104,26 +116,48 @@
             <label>Confirmar Contraseña</label>
             <div class="password-field">
               <input
-                  :type="mostrarConfirmPassword ? 'text' : 'password'"
-                  v-model="confirmarPassword"
-                  placeholder="Confirme nueva contraseña"
+                :type="mostrarConfirmPassword ? 'text' : 'password'"
+                v-model="confirmarPassword"
+                placeholder="Confirme nueva contraseña"
               />
-              <button type="button" class="eye-btn" @click="mostrarConfirmPassword = !mostrarConfirmPassword">
-                {{ mostrarConfirmPassword ? '🙈' : '👁️' }}
+              <button
+                type="button"
+                class="eye-btn"
+                @click="mostrarConfirmPassword = !mostrarConfirmPassword"
+              >
+                {{ mostrarConfirmPassword ? "🙈" : "👁️" }}
               </button>
             </div>
           </div>
 
-          <p v-if="nuevaPassword && confirmarPassword && nuevaPassword !== confirmarPassword" style="color: #e74c3c; font-size: 11px; margin-top: 5px;">
+          <p
+            v-if="
+              nuevaPassword &&
+              confirmarPassword &&
+              nuevaPassword !== confirmarPassword
+            "
+            style="color: #e74c3c; font-size: 11px; margin-top: 5px"
+          >
             Las contraseñas no coinciden
           </p>
-          <p v-else-if="nuevaPassword && nuevaPassword.length < 3" style="color: #e74c3c; font-size: 11px; margin-top: 5px;">
+          <p
+            v-else-if="nuevaPassword && nuevaPassword.length < 3"
+            style="color: #e74c3c; font-size: 11px; margin-top: 5px"
+          >
             La contraseña no cumple con lo requerido (minimo 3 caracteres)
           </p>
 
           <div class="modal-buttons">
-            <button class="si-btn" @click="cambiarPassword" :disabled="!puedeGuardarPassword">Confirmar</button>
-            <button class="no-btn" @click="cerrarModalPassword">Cancelar</button>
+            <button
+              class="si-btn"
+              @click="cambiarPassword"
+              :disabled="!puedeGuardarPassword"
+            >
+              Confirmar
+            </button>
+            <button class="no-btn" @click="cerrarModalPassword">
+              Cancelar
+            </button>
           </div>
         </div>
       </div>
@@ -132,179 +166,205 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { buscarUsuarioPorUserName } from '@/services/apiConfigEmpresaUsuariosService'
-import { getSession, updateForgotPassword } from '@/services/apiAuthService'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import { buscarUsuarioPorUserName } from "@/services/apiConfigEmpresaUsuariosService";
+import { getSession, updateForgotPassword } from "@/services/apiAuthService";
 
 export default {
-  name: 'ConfiguracionUsuarioView',
+  name: "ConfiguracionUsuarioView",
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       usuario: {
-        identificacion: '',
-        userName: '',
-        email: '',
-        telefono: '',
-        direccion: '',
-        fechaCreacion: '',
-        fechaActualizacion: ''
+        identificacion: "",
+        userName: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        fechaCreacion: "",
+        fechaActualizacion: "",
       },
       mostrarConfirmacionActualizar: false,
       mostrarModalPassword: false,
-      mensaje: '',
-      mensajeTipo: 'success',
+      mensaje: "",
+      mensajeTipo: "success",
       userLogin: null,
-      nuevaPassword: '',
-      confirmarPassword: '',
+      nuevaPassword: "",
+      confirmarPassword: "",
       mostrarPassword: false,
-      mostrarConfirmPassword: false
-    }
+      mostrarConfirmPassword: false,
+    };
   },
 
   async mounted() {
     try {
       // ✅ Obtenemos la sesión actual en memoria
-      const session = getSession()
-      console.log('👤 sesión:', session)
-      const token = session?.refreshToken
+      const session = getSession();
+      console.log("👤 sesión:", session);
+      const token = session?.refreshToken;
 
       if (!token) {
-        this.mostrarMensaje('⚠️ No hay sesión activa. Inicia sesión nuevamente.', 'warning')
-        this.$router.push('/login')
-        return
+        this.mostrarMensaje(
+          "⚠️ No hay sesión activa. Inicia sesión nuevamente.",
+          "warning",
+        );
+        this.$router.push("/login");
+        return;
       }
 
       // ✅ Leemos directamente el login desde la sesión
-      this.userLogin = session?.user?.login || null
-      console.log('🆕 Usuario logueado detectado:', this.userLogin)
+      this.userLogin = session?.user?.login || null;
+      console.log("🆕 Usuario logueado detectado:", this.userLogin);
 
       if (this.userLogin) {
-        const { data: datosUsuario } = await buscarUsuarioPorUserName(this.userLogin)
-        console.log('🔹 buscarUsuarioPorUserName →', datosUsuario)
+        const { data: datosUsuario } = await buscarUsuarioPorUserName(
+          this.userLogin,
+        );
+        console.log("🔹 buscarUsuarioPorUserName →", datosUsuario);
 
         // ⚠️ Si el backend devuelve un array, toma el primer elemento
-        const usuarioData = Array.isArray(datosUsuario) ? datosUsuario[0] : datosUsuario
-        console.log('🔹 Nombre usuario login →', usuarioData.nombres)
+        const usuarioData = Array.isArray(datosUsuario)
+          ? datosUsuario[0]
+          : datosUsuario;
+        console.log("🔹 Nombre usuario login →", usuarioData.nombres);
 
-        this.userLogin = usuarioData.nombres + ' ' + usuarioData.apellidos
-        console.log('🆕 Nombre de Usuario logueado detectado:', this.userLogin)
+        this.userLogin = usuarioData.nombres + " " + usuarioData.apellidos;
+        console.log("🆕 Nombre de Usuario logueado detectado:", this.userLogin);
 
         if (usuarioData) {
           // 🔹 Mapear los campos al modelo del frontend
           this.usuario = {
-            identificacion: usuarioData.identificacion || '',
-            userName: usuarioData.userName || '',
-            nombres: usuarioData.nombres || '',
-            apellidos: usuarioData.apellidos || '',
-            email: usuarioData.email || '',
-            telefono: usuarioData.telefono || '',
-            direccion: usuarioData.direccion || '',
-            fechaCreacion: usuarioData.fechaCreacion || '',
-            fechaActualizacion: usuarioData.fechaActualizacion || ''
-          }
+            identificacion: usuarioData.identificacion || "",
+            userName: usuarioData.userName || "",
+            nombres: usuarioData.nombres || "",
+            apellidos: usuarioData.apellidos || "",
+            email: usuarioData.email || "",
+            telefono: usuarioData.telefono || "",
+            direccion: usuarioData.direccion || "",
+            fechaCreacion: usuarioData.fechaCreacion || "",
+            fechaActualizacion: usuarioData.fechaActualizacion || "",
+          };
 
-          this.mostrarMensaje('✅ Usuario autenticado cargado correctamente.', 'success')
+          this.mostrarMensaje(
+            "✅ Usuario autenticado cargado correctamente.",
+            "success",
+          );
         } else {
-          this.mostrarMensaje(`⚠️ No se encontraron datos para el usuario: ${this.userLogin}`, 'warning')
+          this.mostrarMensaje(
+            `⚠️ No se encontraron datos para el usuario: ${this.userLogin}`,
+            "warning",
+          );
         }
       } else {
-        this.mostrarMensaje('⚠️ No se encontró información del usuario autenticado.', 'warning')
+        this.mostrarMensaje(
+          "⚠️ No se encontró información del usuario autenticado.",
+          "warning",
+        );
       }
     } catch (error) {
-      console.error('❌ Error al cargar usuario:', error)
+      console.error("❌ Error al cargar usuario:", error);
       this.mostrarMensaje(
-          error.response?.data?.message || `❌ Error al cargar datos del usuario: ${error.message}`,
-          'error'
-      )
+        error.response?.data?.message ||
+          `❌ Error al cargar datos del usuario: ${error.message}`,
+        "error",
+      );
     }
   },
 
   computed: {
     puedeGuardarPassword() {
       return (
-          this.nuevaPassword.length >= 3 &&
-          this.confirmarPassword.length >= 3 &&
-          this.nuevaPassword === this.confirmarPassword
-      )
-    }
+        this.nuevaPassword.length >= 3 &&
+        this.confirmarPassword.length >= 3 &&
+        this.nuevaPassword === this.confirmarPassword
+      );
+    },
   },
 
   methods: {
     // 🔹 Método de mostrar mensaje
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-      }, 3000)
+        this.mensaje = "";
+      }, 3000);
     },
 
     abrirConfirmacionActualizar() {
-      this.mostrarConfirmacionActualizar = true
+      this.mostrarConfirmacionActualizar = true;
     },
 
     cerrarModalActualizar() {
-      this.mostrarConfirmacionActualizar = false
+      this.mostrarConfirmacionActualizar = false;
     },
 
     async cambiarPassword() {
       if (this.nuevaPassword !== this.confirmarPassword) {
-        this.mostrarMensaje('⚠️ Las contraseñas no coinciden.', 'error')
-        return
+        this.mostrarMensaje("⚠️ Las contraseñas no coinciden.", "error");
+        return;
       }
 
       try {
-        await updateForgotPassword(this.usuario.userName, this.nuevaPassword)
-        this.mostrarMensaje('✅ Contraseña actualizada correctamente.', 'success')
-        this.cerrarModalPassword()
+        await updateForgotPassword(this.usuario.userName, this.nuevaPassword);
+        this.mostrarMensaje(
+          "✅ Contraseña actualizada correctamente.",
+          "success",
+        );
+        this.cerrarModalPassword();
 
         // Recargar datos del usuario para mostrar la nueva fecha de actualizacion
-        const { data } = await buscarUsuarioPorUserName(this.usuario.userName)
-        const usuarioData = Array.isArray(data) ? data[0] : data
+        const { data } = await buscarUsuarioPorUserName(this.usuario.userName);
+        const usuarioData = Array.isArray(data) ? data[0] : data;
         if (usuarioData) {
-          this.usuario.fechaActualizacion = usuarioData.fechaActualizacion || ''
+          this.usuario.fechaActualizacion =
+            usuarioData.fechaActualizacion || "";
         }
       } catch (error) {
         this.mostrarMensaje(
-            error.response?.data?.message || '❌ Error al cambiar la contraseña.',
-            'error'
-        )
+          error.response?.data?.message || "❌ Error al cambiar la contraseña.",
+          "error",
+        );
       }
     },
 
     cerrarModalPassword() {
-      this.mostrarModalPassword = false
-      this.nuevaPassword = ''
-      this.confirmarPassword = ''
-      this.mostrarPassword = false
-      this.mostrarConfirmPassword = false
+      this.mostrarModalPassword = false;
+      this.nuevaPassword = "";
+      this.confirmarPassword = "";
+      this.mostrarPassword = false;
+      this.mostrarConfirmPassword = false;
     },
 
     confirmarActualizar() {
       if (!this.usuario.identificacion) {
-        this.mostrarMensaje('⚠️ No se encontró identificación del usuario.', 'warning')
-        return
+        this.mostrarMensaje(
+          "⚠️ No se encontró identificación del usuario.",
+          "warning",
+        );
+        return;
       }
       if (!this.userLogin) {
-        this.mostrarMensaje('⚠️ No se encontró login del usuario autenticado.', 'warning')
-        return
+        this.mostrarMensaje(
+          "⚠️ No se encontró login del usuario autenticado.",
+          "warning",
+        );
+        return;
       }
 
       this.$router.push({
-        name: 'ConfiguracionActualizarUsuarioView',
+        name: "ConfiguracionActualizarUsuarioView",
         params: {
           identificacion: this.usuario.identificacion,
-          userLogin: this.userLogin
-        }
-      })
-      this.cerrarModalActualizar()
-    }
-  }
-}
+          userLogin: this.userLogin,
+        },
+      });
+      this.cerrarModalActualizar();
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .configuracion-empresa-wrapper {
@@ -530,5 +590,4 @@ input {
 .btn-cambiar-password:hover {
   background-color: #e76f51;
 }
-
 </style>

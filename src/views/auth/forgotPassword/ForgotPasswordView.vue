@@ -16,17 +16,31 @@
       </div>
 
       <div v-else-if="step === 2">
-        <p>Usuario: <strong>{{ username }}</strong></p>
+        <p>
+          Usuario: <strong>{{ username }}</strong>
+        </p>
         <form @submit.prevent="handleUpdatePassword">
           <div class="form-group">
             <label for="newPassword">Nueva contraseña:</label>
-            <input type="password" id="newPassword" v-model="newPassword" required />
+            <input
+              type="password"
+              id="newPassword"
+              v-model="newPassword"
+              required
+            />
           </div>
           <div class="form-group">
             <label for="confirmPassword">Confirmar contraseña:</label>
-            <input type="password" id="confirmPassword" v-model="confirmPassword" required />
+            <input
+              type="password"
+              id="confirmPassword"
+              v-model="confirmPassword"
+              required
+            />
           </div>
-          <button type="submit" class="login-button">Actualizar contraseña</button>
+          <button type="submit" class="login-button">
+            Actualizar contraseña
+          </button>
         </form>
       </div>
 
@@ -46,72 +60,74 @@
 </template>
 
 <script>
-import { searchUserByUsername, updateForgotPassword } from '@/services/apiAuthService'
+import {
+  searchUserByUsername,
+  updateForgotPassword,
+} from "@/services/apiAuthService";
 
 export default {
-  name: 'ForgotPasswordView',
+  name: "ForgotPasswordView",
   data() {
     return {
       step: 1,
-      username: '',
-      newPassword: '',
-      confirmPassword: '',
-      errorMessage: '',
-      successMessage: ''
-    }
+      username: "",
+      newPassword: "",
+      confirmPassword: "",
+      errorMessage: "",
+      successMessage: "",
+    };
   },
   methods: {
     async handleUsername() {
       if (!this.username) {
-        this.errorMessage = 'Debe ingresar un usuario';
+        this.errorMessage = "Debe ingresar un usuario";
         return;
       }
-      this.errorMessage = '';
+      this.errorMessage = "";
 
       try {
         const response = await searchUserByUsername(this.username);
 
         // Si la respuesta trae data, el usuario existe
         if (!response.data) {
-          this.errorMessage = 'El usuario no existe';
+          this.errorMessage = "El usuario no existe";
           return;
         }
 
         // Usuario existe, avanzar al paso 2
         this.step = 2;
-
       } catch (err) {
         console.error(err);
         if (err.response && err.response.status === 404) {
-          this.errorMessage = 'El usuario no existe';
+          this.errorMessage = "El usuario no existe";
         } else {
-          this.errorMessage = 'Ocurrió un error al buscar el usuario';
+          this.errorMessage = "Ocurrió un error al buscar el usuario";
         }
       }
     },
     async handleUpdatePassword() {
-      this.errorMessage = '';
-      this.successMessage = '';
+      this.errorMessage = "";
+      this.successMessage = "";
 
       if (!this.newPassword || !this.confirmPassword) {
-        this.errorMessage = 'Ambos campos de contraseña son obligatorios';
+        this.errorMessage = "Ambos campos de contraseña son obligatorios";
         return;
       }
       if (this.newPassword !== this.confirmPassword) {
-        this.errorMessage = 'Las contraseñas no coinciden';
+        this.errorMessage = "Las contraseñas no coinciden";
         return;
       }
 
       try {
         await updateForgotPassword(this.username, this.newPassword);
-        this.successMessage = 'Contraseña actualizada correctamente';
+        this.successMessage = "Contraseña actualizada correctamente";
       } catch (err) {
         console.error(err);
-        this.errorMessage = 'Ocurrió un error al actualizar la contraseña';
+        this.errorMessage = "Ocurrió un error al actualizar la contraseña";
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

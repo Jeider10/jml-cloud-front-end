@@ -35,16 +35,16 @@
           <input v-model="clienteForm.direccion" type="text" />
 
           <!-- 💾 Botón de actualizar -->
-          <button type="button"
-                  class="actualizar-btn"
-                  @click="actualizarCliente">
+          <button
+            type="button"
+            class="actualizar-btn"
+            @click="actualizarCliente"
+          >
             💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
-          <button type="button"
-                  class="volver-btn"
-                  @click="volverClientes">
+          <button type="button" class="volver-btn" @click="volverClientes">
             ↩️ Volver
           </button>
         </div>
@@ -54,31 +54,34 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { actualizarCliente, buscarClientePorIdentificacion } from '@/services/apiCustomerService.js'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import {
+  actualizarCliente,
+  buscarClientePorIdentificacion,
+} from "@/services/apiCustomerService.js";
 
 export default {
-  name: 'ActualizarClienteView',
+  name: "ActualizarClienteView",
   components: { DashboardSideMenu },
-  props: ['identificacion'],
+  props: ["identificacion"],
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       clienteForm: {
-        identificacion: '',
-        nombres: '',
-        apellidos: '',
-        telefono: '',
-        direccion: ''
+        identificacion: "",
+        nombres: "",
+        apellidos: "",
+        telefono: "",
+        direccion: "",
       },
-      mensaje: '',
-      mensajeTipo: ''
-    }
+      mensaje: "",
+      mensajeTipo: "",
+    };
   },
 
   async mounted() {
     // 🔹 Cargar cliente específico desde backend por identificacion
-    await this.cargarCliente()
+    await this.cargarCliente();
   },
 
   methods: {
@@ -87,105 +90,147 @@ export default {
     // },
 
     // 🔹 Método de mostrar mensaje
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
+        this.mensaje = "";
 
         // 🔹 Solo redirige si es un mensaje de éxito
-        if (tipo === 'success') {
-          this.$router.push({ name: 'ClientesView' })
+        if (tipo === "success") {
+          this.$router.push({ name: "ClientesView" });
         }
-      }, 3000)
+      }, 3000);
     },
 
     // 🔹 Método para cargar producto y normalizar proveedorId
     async cargarCliente() {
       try {
-        const response = await buscarClientePorIdentificacion(this.identificacion)
+        const response = await buscarClientePorIdentificacion(
+          this.identificacion,
+        );
         if (response.data) {
-          this.clienteForm = { ...response.data } // ✅ llena el form directamente
-          this.mostrarMensaje(`✅ Cliente ${this.clienteForm.nombres} cargado correctamente.`, 'info')
+          this.clienteForm = { ...response.data }; // ✅ llena el form directamente
+          this.mostrarMensaje(
+            `✅ Cliente ${this.clienteForm.nombres} cargado correctamente.`,
+            "info",
+          );
         } else {
-          this.mostrarMensaje('⚠️ No se encontraron datos del cliente.', 'warning')
+          this.mostrarMensaje(
+            "⚠️ No se encontraron datos del cliente.",
+            "warning",
+          );
         }
       } catch (error) {
-        this.manejarErrorApiCliente(error, `buscar cliente con identificación ${this.identificacion}`)
+        this.manejarErrorApiCliente(
+          error,
+          `buscar cliente con identificación ${this.identificacion}`,
+        );
       }
     },
 
     // 🔹 Método para actualizar cliente en backend
     async actualizarCliente() {
       if (
-          !this.clienteForm.identificacion ||
-          !this.clienteForm.nombres ||
-          !this.clienteForm.apellidos
+        !this.clienteForm.identificacion ||
+        !this.clienteForm.nombres ||
+        !this.clienteForm.apellidos
       ) {
-        this.mostrarMensaje('Identificación, nombres y apellidos son obligatorios.', 'error')
-        return
+        this.mostrarMensaje(
+          "Identificación, nombres y apellidos son obligatorios.",
+          "error",
+        );
+        return;
       }
 
       try {
-        const response = await actualizarCliente(this.clienteForm)
-        const actualizado = response.data
+        const response = await actualizarCliente(this.clienteForm);
+        const actualizado = response.data;
 
-        this.mostrarMensaje(`✅ Cliente ${actualizado.nombres} ${actualizado.apellidos} actualizado correctamente.`, 'success')
-
+        this.mostrarMensaje(
+          `✅ Cliente ${actualizado.nombres} ${actualizado.apellidos} actualizado correctamente.`,
+          "success",
+        );
       } catch (error) {
-        this.manejarErrorApiCliente(error, `actualizar cliente ${this.clienteForm.nombres}`)
+        this.manejarErrorApiCliente(
+          error,
+          `actualizar cliente ${this.clienteForm.nombres}`,
+        );
       }
     },
 
     // 🔹 Método para volver a clientes
     volverClientes() {
-      this.$router.push({ name: 'ClientesView' })
+      this.$router.push({ name: "ClientesView" });
     },
 
     // 🔹 Metodo para manejar errores de API
-    manejarErrorApiCliente(error, contexto = '') {
-      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+    manejarErrorApiCliente(error, contexto = "") {
+      console.error(`❌ Error en ${contexto || "operación"}:`, error);
 
       // 🔴 Caso 1: Error con respuesta del servidor
       if (error.response) {
-        const status = error.response.status
+        const status = error.response.status;
 
         switch (status) {
           case 400:
-            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Solicitud incorrecta. Revisa los parámetros enviados.",
+              "warning",
+            );
+            break;
           case 401:
-            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
-            break
+            this.mostrarMensaje(
+              "🚫 No autorizado. Inicia sesión nuevamente.",
+              "error",
+            );
+            break;
           case 403:
-            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
-            break
+            this.mostrarMensaje(
+              "🔒 Acceso denegado. No tienes permisos para esta acción.",
+              "error",
+            );
+            break;
           case 404:
-            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Recurso no encontrado en el servidor.",
+              "warning",
+            );
+            break;
           case 409:
-            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Conflicto con el recurso. Puede estar siendo utilizado.",
+              "warning",
+            );
+            break;
           case 500:
-            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
-            break
+            this.mostrarMensaje(
+              "💥 Error interno en el servidor. Inténtalo más tarde.",
+              "error",
+            );
+            break;
           default:
-            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+            this.mostrarMensaje(
+              `⚠️ ${error.response?.data?.message || "Error desconocido en el servidor."}`,
+              "error",
+            );
         }
 
         // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
-        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+        this.mostrarMensaje(
+          "🌐 No se pudo conectar con el servidor. Verifica tu conexión.",
+          "error",
+        );
 
         // ⚙️ Caso 3: Error inesperado en frontend
       } else {
-        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, "error");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .registro-cliente-wrapper {
@@ -215,7 +260,7 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: 1px;    /* espacio desde arriba */
+  margin-top: 1px; /* espacio desde arriba */
 }
 
 .mensaje {
@@ -224,7 +269,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {

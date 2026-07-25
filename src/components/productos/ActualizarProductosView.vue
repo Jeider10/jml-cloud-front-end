@@ -45,16 +45,28 @@
 
           <label for="proveedor">Proveedor</label>
           <div class="form-group">
-            <select v-model="productoForm.proveedorId" @change="actualizarProveedorName" class="form-control">
+            <select
+              v-model="productoForm.proveedorId"
+              @change="actualizarProveedorName"
+              class="form-control"
+            >
               <option disabled value="">Seleccione un proveedor</option>
-              <option v-for="p in proveedores" :key="p.codigoSucursal" :value="p.codigoSucursal">
+              <option
+                v-for="p in proveedores"
+                :key="p.codigoSucursal"
+                :value="p.codigoSucursal"
+              >
                 {{ p.nombre }}
               </option>
             </select>
           </div>
 
           <!-- 💾 Botón de actualizar -->
-          <button type="button" class="actualizar-btn" @click="actualizarProductoEnServidor">
+          <button
+            type="button"
+            class="actualizar-btn"
+            @click="actualizarProductoEnServidor"
+          >
             💾 Actualizar
           </button>
 
@@ -68,43 +80,45 @@
   </div>
 </template>
 
-
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { listarProveedores } from '@/services/apiSuppliersService.js'
-import { actualizarProducto, buscarProductoPorCodigo } from '@/services/apiProductsService.js'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import { listarProveedores } from "@/services/apiSuppliersService.js";
+import {
+  actualizarProducto,
+  buscarProductoPorCodigo,
+} from "@/services/apiProductsService.js";
 
 export default {
-  name: 'ActualizarProductoView',
+  name: "ActualizarProductoView",
   components: { DashboardSideMenu },
-  props: ['codigo'],
+  props: ["codigo"],
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       productoForm: {
-        codigo: '',
-        nombre: '',
-        referencia: '',
-        descripcion: '',
-        marca: '',
-        unidadMedida: '',
+        codigo: "",
+        nombre: "",
+        referencia: "",
+        descripcion: "",
+        marca: "",
+        unidadMedida: "",
         cantidad: 0,
         precio: 0,
         proveedorId: null,
-        proveedorName: ''
+        proveedorName: "",
       },
-      mensaje: '',
-      mensajeTipo: '',
-      proveedores: []
-    }
+      mensaje: "",
+      mensajeTipo: "",
+      proveedores: [],
+    };
   },
 
   async mounted() {
     // 🔹 Cargar todos los proveedores desde backend
-    await this.cargarProveedores()
+    await this.cargarProveedores();
 
     // 🔹 Cargar producto desde backend
-    await this.cargarProducto()
+    await this.cargarProducto();
   },
 
   methods: {
@@ -113,149 +127,197 @@ export default {
     // },
 
     // 🔹 Método de mostrar mensaje
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
+        this.mensaje = "";
 
         // 🔹 Solo redirige si es un mensaje de éxito
-        if (tipo === 'success') {
-          this.$router.push({ name: 'ProductosView' })
+        if (tipo === "success") {
+          this.$router.push({ name: "ProductosView" });
         }
-      }, 3000)
+      }, 3000);
     },
 
     // 🔹 Método para cargar producto y normalizar proveedorId
     async cargarProducto() {
       try {
-        const response = await buscarProductoPorCodigo(this.codigo)
+        const response = await buscarProductoPorCodigo(this.codigo);
 
         if (response.data) {
           this.productoForm = {
             ...response.data,
-            proveedorId: response.data.proveedorId ? String(response.data.proveedorId) : '',
-            proveedorName: response.data.proveedorName || ''
-          }
-          this.mostrarMensaje(`✅ Producto ${this.productoForm.nombre} cargado correctamente.`, 'info')
+            proveedorId: response.data.proveedorId
+              ? String(response.data.proveedorId)
+              : "",
+            proveedorName: response.data.proveedorName || "",
+          };
+          this.mostrarMensaje(
+            `✅ Producto ${this.productoForm.nombre} cargado correctamente.`,
+            "info",
+          );
         } else {
-          this.mostrarMensaje('⚠️ No se encontraron datos del producto.', 'warning')
+          this.mostrarMensaje(
+            "⚠️ No se encontraron datos del producto.",
+            "warning",
+          );
         }
 
         // 🔹 Verificar si el proveedor está en la lista
-        const existe = this.proveedores.find(p => String(p.codigoSucursal) === this.productoForm.proveedorId)
+        const existe = this.proveedores.find(
+          (p) => String(p.codigoSucursal) === this.productoForm.proveedorId,
+        );
         if (!existe && this.productoForm.proveedorId) {
           this.proveedores.push({
             codigoSucursal: this.productoForm.proveedorId,
-            nombre: this.productoForm.proveedorName || 'Proveedor seleccionado'
-          })
+            nombre: this.productoForm.proveedorName || "Proveedor seleccionado",
+          });
         }
       } catch (error) {
-        this.manejarErrorApiProductosActualizar(error, `buscar producto con código ${this.codigo}`)
+        this.manejarErrorApiProductosActualizar(
+          error,
+          `buscar producto con código ${this.codigo}`,
+        );
       }
     },
 
     // 🔹 Método para actualizar producto en backend
     async actualizarProductoEnServidor() {
       if (
-          !this.productoForm.codigo ||
-          !this.productoForm.nombre ||
-          !this.productoForm.descripcion
+        !this.productoForm.codigo ||
+        !this.productoForm.nombre ||
+        !this.productoForm.descripcion
       ) {
-        this.mostrarMensaje('Código, nombre y descripción son obligatorios.', 'error')
-        return
+        this.mostrarMensaje(
+          "Código, nombre y descripción son obligatorios.",
+          "error",
+        );
+        return;
       }
 
-      if (
-          !this.productoForm.proveedorId
-      ) {
-        this.mostrarMensaje('Seleccione un proveedor.', 'error')
-        return
+      if (!this.productoForm.proveedorId) {
+        this.mostrarMensaje("Seleccione un proveedor.", "error");
+        return;
       }
 
       try {
         // buscar nombre del proveedor seleccionado a partir del ID
-        const proveedorSel = this.proveedores.find(p => p.codigoSucursal === this.productoForm.proveedorId)
-        this.productoForm.proveedorName = proveedorSel ? proveedorSel.nombre : this.productoForm.proveedorName
+        const proveedorSel = this.proveedores.find(
+          (p) => p.codigoSucursal === this.productoForm.proveedorId,
+        );
+        this.productoForm.proveedorName = proveedorSel
+          ? proveedorSel.nombre
+          : this.productoForm.proveedorName;
 
-        const response = await actualizarProducto(this.productoForm)
-        const actualizado = response.data
+        const response = await actualizarProducto(this.productoForm);
+        const actualizado = response.data;
 
-        this.mostrarMensaje(`✅ Producto ${actualizado.nombre} actualizado correctamente.`, 'success')
-
+        this.mostrarMensaje(
+          `✅ Producto ${actualizado.nombre} actualizado correctamente.`,
+          "success",
+        );
       } catch (error) {
-        this.manejarErrorApiProductosActualizar(error, `actualizar producto ${this.productoForm.nombre}`)
+        this.manejarErrorApiProductosActualizar(
+          error,
+          `actualizar producto ${this.productoForm.nombre}`,
+        );
       }
     },
 
     // 🔹 Método para volver a todos los productos
     volverProductos() {
-      this.$router.push({ name: 'ProductosView' })
+      this.$router.push({ name: "ProductosView" });
     },
 
     // Metodo para actualizar el nombre del proveedor al cambiar el select
     actualizarProveedorName() {
-      const seleccionado = this.proveedores.find(p => p.codigoSucursal === this.productoForm.proveedorId)
-      this.productoForm.proveedorName = seleccionado ? seleccionado.nombre : ''
+      const seleccionado = this.proveedores.find(
+        (p) => p.codigoSucursal === this.productoForm.proveedorId,
+      );
+      this.productoForm.proveedorName = seleccionado ? seleccionado.nombre : "";
     },
 
     // 🔹 Método para cargar lista de proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores()
-        this.proveedores = response.data.map(p => ({
+        const response = await listarProveedores();
+        this.proveedores = response.data.map((p) => ({
           codigoSucursal: String(p.codigoSucursal),
-          nombre: p.nombre
-        }))
+          nombre: p.nombre,
+        }));
       } catch (error) {
-        this.manejarErrorApiProductosActualizar(error, 'listar proveedores')
+        this.manejarErrorApiProductosActualizar(error, "listar proveedores");
       }
     },
 
     // 🔹 Método para manejar errores de API
-    manejarErrorApiProductosActualizar(error, contexto = '') {
-      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+    manejarErrorApiProductosActualizar(error, contexto = "") {
+      console.error(`❌ Error en ${contexto || "operación"}:`, error);
 
       // 🔴 Caso 1: Error con respuesta del servidor
       if (error.response) {
-        const status = error.response.status
+        const status = error.response.status;
 
         switch (status) {
           case 400:
-            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Solicitud incorrecta. Revisa los parámetros enviados.",
+              "warning",
+            );
+            break;
           case 401:
-            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
-            break
+            this.mostrarMensaje(
+              "🚫 No autorizado. Inicia sesión nuevamente.",
+              "error",
+            );
+            break;
           case 403:
-            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
-            break
+            this.mostrarMensaje(
+              "🔒 Acceso denegado. No tienes permisos para esta acción.",
+              "error",
+            );
+            break;
           case 404:
-            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Recurso no encontrado en el servidor.",
+              "warning",
+            );
+            break;
           case 409:
-            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Conflicto con el recurso. Puede estar siendo utilizado.",
+              "warning",
+            );
+            break;
           case 500:
-            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
-            break
+            this.mostrarMensaje(
+              "💥 Error interno en el servidor. Inténtalo más tarde.",
+              "error",
+            );
+            break;
           default:
-            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+            this.mostrarMensaje(
+              `⚠️ ${error.response?.data?.message || "Error desconocido en el servidor."}`,
+              "error",
+            );
         }
 
         // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
-        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+        this.mostrarMensaje(
+          "🌐 No se pudo conectar con el servidor. Verifica tu conexión.",
+          "error",
+        );
 
         // ⚙️ Caso 3: Error inesperado en frontend
       } else {
-        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, "error");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .registro-producto-wrapper {

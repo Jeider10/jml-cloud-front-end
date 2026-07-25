@@ -24,50 +24,50 @@
 
       <!-- 🔹 Enlaces adicionales -->
       <!-- Links removidos para produccion: solo el admin gestiona usuarios y contraseñas -->
-
     </div>
   </div>
 </template>
 
 <script>
-import { login } from '@/services/apiAuthService'
+import { login } from "@/services/apiAuthService";
 
 export default {
-  name: 'LoginView',
+  name: "LoginView",
   data() {
     return {
-      usuario: '',
-      password: '',
-      errorMessage: ''
-    }
+      usuario: "",
+      password: "",
+      errorMessage: "",
+    };
   },
   methods: {
     async handleLogin() {
-      this.errorMessage = ''
+      this.errorMessage = "";
       try {
-        const response = await login(this.usuario, this.password)
-        console.log('✅ Login exitoso:', response.data)
+        const response = await login(this.usuario, this.password);
+        console.log("✅ Login exitoso:", response.data);
         // Redirige directo al dashboard
-        this.$router.push('/dashboard')
+        this.$router.push("/dashboard");
       } catch (error) {
-        console.error('❌ Error en login:', error)
+        console.error("❌ Error en login:", error);
 
         if (!error.response) {
           // 🔴 No hay respuesta del servidor (API caída, timeout, CORS, etc.)
-          this.errorMessage = 'No se puede conectar con el servicio de autenticación. Por favor contacte al administrador del sistema.'
+          this.errorMessage =
+            "No se puede conectar con el servicio de autenticación. Por favor contacte al administrador del sistema.";
         } else if (error.response.status === 401) {
           // ❌ Credenciales inválidas
-          this.errorMessage = 'Usuario o contraseña incorrectos.'
+          this.errorMessage = "Usuario o contraseña incorrectos.";
         } else {
           // ⚠️ Otro error inesperado
-          this.errorMessage = 'Ocurrió un error inesperado. Intente nuevamente.'
+          this.errorMessage =
+            "Ocurrió un error inesperado. Intente nuevamente.";
         }
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 /* Ajuste general */

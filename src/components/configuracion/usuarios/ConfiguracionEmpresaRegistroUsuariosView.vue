@@ -43,26 +43,34 @@
           <label>Rol</label>
           <select v-model="usuarioForm.roleCode">
             <option disabled value="">Seleccione un rol</option>
-            <option v-for="r in roles" :key="r.roleCode" :value="r.roleCode">{{ r.roleName }}</option>
+            <option v-for="r in roles" :key="r.roleCode" :value="r.roleCode">
+              {{ r.roleName }}
+            </option>
           </select>
 
-          <button type="button"
-                  class="agregar-btn"
-                  :disabled="!hayDatos()"
-                  @click="registrarUsuario">
+          <button
+            type="button"
+            class="agregar-btn"
+            :disabled="!hayDatos()"
+            @click="registrarUsuario"
+          >
             ➕ Registrar Usuario
           </button>
 
-          <button type="button"
-                  class="limpiar-campos-btn"
-                  :disabled="!hayDatos()"
-                  @click="limpiarCampos">
+          <button
+            type="button"
+            class="limpiar-campos-btn"
+            :disabled="!hayDatos()"
+            @click="limpiarCampos"
+          >
             🧹 Limpiar
           </button>
 
-          <button type="button"
-                  class="volver-btn"
-                  @click="volverAConfiguracion">
+          <button
+            type="button"
+            class="volver-btn"
+            @click="volverAConfiguracion"
+          >
             ↩️ Volver
           </button>
         </div>
@@ -72,102 +80,116 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { registrarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
-import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import { registrarUsuario } from "@/services/apiConfigEmpresaUsuariosService";
+import { listarRoles } from "@/services/apiConfigEmpresaRolesService";
 
 export default {
-  name: 'RegistroUsuariosView',
+  name: "RegistroUsuariosView",
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       usuarioForm: {
-        identificacion: '',
-        nombres: '',
-        apellidos: '',
-        userName: '',
-        password: '',
-        email: '',
-        telefono: '',
-        direccion: '',
-        roleCode: ''
+        identificacion: "",
+        nombres: "",
+        apellidos: "",
+        userName: "",
+        password: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        roleCode: "",
       },
       roles: [],
-      mensaje: '',
-      mensajeTipo: ''
-    }
+      mensaje: "",
+      mensajeTipo: "",
+    };
   },
   async mounted() {
-    await this.cargarRoles()
+    await this.cargarRoles();
   },
   methods: {
     async cargarRoles() {
       try {
-        const { data } = await listarRoles()
-        this.roles = data || []
+        const { data } = await listarRoles();
+        this.roles = data || [];
       } catch (error) {
-        console.error('❌ Error al cargar roles:', error)
-        this.mostrarMensaje('No se pudieron cargar los roles.', 'error')
+        console.error("❌ Error al cargar roles:", error);
+        this.mostrarMensaje("No se pudieron cargar los roles.", "error");
       }
     },
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-        if (tipo === 'success') {
-          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
+        this.mensaje = "";
+        if (tipo === "success") {
+          this.$router.push({
+            path: "/configuracion-empresa-usuario",
+            query: { vista: "usuarios" },
+          });
         }
-      }, 2500)
+      }, 2500);
     },
     async registrarUsuario() {
-      if (!this.usuarioForm.identificacion || !this.usuarioForm.nombres || !this.usuarioForm.userName || !this.usuarioForm.password || !this.usuarioForm.roleCode) {
-        this.mostrarMensaje('⚠️ Complete los campos obligatorios.', 'error')
-        return
+      if (
+        !this.usuarioForm.identificacion ||
+        !this.usuarioForm.nombres ||
+        !this.usuarioForm.userName ||
+        !this.usuarioForm.password ||
+        !this.usuarioForm.roleCode
+      ) {
+        this.mostrarMensaje("⚠️ Complete los campos obligatorios.", "error");
+        return;
       }
 
       try {
-        const response = await registrarUsuario(this.usuarioForm)
-        const data = response.data
-        this.mostrarMensaje(`✅ Usuario "${data.nombres} ${data.apellidos}" registrado correctamente.`, 'success')
-        this.limpiarCampos()
+        const response = await registrarUsuario(this.usuarioForm);
+        const data = response.data;
+        this.mostrarMensaje(
+          `✅ Usuario "${data.nombres} ${data.apellidos}" registrado correctamente.`,
+          "success",
+        );
+        this.limpiarCampos();
       } catch (error) {
-        console.error('❌ Error al registrar usuario:', error)
+        console.error("❌ Error al registrar usuario:", error);
 
         // Obtener mensaje real desde el backend
-        let mensajeBackend = 'Error al registrar usuario.'
+        let mensajeBackend = "Error al registrar usuario.";
         if (error.response && error.response.data) {
           // Si tu backend devuelve { message: "texto" }
-          mensajeBackend = error.response.data.message || mensajeBackend
+          mensajeBackend = error.response.data.message || mensajeBackend;
         }
 
-        this.mostrarMensaje(mensajeBackend, 'error')
+        this.mostrarMensaje(mensajeBackend, "error");
       }
     },
     hayDatos() {
-      return Object.values(this.usuarioForm).some(v => v)
+      return Object.values(this.usuarioForm).some((v) => v);
     },
     limpiarCampos() {
       this.usuarioForm = {
-        identificacion: '',
-        nombres: '',
-        apellidos: '',
-        userName: '',
-        password: '',
-        email: '',
-        telefono: '',
-        direccion: '',
-        roleCode: ''
-      }
+        identificacion: "",
+        nombres: "",
+        apellidos: "",
+        userName: "",
+        password: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        roleCode: "",
+      };
     },
     volverAConfiguracion() {
-      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
-    }
-  }
-}
+      this.$router.push({
+        path: "/configuracion-empresa-usuario",
+        query: { vista: "usuarios" },
+      });
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .registro-wrapper {
@@ -205,7 +227,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {
@@ -239,7 +261,8 @@ label {
   font-weight: bold;
 }
 
-input, select {
+input,
+select {
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -296,5 +319,4 @@ input, select {
 .volver-btn:hover {
   background: #005f8a;
 }
-
 </style>

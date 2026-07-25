@@ -22,11 +22,7 @@
       </p>
 
       <!-- Imagen dinámica -->
-      <img
-          :src="logoEmpresa"
-          alt="Logo Empresa"
-          class="logo-empresa"
-      />
+      <img :src="logoEmpresa" alt="Logo Empresa" class="logo-empresa" />
     </div>
 
     <!-- Footer -->
@@ -34,155 +30,186 @@
   </div>
 </template>
 
-
 <script>
-import FooterCredits from '@/components/common/FooterCredits.vue'
-import { obtenerPrimeraEmpresa } from '@/services/apiConfigEmpresaService'
+import FooterCredits from "@/components/common/FooterCredits.vue";
+import { obtenerPrimeraEmpresa } from "@/services/apiConfigEmpresaService";
 
 export default {
   name: "dashboard-page",
   components: { FooterCredits },
   data() {
     return {
-      mensajeEmpresa: '',
+      mensajeEmpresa: "",
       logoEmpresa: null,
       loading: true,
-      mensajeNotificacion: '',
-      mensajeNotificacionTipo: ''
-    }
+      mensajeNotificacion: "",
+      mensajeNotificacionTipo: "",
+    };
   },
   async mounted() {
     // 🔹 Cargar datos reales del backend al iniciar
-    await this.cargarDatosEmpresa()
-    this.loading = false
+    await this.cargarDatosEmpresa();
+    this.loading = false;
 
     // 🔹 Escuchar evento global emitido desde ConfiguracionEmpresaView
     this._empresaUpdatedHandler = (e) => {
-      const payload = e?.detail ?? {}
-      console.log('📢 Empresa actualizada recibida en Dashboard:', payload)
+      const payload = e?.detail ?? {};
+      console.log("📢 Empresa actualizada recibida en Dashboard:", payload);
 
       if (payload.mensaje !== undefined) {
-        this.mensajeEmpresa = payload.mensaje || this.mensajeEmpresa
+        this.mensajeEmpresa = payload.mensaje || this.mensajeEmpresa;
       }
       // actualizar logo (si viene)
       if (payload.logo !== undefined) {
-        this.logoEmpresa = this.getLogoUrl(payload.logo)
+        this.logoEmpresa = this.getLogoUrl(payload.logo);
       }
-    }
+    };
 
-    globalThis.addEventListener('empresaUpdated', this._empresaUpdatedHandler)
+    globalThis.addEventListener("empresaUpdated", this._empresaUpdatedHandler);
   },
 
   beforeUnmount() {
     // Limpiar listener al desmontar para evitar fugas de memoria
-    globalThis.removeEventListener('empresaUpdated', this._empresaUpdatedHandler)
+    globalThis.removeEventListener(
+      "empresaUpdated",
+      this._empresaUpdatedHandler,
+    );
   },
 
   methods: {
     async cargarDatosEmpresa() {
       try {
-        const response = await obtenerPrimeraEmpresa()
-        console.log('📢 Datos de empresa cargados:', response.data)
+        const response = await obtenerPrimeraEmpresa();
+        console.log("📢 Datos de empresa cargados:", response.data);
         if (response?.data?.length > 0) {
-          const empresa = response.data[0]
-          this.mensajeEmpresa = empresa.mensaje || 'Bienvenido a nuestro sistema.'
-          this.logoEmpresa = this.getLogoUrl(empresa.logo)
+          const empresa = response.data[0];
+          this.mensajeEmpresa =
+            empresa.mensaje || "Bienvenido a nuestro sistema.";
+          this.logoEmpresa = this.getLogoUrl(empresa.logo);
         } else {
-          this.setDefaultValues()
+          this.setDefaultValues();
         }
       } catch (error) {
-        this.manejarErrorDashboard(error, `Cargar datos de la empresa`)
-        this.setDefaultValues('Error al cargar los datos de la empresa.')
+        this.manejarErrorDashboard(error, `Cargar datos de la empresa`);
+        this.setDefaultValues("Error al cargar los datos de la empresa.");
       }
     },
 
-    setDefaultValues(mensaje = 'Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.') {
-      this.mensajeEmpresa = mensaje
-      this.logoEmpresa = require('@/assets/img/Empresa.png')
+    setDefaultValues(
+      mensaje = "Bienvenido a nuestro sistema. Aquí trabajamos con compromiso, responsabilidad y dedicación para brindar el mejor servicio a nuestros usuarios.",
+    ) {
+      this.mensajeEmpresa = mensaje;
+      this.logoEmpresa = require("@/assets/img/Empresa.png");
     },
 
     getLogoUrl(path) {
       if (!path) {
         // Si no hay logo, muestra imagen por defecto
-        return require('@/assets/img/Empresa.png')
+        return require("@/assets/img/Empresa.png");
       }
 
       // 🔹 Limpiar comillas o espacios
-      const cleanPath = path.toString().trim().replaceAll(/(^"|"$)/g, '')
+      const cleanPath = path
+        .toString()
+        .trim()
+        .replaceAll(/(^"|"$)/g, "");
 
       // 🔹 Si es una URL completa (S3 u otra), úsala directamente
-      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
-        return cleanPath
+      if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+        return cleanPath;
       }
 
       // 🔹 Si ya viene con formato data:image/... (Base64 con prefijo)
-      if (cleanPath.startsWith('data:image')) {
-        return cleanPath
+      if (cleanPath.startsWith("data:image")) {
+        return cleanPath;
       }
 
       // 🔹 Si es Base64 puro (sin prefijo), agregamos el tipo MIME más común (png)
       if (/^[A-Za-z0-9+/=]+$/.test(cleanPath)) {
-        return `data:image/png;base64,${cleanPath}`
+        return `data:image/png;base64,${cleanPath}`;
       }
 
       // 🔹 Si es una ruta relativa (casos antiguos o locales)
-      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`;
     },
 
     // Metodo para mostrar mensajes en pantalla
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensajeNotificacion = texto
-      this.mensajeNotificacionTipo = tipo
-      console.warn(`[${tipo}] ${texto}`)
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensajeNotificacion = texto;
+      this.mensajeNotificacionTipo = tipo;
+      console.warn(`[${tipo}] ${texto}`);
       setTimeout(() => {
-        this.mensajeNotificacion = ''
-      }, 3000)
+        this.mensajeNotificacion = "";
+      }, 3000);
     },
 
     // 🔹 Metodo para manejar errores de API
-    manejarErrorDashboard(error, contexto = '') {
-      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+    manejarErrorDashboard(error, contexto = "") {
+      console.error(`❌ Error en ${contexto || "operación"}:`, error);
 
       // 🔴 Caso 1: Error con respuesta del servidor
       if (error.response) {
-        const status = error.response.status
+        const status = error.response.status;
 
         switch (status) {
           case 400:
-            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Solicitud incorrecta. Revisa los parámetros enviados.",
+              "warning",
+            );
+            break;
           case 401:
-            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
-            break
+            this.mostrarMensaje(
+              "🚫 No autorizado. Inicia sesión nuevamente.",
+              "error",
+            );
+            break;
           case 403:
-            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
-            break
+            this.mostrarMensaje(
+              "🔒 Acceso denegado. No tienes permisos para esta acción.",
+              "error",
+            );
+            break;
           case 404:
-            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Recurso no encontrado en el servidor.",
+              "warning",
+            );
+            break;
           case 409:
-            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Conflicto con el recurso. Puede estar siendo utilizado.",
+              "warning",
+            );
+            break;
           case 500:
-            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
-            break
+            this.mostrarMensaje(
+              "💥 Error interno en el servidor. Inténtalo más tarde.",
+              "error",
+            );
+            break;
           default:
-            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+            this.mostrarMensaje(
+              `⚠️ ${error.response?.data?.message || "Error desconocido en el servidor."}`,
+              "error",
+            );
         }
 
         // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
-        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+        this.mostrarMensaje(
+          "🌐 No se pudo conectar con el servidor. Verifica tu conexión.",
+          "error",
+        );
 
         // ⚙️ Caso 3: Error inesperado en frontend
       } else {
-        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, "error");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .dashboard-container {
@@ -262,7 +289,7 @@ export default {
   background-color: rgba(255, 255, 255, 0.6);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Logo */
@@ -286,13 +313,27 @@ export default {
 
 /* Animación arcoíris */
 @keyframes rainbow-text {
-  0% { color: red; }
-  16% { color: orange; }
-  32% { color: yellow; }
-  48% { color: green; }
-  64% { color: blue; }
-  80% { color: indigo; }
-  100% { color: violet; }
+  0% {
+    color: red;
+  }
+  16% {
+    color: orange;
+  }
+  32% {
+    color: yellow;
+  }
+  48% {
+    color: green;
+  }
+  64% {
+    color: blue;
+  }
+  80% {
+    color: indigo;
+  }
+  100% {
+    color: violet;
+  }
 }
 
 .animate-rainbow-text {
@@ -300,13 +341,23 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 🔹 Ajustes para impresión */

@@ -25,8 +25,15 @@
               {{ modalEliminar.proveedor.nombre }}?
             </p>
             <div class="modal-buttons">
-              <button class="btn-yes" @click="eliminarProveedor(modalEliminar.idx)">Sí</button>
-              <button class="btn-no" @click="modalEliminar.visible = false">No</button>
+              <button
+                class="btn-yes"
+                @click="eliminarProveedor(modalEliminar.idx)"
+              >
+                Sí
+              </button>
+              <button class="btn-no" @click="modalEliminar.visible = false">
+                No
+              </button>
             </div>
           </div>
         </div>
@@ -39,7 +46,7 @@
         <span class="buscar-label">Buscar por:</span>
 
         <!-- Nuevo: selector + input + botones -->
-        <div style="display: flex; gap: 4px;">
+        <div style="display: flex; gap: 4px">
           <select v-model="tipoBusqueda">
             <option disabled value="">Seleccione una opción</option>
             <option value="codigoSucursal">Código Sucursal</option>
@@ -48,35 +55,42 @@
           </select>
 
           <!-- 🔍 Termino de búsqueda -->
-          <input v-if="tipoBusqueda !== 'fechaCreacion'"
-                 v-model="busqueda"
-                 type="text"
-                 placeholder="Ingrese término de búsqueda"
-                 :disabled="!tipoBusqueda" />
+          <input
+            v-if="tipoBusqueda !== 'fechaCreacion'"
+            v-model="busqueda"
+            type="text"
+            placeholder="Ingrese término de búsqueda"
+            :disabled="!tipoBusqueda"
+          />
 
           <!-- 📅 Selector de rango de fecha estilo CloudWatch -->
-          <DateRangePicker v-if="tipoBusqueda === 'fechaCreacion'" @aplicar="onFechaRangoAplicar" />
+          <DateRangePicker
+            v-if="tipoBusqueda === 'fechaCreacion'"
+            @aplicar="onFechaRangoAplicar"
+          />
 
           <!-- 🔍 Botón de búsqueda -->
-          <button type="button"
-                  class="buscar-btn"
-                  :disabled="!puedeFiltrarse"
-                  @click="filtrarProveedores">
+          <button
+            type="button"
+            class="buscar-btn"
+            :disabled="!puedeFiltrarse"
+            @click="filtrarProveedores"
+          >
             🔍 Buscar
           </button>
 
           <!-- 🧹 Botón de limpiar búsqueda -->
-          <button type="button"
-                  class="limpiar-btn"
-                  :disabled="!puedeFiltrarse && tipoBusqueda !== 'fechaCreacion'"
-                  @click="limpiarBusqueda">
+          <button
+            type="button"
+            class="limpiar-btn"
+            :disabled="!puedeFiltrarse && tipoBusqueda !== 'fechaCreacion'"
+            @click="limpiarBusqueda"
+          >
             🧹 Limpiar
           </button>
 
           <!-- ➕ Botón de registrar producto -->
-          <button type="button"
-                  class="registrar-btn"
-                  @click="agregarProveedor">
+          <button type="button" class="registrar-btn" @click="agregarProveedor">
             ➕ Registrar Proveedor
           </button>
         </div>
@@ -85,42 +99,54 @@
       <!-- Tabla proveedores -->
       <table class="proveedores-table">
         <thead>
-        <tr>
-          <th>ID</th>
-          <th>CÓDIGO SUCURSAL</th>
-          <th>NOMBRE</th>
-          <th>TELÉFONO</th>
-          <th>DIRECCIÓN</th>
-          <th>CORREO</th>
-          <th>FECHA CREACIÓN</th>
-          <th>FECHA ACTUALIZACIÓN</th>
-          <th>ACCIONES</th>
-        </tr>
+          <tr>
+            <th>ID</th>
+            <th>CÓDIGO SUCURSAL</th>
+            <th>NOMBRE</th>
+            <th>TELÉFONO</th>
+            <th>DIRECCIÓN</th>
+            <th>CORREO</th>
+            <th>FECHA CREACIÓN</th>
+            <th>FECHA ACTUALIZACIÓN</th>
+            <th>ACCIONES</th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="(p, idx) in proveedoresFiltrados" :key="idx">
-          <td>{{ idx + 1 }}</td>
-          <td>{{ p.codigoSucursal }}</td>
-          <td>{{ p.nombre }}</td>
-          <td>{{ p.telefono }}</td>
-          <td>{{ p.direccion }}</td>
-          <td>{{ p.correo }}</td>
-          <td>{{ p.fechaCreacion }}</td> <!-- ⏰ Fecha de registro -->
-          <td>{{ p.fechaActualizacion }}</td> <!-- ⏰ Fecha actualización, inicialmente vacía -->
-          <td>
-            <!-- ✏️ Botón de editar -->
-            <button class="update-btn" title="Editar" @click="abrirActualizarProveedor(p)">
-              ✏️
-            </button>
-            <!-- 🗑️️ Botón de eliminar -->
-            <button class="delete-btn" title="Eliminar" @click="confirmarEliminar(idx)">
-              🗑️
-            </button>
-          </td>
-        </tr>
-        <tr v-if="proveedoresFiltrados.length === 0">
-          <td colspan="9" class="empty-row">No hay proveedores registrados.</td>
-        </tr>
+          <tr v-for="(p, idx) in proveedoresFiltrados" :key="idx">
+            <td>{{ idx + 1 }}</td>
+            <td>{{ p.codigoSucursal }}</td>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.telefono }}</td>
+            <td>{{ p.direccion }}</td>
+            <td>{{ p.correo }}</td>
+            <td>{{ p.fechaCreacion }}</td>
+            <!-- ⏰ Fecha de registro -->
+            <td>{{ p.fechaActualizacion }}</td>
+            <!-- ⏰ Fecha actualización, inicialmente vacía -->
+            <td>
+              <!-- ✏️ Botón de editar -->
+              <button
+                class="update-btn"
+                title="Editar"
+                @click="abrirActualizarProveedor(p)"
+              >
+                ✏️
+              </button>
+              <!-- 🗑️️ Botón de eliminar -->
+              <button
+                class="delete-btn"
+                title="Eliminar"
+                @click="confirmarEliminar(idx)"
+              >
+                🗑️
+              </button>
+            </td>
+          </tr>
+          <tr v-if="proveedoresFiltrados.length === 0">
+            <td colspan="9" class="empty-row">
+              No hay proveedores registrados.
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -128,56 +154,58 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import DateRangePicker from '@/components/common/DateRangePicker.vue'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import DateRangePicker from "@/components/common/DateRangePicker.vue";
 import {
   listarProveedores,
   buscarProveedorPorCodigoSucursal,
   buscarProveedorPorNombre,
   buscarProveedorPorFechaCreacion,
-  eliminarProveedorPorCodigoSucursal
-} from '@/services/apiSuppliersService.js'
+  eliminarProveedorPorCodigoSucursal,
+} from "@/services/apiSuppliersService.js";
 
 export default {
-  name: 'ProveedoresView',
+  name: "ProveedoresView",
   components: { DashboardSideMenu, DateRangePicker },
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       proveedorForm: {
-        codigoSucursal: '',
-        nombre: '',
-        telefono: '',
-        direccion: '',
-        correo: ''
+        codigoSucursal: "",
+        nombre: "",
+        telefono: "",
+        direccion: "",
+        correo: "",
       },
       proveedores: [],
       proveedoresFiltrados: [],
-      mensaje: '',
-      mensajeTipo: '',
-      busqueda: '',
-      tipoBusqueda: '',
-      fechaRango: { fechaInicio: '', fechaFin: '' },
+      mensaje: "",
+      mensajeTipo: "",
+      busqueda: "",
+      tipoBusqueda: "",
+      fechaRango: { fechaInicio: "", fechaFin: "" },
       modalEliminar: {
         visible: false,
         idx: null,
-        proveedor: {}
-      }
-    }
+        proveedor: {},
+      },
+    };
   },
   mounted() {
     // 🔹 Cargar todos los proveedores desde backend al iniciar
-    this.cargarProveedores()
+    this.cargarProveedores();
   },
 
   computed: {
     puedeFiltrarse() {
-      if (!this.tipoBusqueda) return false
-      if (this.tipoBusqueda === 'fechaCreacion') {
-        return this.fechaRango.fechaInicio !== '' && this.fechaRango.fechaFin !== ''
+      if (!this.tipoBusqueda) return false;
+      if (this.tipoBusqueda === "fechaCreacion") {
+        return (
+          this.fechaRango.fechaInicio !== "" && this.fechaRango.fechaFin !== ""
+        );
       }
-      return this.busqueda.trim().length > 0
-    }
+      return this.busqueda.trim().length > 0;
+    },
   },
 
   methods: {
@@ -186,254 +214,312 @@ export default {
     // },
 
     // 🔹 Método de mostrar mensaje
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-      }, 3000)
+        this.mensaje = "";
+      }, 3000);
     },
 
     // 🔹 Método de cargar proveedores
     async cargarProveedores() {
       try {
-        const response = await listarProveedores()
+        const response = await listarProveedores();
 
         // 🟡 Caso 1: No hay proveedores (HTTP 204)
         if (response.status === 204) {
-          this.proveedores = []
-          this.proveedoresFiltrados = []
-          this.mostrarMensaje('⚠️ No se encontraron proveedores en el sistema.', 'warning')
-          return
+          this.proveedores = [];
+          this.proveedoresFiltrados = [];
+          this.mostrarMensaje(
+            "⚠️ No se encontraron proveedores en el sistema.",
+            "warning",
+          );
+          return;
         }
 
         // 🟢 Caso 2: Proveedores cargados exitosamente
-        this.proveedores = response.data
-        this.proveedoresFiltrados = [...this.proveedores]
+        this.proveedores = response.data;
+        this.proveedoresFiltrados = [...this.proveedores];
 
-        this.mostrarMensaje(`✅ ${this.proveedores.length} proveedor${this.proveedores.length === 1 ? '' : 'es'} cargado${this.proveedores.length === 1 ? '' : 's'} correctamente.`, 'success')
-
+        this.mostrarMensaje(
+          `✅ ${this.proveedores.length} proveedor${this.proveedores.length === 1 ? "" : "es"} cargado${this.proveedores.length === 1 ? "" : "s"} correctamente.`,
+          "success",
+        );
       } catch (error) {
-        this.manejarErrorApiProveedores(error, 'cargar proveedores')
+        this.manejarErrorApiProveedores(error, "cargar proveedores");
       }
     },
 
     // 🔹 Método para llamar al componente de agregar proveedor
     async agregarProveedor(proveedor) {
       this.$router.push({
-        name: 'RegistroProveedorView',
-        state: { proveedor }
-      })
+        name: "RegistroProveedorView",
+        state: { proveedor },
+      });
     },
 
     // 🔹 Método para llamar al componente de actualizar proveedor
     abrirActualizarProveedor(proveedor) {
       this.$router.push({
-        name: 'ActualizarProveedorView',
+        name: "ActualizarProveedorView",
         params: {
-          codigoSucursal: proveedor.codigoSucursal
-        }
-      })
+          codigoSucursal: proveedor.codigoSucursal,
+        },
+      });
     },
 
     // 🔹 Método para eliminar producto
     async eliminarProveedor(idx) {
-      const proveedor = this.proveedores[idx]
+      const proveedor = this.proveedores[idx];
 
       try {
-        await eliminarProveedorPorCodigoSucursal(proveedor.codigoSucursal)
+        await eliminarProveedorPorCodigoSucursal(proveedor.codigoSucursal);
 
         // ✅ Eliminamos solo si backend respondió bien
-        this.proveedores.splice(idx, 1)
-        this.proveedoresFiltrados = [...this.proveedores]
+        this.proveedores.splice(idx, 1);
+        this.proveedoresFiltrados = [...this.proveedores];
 
-        this.mostrarMensaje(`🗑️ Proveedor ${proveedor.nombre} eliminado.`, 'success')
-
+        this.mostrarMensaje(
+          `🗑️ Proveedor ${proveedor.nombre} eliminado.`,
+          "success",
+        );
       } catch (error) {
-        this.manejarErrorApiProveedores(error, `eliminar proveedor ${proveedor.nombre}`)
+        this.manejarErrorApiProveedores(
+          error,
+          `eliminar proveedor ${proveedor.nombre}`,
+        );
       } finally {
         // 🧹 Siempre cerramos el modal de confirmación
-        this.modalEliminar.visible = false
+        this.modalEliminar.visible = false;
       }
     },
 
     // 🔹 Método para filtrar proveedores según el tipo de búsqueda
     async filtrarProveedores() {
       // Caso especial: busqueda por fecha
-      if (this.tipoBusqueda === 'fechaCreacion') {
-        return this.filtrarProveedoresPorFecha()
+      if (this.tipoBusqueda === "fechaCreacion") {
+        return this.filtrarProveedoresPorFecha();
       }
 
-      const termino = this.busqueda.trim()
+      const termino = this.busqueda.trim();
       if (!termino || !this.tipoBusqueda) {
-        this.mostrarMensaje('⚠️ Por favor, seleccione un tipo de búsqueda y un término.', 'error')
-        return
+        this.mostrarMensaje(
+          "⚠️ Por favor, seleccione un tipo de búsqueda y un término.",
+          "error",
+        );
+        return;
       }
 
       try {
-        let response
+        let response;
 
         switch (this.tipoBusqueda) {
-          case 'codigoSucursal':
-            response = await buscarProveedorPorCodigoSucursal(termino)
-            break
-          case 'nombre':
-            response = await buscarProveedorPorNombre(termino)
-            break
+          case "codigoSucursal":
+            response = await buscarProveedorPorCodigoSucursal(termino);
+            break;
+          case "nombre":
+            response = await buscarProveedorPorNombre(termino);
+            break;
           default:
-            this.mostrarMensaje('⚠️ Tipo de búsqueda no válido.', 'error')
-            return
+            this.mostrarMensaje("⚠️ Tipo de búsqueda no válido.", "error");
+            return;
         }
 
-        console.log('📦 Respuesta del backend:', response)
+        console.log("📦 Respuesta del backend:", response);
 
         // ✅ Proveedor(es) no encontrado(s)
         if (response.status === 204) {
-          this.proveedoresFiltrados = []
-          this.mostrarMensaje(`❌ No se encontraron proveedores con ${this.tipoBusqueda}: ${termino}`, 'warning')
-          return
+          this.proveedoresFiltrados = [];
+          this.mostrarMensaje(
+            `❌ No se encontraron proveedores con ${this.tipoBusqueda}: ${termino}`,
+            "warning",
+          );
+          return;
         }
 
         // ✅ Proveedor(es) encontrado(s)
-        if(response.data) {
+        if (response.data) {
           if (Array.isArray(response.data)) {
-            this.proveedoresFiltrados = response.data
+            this.proveedoresFiltrados = response.data;
           } else {
-            this.proveedoresFiltrados = [response.data]
+            this.proveedoresFiltrados = [response.data];
           }
-          this.mostrarMensaje(`✅ Proveedor${Array.isArray(response.data) && response.data.length > 1 ? 'es' : ''} encontrado${Array.isArray(response.data) && response.data.length > 1 ? 's' : ''} correctamente.`, 'success')
-          return
+          this.mostrarMensaje(
+            `✅ Proveedor${Array.isArray(response.data) && response.data.length > 1 ? "es" : ""} encontrado${Array.isArray(response.data) && response.data.length > 1 ? "s" : ""} correctamente.`,
+            "success",
+          );
+          return;
         }
 
         // ⚠️ Caso defensivo (nunca debería entrar aquí)
-        this.proveedoresFiltrados = []
-        this.mostrarMensaje(`❌ No se encontraron proveedores con ${this.tipoBusqueda}: ${termino}`, 'warning')
-
+        this.proveedoresFiltrados = [];
+        this.mostrarMensaje(
+          `❌ No se encontraron proveedores con ${this.tipoBusqueda}: ${termino}`,
+          "warning",
+        );
       } catch (error) {
-        this.manejarErrorApiProveedores(error, `filtrar proveedores por ${this.tipoBusqueda}`)
+        this.manejarErrorApiProveedores(
+          error,
+          `filtrar proveedores por ${this.tipoBusqueda}`,
+        );
       }
     },
 
     // 🔹 Método para abrir modal en vez de window.confirm
     confirmarEliminar(idx) {
-      this.modalEliminar.idx = idx
-      this.modalEliminar.proveedor = this.proveedores[idx]
-      this.modalEliminar.visible = true
+      this.modalEliminar.idx = idx;
+      this.modalEliminar.proveedor = this.proveedores[idx];
+      this.modalEliminar.visible = true;
     },
 
     // 🔹 Método para saber si hay datos en el cuadro de filtro
     hayDatosFiltro() {
-      return this.busqueda.trim().length > 0
+      return this.busqueda.trim().length > 0;
     },
 
     // 🔹 Método para saber si hay datos en el formulario
     hayDatos() {
-      return this.proveedorForm.codigoSucursal ||
-          this.proveedorForm.nombre ||
-          this.proveedorForm.telefono ||
-          this.proveedorForm.direccion ||
-          this.proveedorForm.correo;
+      return (
+        this.proveedorForm.codigoSucursal ||
+        this.proveedorForm.nombre ||
+        this.proveedorForm.telefono ||
+        this.proveedorForm.direccion ||
+        this.proveedorForm.correo
+      );
     },
 
     // 🔹 Método de limpiar campos del formulario
     limpiarCampos() {
       this.proveedorForm = {
-        codigoSucursal: '',
-        nombre: '',
-        telefono: '',
-        direccion: '',
-        correo: ''
-      }
+        codigoSucursal: "",
+        nombre: "",
+        telefono: "",
+        direccion: "",
+        correo: "",
+      };
     },
 
     // 🔹 Método para limpiar búsqueda
     limpiarBusqueda() {
-      this.busqueda = ''
-      this.tipoBusqueda = '' // 🔹 Resetea la opción del selector
-      this.fechaRango = { fechaInicio: '', fechaFin: '' }
-      this.cargarProveedores() // 🔹 Vuelve a cargar todos los proveedores
+      this.busqueda = "";
+      this.tipoBusqueda = ""; // 🔹 Resetea la opción del selector
+      this.fechaRango = { fechaInicio: "", fechaFin: "" };
+      this.cargarProveedores(); // 🔹 Vuelve a cargar todos los proveedores
     },
 
     // 🔹 Callback del DateRangePicker
     onFechaRangoAplicar(rango) {
-      this.fechaRango = rango
+      this.fechaRango = rango;
       // Auto-buscar al aplicar el rango
-      this.filtrarProveedoresPorFecha()
+      this.filtrarProveedoresPorFecha();
     },
 
     // 🔹 Metodo para filtrar proveedores por rango de fecha de creacion
     async filtrarProveedoresPorFecha() {
       try {
-        const inicio = this.fechaRango.fechaInicio
-        const fin = this.fechaRango.fechaFin
+        const inicio = this.fechaRango.fechaInicio;
+        const fin = this.fechaRango.fechaFin;
 
         if (!inicio || !fin) {
-          this.mostrarMensaje('⚠️ Seleccione un rango de fechas.', 'error')
-          return
+          this.mostrarMensaje("⚠️ Seleccione un rango de fechas.", "error");
+          return;
         }
 
-        const response = await buscarProveedorPorFechaCreacion(inicio, fin)
+        const response = await buscarProveedorPorFechaCreacion(inicio, fin);
 
         if (response.status === 204) {
-          this.proveedoresFiltrados = []
-          this.mostrarMensaje('❌ No se encontraron proveedores en el rango de fechas seleccionado.', 'warning')
-          return
+          this.proveedoresFiltrados = [];
+          this.mostrarMensaje(
+            "❌ No se encontraron proveedores en el rango de fechas seleccionado.",
+            "warning",
+          );
+          return;
         }
 
         if (response.data) {
-          this.proveedoresFiltrados = Array.isArray(response.data) ? response.data : [response.data]
-          this.mostrarMensaje('✅ ' + this.proveedoresFiltrados.length + ' proveedor(es) encontrado(s) en el rango de fechas.', 'success')
+          this.proveedoresFiltrados = Array.isArray(response.data)
+            ? response.data
+            : [response.data];
+          this.mostrarMensaje(
+            "✅ " +
+              this.proveedoresFiltrados.length +
+              " proveedor(es) encontrado(s) en el rango de fechas.",
+            "success",
+          );
         }
-
       } catch (error) {
-        this.manejarErrorApiProveedores(error, 'filtrar proveedores por fecha')
+        this.manejarErrorApiProveedores(error, "filtrar proveedores por fecha");
       }
     },
 
     // 🔹 Método para manejar errores de API
-    manejarErrorApiProveedores(error, contexto = '') {
-      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+    manejarErrorApiProveedores(error, contexto = "") {
+      console.error(`❌ Error en ${contexto || "operación"}:`, error);
 
       // 🔴 Caso 1: Error con respuesta del servidor
       if (error.response) {
-        const status = error.response.status
+        const status = error.response.status;
 
         switch (status) {
           case 400:
-            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Solicitud incorrecta. Revisa los parámetros enviados.",
+              "warning",
+            );
+            break;
           case 401:
-            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
-            break
+            this.mostrarMensaje(
+              "🚫 No autorizado. Inicia sesión nuevamente.",
+              "error",
+            );
+            break;
           case 403:
-            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
-            break
+            this.mostrarMensaje(
+              "🔒 Acceso denegado. No tienes permisos para esta acción.",
+              "error",
+            );
+            break;
           case 404:
-            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Recurso no encontrado en el servidor.",
+              "warning",
+            );
+            break;
           case 409:
-            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Conflicto con el recurso. Puede estar siendo utilizado.",
+              "warning",
+            );
+            break;
           case 500:
-            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
-            break
+            this.mostrarMensaje(
+              "💥 Error interno en el servidor. Inténtalo más tarde.",
+              "error",
+            );
+            break;
           default:
-            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+            this.mostrarMensaje(
+              `⚠️ ${error.response?.data?.message || "Error desconocido en el servidor."}`,
+              "error",
+            );
         }
 
         // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
-        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+        this.mostrarMensaje(
+          "🌐 No se pudo conectar con el servidor. Verifica tu conexión.",
+          "error",
+        );
 
         // ⚙️ Caso 3: Error inesperado en frontend
       } else {
-        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, "error");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .registro-proveedor-wrapper {
@@ -463,12 +549,12 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: -10px;    /* espacio desde arriba */
+  margin-top: -10px; /* espacio desde arriba */
 }
 
 .buscar-label {
-  display: block;       /* para que respete el margen como línea */
-  margin-top: -20px;    /* sube el texto hacia arriba */
+  display: block; /* para que respete el margen como línea */
+  margin-top: -20px; /* sube el texto hacia arriba */
   font-weight: bold;
 }
 
@@ -478,7 +564,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {
@@ -500,10 +586,10 @@ export default {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  align-items: center;      /* o center según prefieras */
-  gap: 4px;                 /* espacio entre el texto y los inputs/botones */
-  margin-top: 20px;         /* espacio arriba del bloque */
-  margin-bottom: 12px;      /* espacio debajo del bloque */
+  align-items: center; /* o center según prefieras */
+  gap: 4px; /* espacio entre el texto y los inputs/botones */
+  margin-top: 20px; /* espacio arriba del bloque */
+  margin-bottom: 12px; /* espacio debajo del bloque */
 }
 
 input {
@@ -635,7 +721,7 @@ input {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -648,7 +734,7 @@ input {
   border-radius: 8px;
   text-align: center;
   min-width: 300px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.25);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 .modal-buttons {

@@ -29,23 +29,29 @@
           <input v-model="roleForm.descripcion" type="text" />
 
           <!-- Botones -->
-          <button type="button"
-                  class="agregar-btn"
-                  :disabled="!hayDatos()"
-                  @click="registrarRol">
+          <button
+            type="button"
+            class="agregar-btn"
+            :disabled="!hayDatos()"
+            @click="registrarRol"
+          >
             ➕ Registrar Rol
           </button>
 
-          <button type="button"
-                  class="limpiar-campos-btn"
-                  :disabled="!hayDatos()"
-                  @click="limpiarCampos">
+          <button
+            type="button"
+            class="limpiar-campos-btn"
+            :disabled="!hayDatos()"
+            @click="limpiarCampos"
+          >
             🧹 Limpiar
           </button>
 
-          <button type="button"
-                  class="volver-btn"
-                  @click="volverAConfiguracion">
+          <button
+            type="button"
+            class="volver-btn"
+            @click="volverAConfiguracion"
+          >
             ↩️ Volver
           </button>
         </div>
@@ -55,62 +61,78 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { registrarRole } from '@/services/apiConfigEmpresaRolesService'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import { registrarRole } from "@/services/apiConfigEmpresaRolesService";
 
 export default {
-  name: 'RegistroRolesView',
+  name: "RegistroRolesView",
   components: { DashboardSideMenu },
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       roleForm: {
-        roleCode: '',
-        roleName: '',
-        descripcion: ''
+        roleCode: "",
+        roleName: "",
+        descripcion: "",
       },
-      mensaje: '',
-      mensajeTipo: ''
-    }
+      mensaje: "",
+      mensajeTipo: "",
+    };
   },
   methods: {
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-        if (tipo === 'success') {
-          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
+        this.mensaje = "";
+        if (tipo === "success") {
+          this.$router.push({
+            path: "/configuracion-empresa-usuario",
+            query: { vista: "roles" },
+          });
         }
-      }, 2500)
+      }, 2500);
     },
     async registrarRol() {
       if (!this.roleForm.roleCode || !this.roleForm.roleName) {
-        this.mostrarMensaje('⚠️ Complete los campos obligatorios.', 'error')
-        return
+        this.mostrarMensaje("⚠️ Complete los campos obligatorios.", "error");
+        return;
       }
 
       try {
-        const response = await registrarRole(this.roleForm)
-        const data = response.data
-        this.mostrarMensaje(`✅ Rol "${data.roleName}" registrado correctamente.`, 'success')
-        this.limpiarCampos()
+        const response = await registrarRole(this.roleForm);
+        const data = response.data;
+        this.mostrarMensaje(
+          `✅ Rol "${data.roleName}" registrado correctamente.`,
+          "success",
+        );
+        this.limpiarCampos();
       } catch (error) {
-        console.error('❌ Error al registrar rol:', error)
-        this.mostrarMensaje(error.message || 'Error al registrar rol.', 'error')
+        console.error("❌ Error al registrar rol:", error);
+        this.mostrarMensaje(
+          error.message || "Error al registrar rol.",
+          "error",
+        );
       }
     },
     hayDatos() {
-      return this.roleForm.roleCode || this.roleForm.roleName || this.roleForm.descripcion
+      return (
+        this.roleForm.roleCode ||
+        this.roleForm.roleName ||
+        this.roleForm.descripcion
+      );
     },
     limpiarCampos() {
-      this.roleForm = { roleCode: '', roleName: '', descripcion: '' }
+      this.roleForm = { roleCode: "", roleName: "", descripcion: "" };
     },
     volverAConfiguracion() {
-      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
-    }
-  }
-}
+      this.$router.push({
+        path: "/configuracion-empresa-usuario",
+        query: { vista: "roles" },
+      });
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -149,12 +171,21 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.mensaje.success { background: #2ecc71; color: white; }
-.mensaje.warning { background: #f1c40f; color: #333; }
-.mensaje.error { background: #e74c3c; color: white; }
+.mensaje.success {
+  background: #2ecc71;
+  color: white;
+}
+.mensaje.warning {
+  background: #f1c40f;
+  color: #333;
+}
+.mensaje.error {
+  background: #e74c3c;
+  color: white;
+}
 
 .form-container {
   margin-bottom: 0px;
@@ -172,7 +203,8 @@ label {
   font-weight: bold;
 }
 
-input, select {
+input,
+select {
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -229,5 +261,4 @@ input, select {
 .volver-btn:hover {
   background: #005f8a;
 }
-
 </style>

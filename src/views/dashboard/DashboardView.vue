@@ -11,21 +11,21 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import DashboardExpandedView from '@/views/dashboard/DashboardExpandedView.vue'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import DashboardExpandedView from "@/views/dashboard/DashboardExpandedView.vue";
 
 export default {
-  name: 'DashboardView',
+  name: "DashboardView",
   components: {
     DashboardSideMenu,
-    DashboardExpandedView
+    DashboardExpandedView,
   },
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
-    }
-  }
-}
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
+    };
+  },
+};
 </script>
 
 <style scoped>

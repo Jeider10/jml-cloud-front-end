@@ -23,8 +23,16 @@
           <input v-model="rolForm.descripcion" type="text" />
 
           <!-- Botones -->
-          <button type="button" class="agregar-btn" @click="abrirModalConfirmacion">💾 Actualizar</button>
-          <button type="button" class="volver-btn" @click="volverConfiguracion">↩️ Volver</button>
+          <button
+            type="button"
+            class="agregar-btn"
+            @click="abrirModalConfirmacion"
+          >
+            💾 Actualizar
+          </button>
+          <button type="button" class="volver-btn" @click="volverConfiguracion">
+            ↩️ Volver
+          </button>
         </div>
       </div>
     </div>
@@ -44,81 +52,93 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { buscarRolePorRoleCode, actualizarRole } from '@/services/apiConfigEmpresaRolesService'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import {
+  buscarRolePorRoleCode,
+  actualizarRole,
+} from "@/services/apiConfigEmpresaRolesService";
 
 export default {
-  name: 'ConfiguracionEmpresaActualizarRoleView',
+  name: "ConfiguracionEmpresaActualizarRoleView",
   components: { DashboardSideMenu },
-  props: ['roleCode'],
+  props: ["roleCode"],
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       rolForm: {
-        roleCode: '',
-        roleName: '',
-        descripcion: ''
+        roleCode: "",
+        roleName: "",
+        descripcion: "",
       },
-      mensaje: '',
-      mensajeTipo: '',
-      mostrarConfirmacion: false
-    }
+      mensaje: "",
+      mensajeTipo: "",
+      mostrarConfirmacion: false,
+    };
   },
 
   async mounted() {
     if (this.roleCode) {
-      await this.cargarRole()
+      await this.cargarRole();
     } else {
-      this.mostrarMensaje('❌ No se proporcionó un código de rol válido.', 'error')
+      this.mostrarMensaje(
+        "❌ No se proporcionó un código de rol válido.",
+        "error",
+      );
     }
   },
 
   methods: {
     async cargarRole() {
       try {
-        const response = await buscarRolePorRoleCode(this.roleCode)
-        this.rolForm = { ...response.data }
+        const response = await buscarRolePorRoleCode(this.roleCode);
+        this.rolForm = { ...response.data };
       } catch (error) {
-        this.mostrarMensaje('Error al cargar rol.', 'error')
+        this.mostrarMensaje("Error al cargar rol.", "error");
       }
     },
 
     // 🔹 Abrir modal de confirmación antes de actualizar
     abrirModalConfirmacion() {
-      this.mostrarConfirmacion = true
+      this.mostrarConfirmacion = true;
     },
 
     cerrarModal() {
-      this.mostrarConfirmacion = false
+      this.mostrarConfirmacion = false;
     },
 
     // 🔹 Confirmar y ejecutar actualización
     async confirmarActualizacion() {
-      this.mostrarConfirmacion = false
+      this.mostrarConfirmacion = false;
       try {
-        await actualizarRole(this.rolForm)
-        this.mostrarMensaje('✅ Rol actualizado correctamente.', 'success')
+        await actualizarRole(this.rolForm);
+        this.mostrarMensaje("✅ Rol actualizado correctamente.", "success");
       } catch (error) {
-        this.mostrarMensaje('❌ Error al actualizar rol.', 'error')
+        this.mostrarMensaje("❌ Error al actualizar rol.", "error");
       }
     },
 
     mostrarMensaje(texto, tipo) {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-        if (tipo === 'success') {
-          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
+        this.mensaje = "";
+        if (tipo === "success") {
+          this.$router.push({
+            path: "/configuracion-empresa-usuario",
+            query: { vista: "roles" },
+          });
         }
-      }, 2000)
+      }, 2000);
     },
 
     volverConfiguracion() {
-      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'roles' } })
-    }
-  }
-}
+      this.$router.push({
+        path: "/configuracion-empresa-usuario",
+        query: { vista: "roles" },
+      });
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -149,7 +169,7 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: 1px;    /* espacio desde arriba */
+  margin-top: 1px; /* espacio desde arriba */
 }
 
 .mensaje {
@@ -284,5 +304,4 @@ input {
 .no-btn:hover {
   background-color: #922b21;
 }
-
 </style>

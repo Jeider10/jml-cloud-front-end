@@ -1,29 +1,36 @@
 // src/services/apiConfigEmpresaRolesService.js
 
-import { apiAuth as apiConfigEmpresaRole } from '@/services/apiAuthService'
+import { apiAuth as apiConfigEmpresaRole } from "@/services/apiAuthService";
 
 // ===============================
 // 📡 ENDPOINTS PARA ROLES
 // ===============================
 
 // Listar todos los roles
-export const listarRoles = () => apiConfigEmpresaRole.get('/roles/list/all')
+export const listarRoles = () => apiConfigEmpresaRole.get("/roles/list/all");
 
 // Registrar rol
-export const registrarRole = (role) => apiConfigEmpresaRole.post('/roles/register', role)
+export const registrarRole = (role) =>
+  apiConfigEmpresaRole.post("/roles/register", role);
 
 // Búsqueda de rol por código
-export const buscarRolePorRoleCode = (roleCode) => apiConfigEmpresaRole.get('/roles/roleCode', { params: { roleCode } })
+export const buscarRolePorRoleCode = (roleCode) =>
+  apiConfigEmpresaRole.get("/roles/roleCode", { params: { roleCode } });
 
 // Buscar por nombre de rol
-export const buscarRolePorRoleName = (roleName) => apiConfigEmpresaRole.get('/roles/roleName', { params: { roleName } })
+export const buscarRolePorRoleName = (roleName) =>
+  apiConfigEmpresaRole.get("/roles/roleName", { params: { roleName } });
 
 // Actualizar rol
-export const actualizarRole = (role) => apiConfigEmpresaRole.put('/roles/update', role)
+export const actualizarRole = (role) =>
+  apiConfigEmpresaRole.put("/roles/update", role);
 
 // Eliminar rol
-export const eliminarRole = (roleCode) => apiConfigEmpresaRole.delete('/roles/delete', { params: { roleCode } })
+export const eliminarRole = (roleCode) =>
+  apiConfigEmpresaRole.delete("/roles/delete", { params: { roleCode } });
 
 // Busqueda por fecha de creacion (rango)
 export const buscarRolePorFechaCreacion = (fechaInicio, fechaFin) =>
-    apiConfigEmpresaRole.get('/roles/fechaCreacion', { params: { fechaInicio, fechaFin } })
+  apiConfigEmpresaRole.get("/roles/fechaCreacion", {
+    params: { fechaInicio, fechaFin },
+  });

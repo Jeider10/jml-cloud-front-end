@@ -35,16 +35,16 @@
           <input v-model="proveedorForm.correo" type="text" />
 
           <!-- 💾 Botón de actualizar -->
-          <button type="button"
-                  class="actualizar-btn"
-                  @click="actualizarProveedor">
+          <button
+            type="button"
+            class="actualizar-btn"
+            @click="actualizarProveedor"
+          >
             💾 Actualizar
           </button>
 
           <!-- ↩️ Botón de volver -->
-          <button type="button"
-                  class="volver-btn"
-                  @click="volverProveedores">
+          <button type="button" class="volver-btn" @click="volverProveedores">
             ↩️ Volver
           </button>
         </div>
@@ -54,31 +54,34 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { actualizarProveedor, buscarProveedorPorCodigoSucursal } from '@/services/apiSuppliersService.js'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import {
+  actualizarProveedor,
+  buscarProveedorPorCodigoSucursal,
+} from "@/services/apiSuppliersService.js";
 
 export default {
-  name: 'ActualizarProveedorView',
+  name: "ActualizarProveedorView",
   components: { DashboardSideMenu },
-  props: ['codigoSucursal'],
+  props: ["codigoSucursal"],
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       proveedorForm: {
-        codigoSucursal: '',
-        nombre: '',
-        telefono: '',
-        direccion: '',
-        correo: ''
+        codigoSucursal: "",
+        nombre: "",
+        telefono: "",
+        direccion: "",
+        correo: "",
       },
-      mensaje: '',
-      mensajeTipo: ''
-    }
+      mensaje: "",
+      mensajeTipo: "",
+    };
   },
 
   async mounted() {
     // 🔹 Cargar proveedor específico desde backend por codigoSucursal
-    await this.cargarProveedor()
+    await this.cargarProveedor();
   },
 
   methods: {
@@ -87,107 +90,149 @@ export default {
     // },
 
     // 🔹 Método de mostrar mensaje
-    mostrarMensaje(texto, tipo = 'success') {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+    mostrarMensaje(texto, tipo = "success") {
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
+        this.mensaje = "";
 
         // 🔹 Solo redirige si es un mensaje de éxito
-        if (tipo === 'success') {
-          this.$router.push({ name: 'ProveedoresView' })
+        if (tipo === "success") {
+          this.$router.push({ name: "ProveedoresView" });
         }
-      }, 3000)
+      }, 3000);
     },
 
     // 🔹 Método de agregar un proveedor por códigoSucursal
     async cargarProveedor() {
       try {
-        const response = await buscarProveedorPorCodigoSucursal(this.codigoSucursal)
+        const response = await buscarProveedorPorCodigoSucursal(
+          this.codigoSucursal,
+        );
         if (response.data) {
-          this.proveedorForm = { ...response.data } // ✅ llena el form directamente
-          this.mostrarMensaje(`✅ Proveedor ${this.proveedorForm.nombre} cargado correctamente.`, 'info')
+          this.proveedorForm = { ...response.data }; // ✅ llena el form directamente
+          this.mostrarMensaje(
+            `✅ Proveedor ${this.proveedorForm.nombre} cargado correctamente.`,
+            "info",
+          );
         } else {
-          this.mostrarMensaje('⚠️ No se encontraron datos del proveedor.', 'warning')
+          this.mostrarMensaje(
+            "⚠️ No se encontraron datos del proveedor.",
+            "warning",
+          );
         }
       } catch (error) {
-        this.manejarErrorApiProveedorActualizar(error, `buscar proveedor con código de sucursal ${this.codigoSucursal}`)
+        this.manejarErrorApiProveedorActualizar(
+          error,
+          `buscar proveedor con código de sucursal ${this.codigoSucursal}`,
+        );
       }
     },
 
     // 🔹 Método para actualizar proveedor en backend
     async actualizarProveedor() {
       if (
-          !this.proveedorForm.codigoSucursal ||
-          !this.proveedorForm.nombre ||
-          !this.proveedorForm.telefono ||
-          !this.proveedorForm.direccion ||
-          !this.proveedorForm.correo
+        !this.proveedorForm.codigoSucursal ||
+        !this.proveedorForm.nombre ||
+        !this.proveedorForm.telefono ||
+        !this.proveedorForm.direccion ||
+        !this.proveedorForm.correo
       ) {
-        this.mostrarMensaje('Código sucursal, nombre, teléfono, dirección y correo son obligatorios.', 'error')
-        return
+        this.mostrarMensaje(
+          "Código sucursal, nombre, teléfono, dirección y correo son obligatorios.",
+          "error",
+        );
+        return;
       }
 
       try {
-        const response = await actualizarProveedor(this.proveedorForm)
-        const actualizado = response.data
+        const response = await actualizarProveedor(this.proveedorForm);
+        const actualizado = response.data;
 
-        this.mostrarMensaje(`✅ Proveedor ${actualizado.nombre} actualizado correctamente.`, 'success')
-
+        this.mostrarMensaje(
+          `✅ Proveedor ${actualizado.nombre} actualizado correctamente.`,
+          "success",
+        );
       } catch (error) {
-        this.manejarErrorApiProveedorActualizar(error, `actualizar proveedor ${this.proveedorForm.nombre}`)
+        this.manejarErrorApiProveedorActualizar(
+          error,
+          `actualizar proveedor ${this.proveedorForm.nombre}`,
+        );
       }
     },
 
     // 🔹 Método para volver a registro de proveedores
     volverProveedores() {
-      this.$router.push({ name: 'ProveedoresView' })
+      this.$router.push({ name: "ProveedoresView" });
     },
 
     // 🔹 Método para manejar errores de API
-    manejarErrorApiProveedorActualizar(error, contexto = '') {
-      console.error(`❌ Error en ${contexto || 'operación'}:`, error)
+    manejarErrorApiProveedorActualizar(error, contexto = "") {
+      console.error(`❌ Error en ${contexto || "operación"}:`, error);
 
       // 🔴 Caso 1: Error con respuesta del servidor
       if (error.response) {
-        const status = error.response.status
+        const status = error.response.status;
 
         switch (status) {
           case 400:
-            this.mostrarMensaje('⚠️ Solicitud incorrecta. Revisa los parámetros enviados.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Solicitud incorrecta. Revisa los parámetros enviados.",
+              "warning",
+            );
+            break;
           case 401:
-            this.mostrarMensaje('🚫 No autorizado. Inicia sesión nuevamente.', 'error')
-            break
+            this.mostrarMensaje(
+              "🚫 No autorizado. Inicia sesión nuevamente.",
+              "error",
+            );
+            break;
           case 403:
-            this.mostrarMensaje('🔒 Acceso denegado. No tienes permisos para esta acción.', 'error')
-            break
+            this.mostrarMensaje(
+              "🔒 Acceso denegado. No tienes permisos para esta acción.",
+              "error",
+            );
+            break;
           case 404:
-            this.mostrarMensaje('⚠️ Recurso no encontrado en el servidor.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Recurso no encontrado en el servidor.",
+              "warning",
+            );
+            break;
           case 409:
-            this.mostrarMensaje('⚠️ Conflicto con el recurso. Puede estar siendo utilizado.', 'warning')
-            break
+            this.mostrarMensaje(
+              "⚠️ Conflicto con el recurso. Puede estar siendo utilizado.",
+              "warning",
+            );
+            break;
           case 500:
-            this.mostrarMensaje('💥 Error interno en el servidor. Inténtalo más tarde.', 'error')
-            break
+            this.mostrarMensaje(
+              "💥 Error interno en el servidor. Inténtalo más tarde.",
+              "error",
+            );
+            break;
           default:
-            this.mostrarMensaje(`⚠️ ${error.response?.data?.message || 'Error desconocido en el servidor.'}`, 'error')
+            this.mostrarMensaje(
+              `⚠️ ${error.response?.data?.message || "Error desconocido en el servidor."}`,
+              "error",
+            );
         }
 
         // 🌐 Caso 2: No hay conexión o CORS bloqueado
       } else if (error.request) {
-        this.mostrarMensaje('🌐 No se pudo conectar con el servidor. Verifica tu conexión.', 'error')
+        this.mostrarMensaje(
+          "🌐 No se pudo conectar con el servidor. Verifica tu conexión.",
+          "error",
+        );
 
         // ⚙️ Caso 3: Error inesperado en frontend
       } else {
-        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, 'error')
+        this.mostrarMensaje(`⚠️ Error inesperado: ${error.message}`, "error");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .registro-proveedor-wrapper {
@@ -217,7 +262,7 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: 1px;    /* espacio desde arriba */
+  margin-top: 1px; /* espacio desde arriba */
 }
 
 .mensaje {
@@ -226,7 +271,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {

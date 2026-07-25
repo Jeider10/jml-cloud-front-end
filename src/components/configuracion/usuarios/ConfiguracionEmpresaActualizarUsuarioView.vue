@@ -38,13 +38,25 @@
           <label>Rol</label>
           <select v-model="usuarioForm.roleCode">
             <option disabled value="">Seleccione un rol</option>
-            <option v-for="role in roles" :key="role.roleCode" :value="role.roleCode">
+            <option
+              v-for="role in roles"
+              :key="role.roleCode"
+              :value="role.roleCode"
+            >
               {{ role.roleName || role.roleCode }}
             </option>
           </select>
 
-          <button type="button" class="agregar-btn" @click="abrirModalConfirmacion">💾 Actualizar</button>
-          <button type="button" class="volver-btn" @click="volverConfiguracion">↩️ Volver</button>
+          <button
+            type="button"
+            class="agregar-btn"
+            @click="abrirModalConfirmacion"
+          >
+            💾 Actualizar
+          </button>
+          <button type="button" class="volver-btn" @click="volverConfiguracion">
+            ↩️ Volver
+          </button>
         </div>
       </div>
     </div>
@@ -64,129 +76,145 @@
 </template>
 
 <script>
-import DashboardSideMenu from '@/views/dashboard/DashboardSideMenu.vue'
-import { buscarUsuarioPorIdentificacion, actualizarUsuario } from '@/services/apiConfigEmpresaUsuariosService'
-import { listarRoles } from '@/services/apiConfigEmpresaRolesService'
+import DashboardSideMenu from "@/views/dashboard/DashboardSideMenu.vue";
+import {
+  buscarUsuarioPorIdentificacion,
+  actualizarUsuario,
+} from "@/services/apiConfigEmpresaUsuariosService";
+import { listarRoles } from "@/services/apiConfigEmpresaRolesService";
 
 export default {
-  name: 'ConfiguracionEmpresaActualizarUsuarioView',
+  name: "ConfiguracionEmpresaActualizarUsuarioView",
   components: { DashboardSideMenu },
-  props: ['identificacion', 'userLogin'],
+  props: ["identificacion", "userLogin"],
 
   data() {
     return {
-      menuOpen: localStorage.getItem('menuPinned') === 'true', // Siempre arranca expandido y false arranca oculto
+      menuOpen: localStorage.getItem("menuPinned") === "true", // Siempre arranca expandido y false arranca oculto
       roles: [],
 
       usuarioForm: {
-        identificacion: '',
-        nombres: '',
-        apellidos: '',
-        userName: '',
-        email: '',
-        telefono: '',
-        direccion: '',
-        roleCode: ''
+        identificacion: "",
+        nombres: "",
+        apellidos: "",
+        userName: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        roleCode: "",
       },
-      mensaje: '',
-      mensajeTipo: '',
-      mostrarConfirmacion: false
-    }
+      mensaje: "",
+      mensajeTipo: "",
+      mostrarConfirmacion: false,
+    };
   },
 
   async mounted() {
-    console.log('🟢 Parametros recibidos:', this.$route.params)
-    console.log('🟢 userLogin recibido:', this.userLogin)
+    console.log("🟢 Parametros recibidos:", this.$route.params);
+    console.log("🟢 userLogin recibido:", this.userLogin);
 
     if (!this.identificacion) {
-      this.mostrarMensaje('Identificación no válida.', 'error')
-      return
+      this.mostrarMensaje("Identificación no válida.", "error");
+      return;
     }
 
     // Cargar roles y usuario en paralelo
     try {
-      await Promise.all([this.cargarRoles(), this.cargarUsuario()])
+      await Promise.all([this.cargarRoles(), this.cargarUsuario()]);
     } catch (err) {
       // Si alguno falla mostramos mensaje genérico (los métodos ya manejan logs)
-      this.mostrarMensaje('Error al inicializar datos del formulario.', 'error')
+      this.mostrarMensaje(
+        "Error al inicializar datos del formulario.",
+        "error",
+      );
     }
   },
 
   methods: {
     async cargarRoles() {
       try {
-        const resp = await listarRoles()
+        const resp = await listarRoles();
         // Asumimos que la respuesta viene en resp.data como array
-        this.roles = Array.isArray(resp.data) ? resp.data : []
+        this.roles = Array.isArray(resp.data) ? resp.data : [];
       } catch (error) {
         // No bloqueamos la carga del usuario si falla la lista de roles,
         // pero avisamos para que el usuario sepa que no se pudieron cargar.
-        this.roles = []
-        this.mostrarMensaje('⚠️ No se pudieron cargar los roles.', 'warning')
-        console.error('Error listarRoles:', error)
+        this.roles = [];
+        this.mostrarMensaje("⚠️ No se pudieron cargar los roles.", "warning");
+        console.error("Error listarRoles:", error);
       }
     },
 
     async cargarUsuario() {
       try {
-        const response = await buscarUsuarioPorIdentificacion(this.identificacion)
-        const user = response.data
+        const response = await buscarUsuarioPorIdentificacion(
+          this.identificacion,
+        );
+        const user = response.data;
 
         if (!user) {
-          this.mostrarMensaje('❌ Usuario no encontrado.', 'error')
-          return
+          this.mostrarMensaje("❌ Usuario no encontrado.", "error");
+          return;
         }
 
-        this.usuarioForm = { ...response.data }
-
+        this.usuarioForm = { ...response.data };
       } catch (error) {
-        this.mostrarMensaje('Error al cargar usuario.', 'error')
-        console.error('Error cargarUsuario:', error)
+        this.mostrarMensaje("Error al cargar usuario.", "error");
+        console.error("Error cargarUsuario:", error);
       }
     },
 
     // 🔹 Abrir el modal de confirmación antes de actualizar
     abrirModalConfirmacion() {
-      this.mostrarConfirmacion = true
+      this.mostrarConfirmacion = true;
     },
 
     cerrarModal() {
-      this.mostrarConfirmacion = false
+      this.mostrarConfirmacion = false;
     },
 
     // 🔹 Confirmar y ejecutar actualización
     async confirmarActualizacion() {
-      this.mostrarConfirmacion = false
+      this.mostrarConfirmacion = false;
       try {
         // Enviamos el objeto tal cual; backend debe aceptar roleCode como parte del DTO.
-        await actualizarUsuario(this.usuarioForm, this.userLogin)
-        this.mostrarMensaje('✅ Usuario actualizado correctamente.', 'success')
+        await actualizarUsuario(this.usuarioForm, this.userLogin);
+        this.mostrarMensaje("✅ Usuario actualizado correctamente.", "success");
       } catch (error) {
         // Si el backend devuelve mensaje, mostramos ese mensaje preferentemente
-        const backendMessage = error.response?.data?.message || error.response?.data?.mensaje
-        this.mostrarMensaje(backendMessage || '❌ Error al actualizar usuario.', 'error')
-        console.error('Error actualizarUsuario:', error)
+        const backendMessage =
+          error.response?.data?.message || error.response?.data?.mensaje;
+        this.mostrarMensaje(
+          backendMessage || "❌ Error al actualizar usuario.",
+          "error",
+        );
+        console.error("Error actualizarUsuario:", error);
       }
     },
 
     mostrarMensaje(texto, tipo) {
-      this.mensaje = texto
-      this.mensajeTipo = tipo
+      this.mensaje = texto;
+      this.mensajeTipo = tipo;
       setTimeout(() => {
-        this.mensaje = ''
-        if (tipo === 'success') {
-          this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
+        this.mensaje = "";
+        if (tipo === "success") {
+          this.$router.push({
+            path: "/configuracion-empresa-usuario",
+            query: { vista: "usuarios" },
+          });
         }
-      }, 2000)
+      }, 2000);
     },
 
     volverConfiguracion() {
-      this.$router.push({ path: '/configuracion-empresa-usuario', query: { vista: 'usuarios' } })
-    }
-  }
-}
+      this.$router.push({
+        path: "/configuracion-empresa-usuario",
+        query: { vista: "usuarios" },
+      });
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .registro-proveedor-wrapper {
@@ -216,7 +244,7 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
-  margin-top: 1px;    /* espacio desde arriba */
+  margin-top: 1px; /* espacio desde arriba */
 }
 
 .mensaje {
@@ -225,7 +253,7 @@ export default {
   margin-bottom: 15px;
   font-weight: bold;
   text-align: center;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mensaje.success {
@@ -351,5 +379,4 @@ input {
 .no-btn:hover {
   background-color: #922b21;
 }
-
 </style>

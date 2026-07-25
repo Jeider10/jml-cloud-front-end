@@ -1,19 +1,19 @@
 // vue.config.js
 
-const { defineConfig } = require('@vue/cli-service')
+const { defineConfig } = require("@vue/cli-service");
 
 module.exports = defineConfig({
   transpileDependencies: true,
 
   // importante para que Vue genere rutas relativas y no absolutas
-  publicPath: './',
+  publicPath: "./",
 
   // Titulo de la app en el navegador
   pages: {
     index: {
-      entry: 'src/main.js',
-      title: 'JML Cloud APP'
-    }
+      entry: "src/main.js",
+      title: "JML Cloud APP",
+    },
   },
 
   devServer: {
@@ -25,8 +25,8 @@ module.exports = defineConfig({
   pluginOptions: {
     electronBuilder: {
       // Aquí cargas tu archivo principal de electron
-      mainProcessFile: 'background.js',
-      rendererProcessFile: 'src/main.js',
-    }
-  }
-})
+      mainProcessFile: "background.js",
+      rendererProcessFile: "src/main.js",
+    },
+  },
+});
