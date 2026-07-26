@@ -1,0 +1,11 @@
+=====================================
+ JML Cloud - Frontend
+ Historial de Cambios
+=====================================
+
+[1.0.0-SNAPSHOT] - 2026-07-26 - (Jeider Montiel)
+  - Version inicial del frontend Vue.js.
+  - Dashboard con menu lateral dinamico.
+  - Login, Nueva Venta, Clientes, Proveedores, Productos, Ventas.
+  - Configuracion de empresa con logo dinamico en sidebar.
+  - Footer con enlaces a WhatsApp, Facebook y TikTok.
