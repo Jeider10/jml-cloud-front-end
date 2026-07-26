@@ -15,7 +15,13 @@
       <div class="top-section">
         <!-- Logo — clic aquí colapsa/oculta el menú -->
         <div class="logo-icon nav-row" @click="onLogoClick">
-          <img src="@/assets/img/LogoVue.png" alt="Logo" class="logo" />
+          <!-- Logo dinámico: muestra el logo de la empresa si existe, sino el logo por defecto -->
+          <img
+            :src="logoEmpresa"
+            alt="Logo"
+            class="logo"
+            @error="onLogoSidebarError"
+          />
           <!-- etiqueta solo visible si expanded -->
           <span class="label">Inicio</span>
         </div>
@@ -123,6 +129,7 @@
 
 <script>
 import { getSession, logoutBackend } from "@/services/apiAuthService";
+import { obtenerPrimeraEmpresa } from "@/services/apiConfigEmpresaService";
 
 export default {
   name: "DashboardSideMenu",
@@ -131,9 +138,12 @@ export default {
     const savedPinned = localStorage.getItem("menuPinned") === "true";
     return {
       menuOpen: savedPinned, // Si estaba pinned, arranca expandido
-      pinned: savedPinned, // Si está "pinned" se queda fijo expandido
-      hoverOpen: false, // Si se abrió por hover
+      pinned: savedPinned,   // Si está "pinned" se queda fijo expandido
+      hoverOpen: false,      // Si se abrió por hover
       roleName: "",
+      // Logo dinámico de la empresa — se carga al montar y se actualiza
+      // cuando el usuario cambia el logo en "Configuración Empresa"
+      logoEmpresa: require("@/assets/img/LogoVue.png"),
     };
   },
   async created() {
@@ -148,6 +158,28 @@ export default {
     }
     // Emitir estado inicial para que el contenido se posicione correctamente
     this.$emit("menu-toggle", this.menuOpen);
+
+    // Cargar el logo de la empresa al iniciar
+    await this.cargarLogoEmpresa();
+
+    // Escuchar el evento global que emite ConfiguracionEmpresaView
+    // cuando el usuario guarda o actualiza los datos de la empresa
+    this._onEmpresaUpdated = (event) => {
+      const empresa = event.detail;
+      if (empresa && empresa.logo) {
+        this.logoEmpresa = this.resolverLogoUrl(empresa.logo);
+      } else {
+        // Si se elimino la empresa, volver al logo por defecto
+        this.logoEmpresa = require("@/assets/img/LogoVue.png");
+      }
+    };
+    globalThis.addEventListener("empresaUpdated", this._onEmpresaUpdated);
+  },
+  beforeUnmount() {
+    // Limpiar el listener al destruir el componente para evitar memory leaks
+    if (this._onEmpresaUpdated) {
+      globalThis.removeEventListener("empresaUpdated", this._onEmpresaUpdated);
+    }
   },
   computed: {
     isAdmin() {
@@ -163,6 +195,53 @@ export default {
     },
   },
   methods: {
+    // ==========================================
+    // LOGO DE EMPRESA
+    // ==========================================
+
+    // Carga el logo de la empresa desde el backend al iniciar el sidebar
+    async cargarLogoEmpresa() {
+      try {
+        const response = await obtenerPrimeraEmpresa();
+        if (response?.data?.length > 0) {
+          const logo = response.data[0]?.logo;
+          if (logo) {
+            this.logoEmpresa = this.resolverLogoUrl(logo);
+          }
+        }
+      } catch (error) {
+        // Si falla (ej: no hay empresa aun), mantiene el logo por defecto
+        console.warn("⚠️ No se pudo cargar el logo de la empresa:", error.message);
+      }
+    },
+
+    // Resuelve la URL del logo igual que getLogoUrl en ConfiguracionEmpresaView
+    resolverLogoUrl(path) {
+      if (!path) return require("@/assets/img/LogoVue.png");
+
+      const cleanPath = path.toString().trim().replaceAll(/(^"|"$)/g, "");
+
+      if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+        return cleanPath;
+      }
+      if (cleanPath.startsWith("data:image")) {
+        return cleanPath;
+      }
+      if (/^[A-Za-z0-9+/=]+$/.test(cleanPath)) {
+        return `data:image/png;base64,${cleanPath}`;
+      }
+      return `${process.env.VUE_APP_AUTH_BASE_URL}${cleanPath}`;
+    },
+
+    // Si el logo falla al cargar (URL rota, S3 expirado, etc.), usar el default
+    onLogoSidebarError(event) {
+      event.target.src = require("@/assets/img/LogoVue.png");
+    },
+
+    // ==========================================
+    // MENU
+    // ==========================================
+
     // 🔹 Hover: expande temporalmente si no está pinned
     onMouseEnter() {
       if (!this.pinned && !this.menuOpen) {
@@ -372,6 +451,15 @@ export default {
   width: 26px;
   height: 26px;
   display: block;
+}
+
+/* El logo de empresa puede ser rectangular — usar object-fit para no deformarlo */
+.logo-icon img.logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.10);
 }
 
 /* Sección inferior (botón salir) */
