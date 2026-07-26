@@ -17,10 +17,10 @@ export default {
     return {
       anioActual: new Date().getFullYear(),
       // Cambia estos valores por tus datos reales
-      telefono: "573212365871",
+      telefono: "573233205852",
       mensajeWhatsapp: "Hola, me interesa obtener mas informacion.",
-      facebookLink: "https://www.facebook.com/jeider.montiel",
-      tiktokLink: "https://www.tiktok.com/@jeider.montiel",
+      facebookLink: "https://www.facebook.com/Jeiider10",
+      tiktokLink: "https://www.tiktok.com/@jeiider10",
     };
   },
   computed: {
