@@ -58,6 +58,10 @@ export default {
         } else if (error.response.status === 401) {
           // ❌ Credenciales inválidas
           this.errorMessage = "Usuario o contraseña incorrectos.";
+        } else if (error.response.status === 404) {
+          // ❌ Usuario no encontrado o rol del usuario no existe en el sistema
+          this.errorMessage =
+            "El acceso no está permitido. El usuario no tiene un rol válido asignado. Contacte al administrador.";
         } else {
           // ⚠️ Otro error inesperado
           this.errorMessage =
